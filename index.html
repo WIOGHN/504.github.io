@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>COPA WIOG – Todo Integrado</title>
+  <title>COPA WIOG – Mundial Completo con Llave Visual</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -103,8 +103,9 @@
   </style>
 </head>
 <body>
-  <h1>🏆 COPA WIOG – Mundial Completo</h1>
-
+  <h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1>
+  <textarea id="listaEquipos" rows="6" cols="40" placeholder="Pega aquí los 32 equipos (uno por línea)"></textarea><br>
+  
   <h3>Agregar Equipos</h3>
   <input type="text" id="equipoInput" placeholder="Nombre del equipo" />
   <button onclick="agregarEquipo()">Agregar</button><br>
@@ -112,10 +113,8 @@
   <button onclick="agregarLista()">Agregar Lista</button>
   <div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
 
-  <hr>
   <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
   <div id="grupos"></div>
-
   <hr>
   <h2>Fase Eliminatoria</h2>
   <button onclick="clasificarAOctavos()">🏁 Clasificar a Octavos</button>
@@ -135,31 +134,10 @@ let equipos = [];
 let gruposGlobal = {};
 let clasificados = [];
 
-function agregarEquipo() {
-  const input = document.getElementById("equipoInput");
-  const nombre = input.value.trim();
-  if (nombre && !equipos.includes(nombre)) {
-    equipos.push(nombre);
-    input.value = '';
-    mostrarEquipos();
-  }
-}
-
-function agregarLista() {
-  const lista = document.getElementById("listaEquipos").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
-  lista.forEach(e => {
-    if (e && !equipos.includes(e)) equipos.push(e);
-  });
-  document.getElementById("listaEquipos").value = '';
-  mostrarEquipos();
-}
-
-function mostrarEquipos() {
-  document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
-}
-
 function sortearGrupos() {
-  if (equipos.length !== 32) return alert("Debes ingresar exactamente 32 equipos.");
+  const lista = document.getElementById("listaEquipos").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
+  if (lista.length !== 32) return alert("Debes ingresar exactamente 32 equipos.");
+  equipos = lista;
   const mezclados = [...equipos].sort(() => Math.random() - 0.5);
   const letras = 'ABCDEFGH'.split('');
   gruposGlobal = {};
@@ -211,6 +189,80 @@ function generarTabla(grupo, eq) {
   document.getElementById(`tabla_${grupo}`).innerHTML = html;
   clasificados = clasificados.concat(tabla.slice(0,2).map(t => t.Equipo));
 }
+
+function clasificarAOctavos() {
+  if (clasificados.length !== 16) return alert("Asegúrate de generar todas las tablas de grupo.");
+  const izq = clasificados.slice(0, 8);
+  const der = clasificados.slice(8, 16);
+  const octavosIzq = document.getElementById("octavosIzq");
+  const octavosDer = document.getElementById("octavosDer");
+  octavosIzq.innerHTML = '';
+  octavosDer.innerHTML = '';
+  for (let i = 0; i < 4; i++) {
+    octavosIzq.innerHTML += generarPartidoHTML(`oz${i}`, izq[i*2], izq[i*2+1], 'cuartosIzq');
+    octavosDer.innerHTML += generarPartidoHTML(`od${i}`, der[i*2], der[i*2+1], 'cuartosDer');
+  }
+}
+
+function generarPartidoHTML(id, e1, e2, siguienteRonda) {
+  return `<div class='match' id='${id}'>${e1} <input type='number' id='${id}a'> - <input type='number' id='${id}b'> ${e2}
+    <br><button onclick="autoAvanzar('${id}','${e1}','${e2}','${siguienteRonda}')">▶</button></div>`;
+}
+
+function autoAvanzar(id, e1, e2, ronda) {
+  const g1 = parseInt(document.getElementById(id + 'a').value);
+  const g2 = parseInt(document.getElementById(id + 'b').value);
+  if (isNaN(g1) || isNaN(g2)) return alert("Faltan goles");
+  let ganador = g1 > g2 ? e1 : g1 < g2 ? e2 : prompt("Empate. Escribe el nombre del ganador:");
+  const cont = document.getElementById(ronda);
+  if (!cont.dataset.equipos) cont.dataset.equipos = '';
+  let eqs = cont.dataset.equipos.split(',').filter(Boolean);
+  eqs.push(ganador);
+  cont.dataset.equipos = eqs.join(',');
+  renderRonda(ronda, eqs);
+}
+
+function renderRonda(id, eqs) {
+  const cont = document.getElementById(id);
+  cont.innerHTML = '';
+  if (eqs.length % 2 !== 0) return;
+  for (let i = 0; i < eqs.length; i += 2) {
+    const next = id === 'cuartosIzq' ? 'semisIzq' :
+                 id === 'cuartosDer' ? 'semisDer' :
+                 id === 'semisIzq' ? 'final' :
+                 id === 'semisDer' ? 'final' : '';
+    cont.innerHTML += generarPartidoHTML(`${id}_${i}`, eqs[i], eqs[i+1], next);
+  }
+  if (id === 'final' && eqs.length === 2) {
+    document.getElementById('final').innerHTML = generarPartidoHTML('finalMatch', eqs[0], eqs[1], 'campeon');
+  } else if (id === 'campeon' && eqs.length === 1) {
+    document.getElementById('campeon').innerText = "🏆 CAMPEÓN: " + eqs[0];
+  }
+}
+
+function agregarEquipo() {
+  const input = document.getElementById("equipoInput");
+  const nombre = input.value.trim();
+  if (nombre && !equipos.includes(nombre)) {
+    equipos.push(nombre);
+    input.value = '';
+    mostrarEquipos();
+  }
+}
+
+function agregarLista() {
+  const lista = document.getElementById("listaEquipos").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
+  lista.forEach(e => {
+    if (e && !equipos.includes(e)) equipos.push(e);
+  });
+  document.getElementById("listaEquipos").value = '';
+  mostrarEquipos();
+}
+
+function mostrarEquipos() {
+  document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
+}
+
 </script>
 </body>
 </html>
