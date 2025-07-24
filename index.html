@@ -2,54 +2,129 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>COPA WIOG</title>
+  <title>COPA WIOG – Sorteo de Grupos</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-image: url('https://images.unsplash.com/photo-1606011878023-62c815f42320?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80');
-      background-size: cover;
-      background-position: center;
-      color: #fff;
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      padding: 40px;
       text-align: center;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      backdrop-filter: brightness(0.8);
     }
 
-    .titulo {
-      font-size: 64px;
-      font-weight: bold;
-      text-shadow: 3px 3px 8px #000;
-      margin: 0 20px;
+    h1 {
+      color: #0077cc;
     }
 
-    .subtitulo {
-      font-size: 24px;
+    input, textarea, button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    .grupo {
+      margin: 20px auto;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      width: 200px;
+      display: inline-block;
+      text-align: left;
+    }
+
+    .grupo h3 {
+      margin: 0 0 10px;
+      color: #0077cc;
+    }
+
+    #equiposLista {
       margin-top: 20px;
-      text-shadow: 2px 2px 6px #000;
+      font-weight: bold;
     }
 
-    footer {
-      position: absolute;
-      bottom: 20px;
-      width: 100%;
-      text-align: center;
-      font-size: 14px;
-      color: #ccc;
-      text-shadow: 1px 1px 2px #000;
+    .grupos-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
     }
   </style>
 </head>
 <body>
 
-  <h1 class="titulo">🏆 BIENVENIDOS A LA COPA WIOG 🏆</h1>
-  <p class="subtitulo">El torneo de predicciones más emocionante está por comenzar</p>
+  <h1>🏆 COPA WIOG – Sorteo de Grupos 🏆</h1>
 
-  <footer>© 2025 COPA WIOG | Todos los derechos reservados</footer>
+  <div>
+    <input type="text" id="equipoInput" placeholder="Agregar equipo individual" />
+    <button onclick="agregarEquipo()">Agregar</button>
+  </div>
+
+  <div>
+    <textarea id="listaEquipos" rows="6" cols="40" placeholder="Pega aquí una lista de equipos (uno por línea)"></textarea><br>
+    <button onclick="agregarLista()">Agregar Lista</button>
+  </div>
+
+  <div id="equiposLista"></div>
+
+  <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
+
+  <div id="gruposResultado" class="grupos-container"></div>
+
+  <script>
+    let equipos = [];
+
+    function agregarEquipo() {
+      const input = document.getElementById('equipoInput');
+      const nombre = input.value.trim();
+      if (nombre && !equipos.includes(nombre)) {
+        equipos.push(nombre);
+        input.value = '';
+        mostrarEquipos();
+      }
+    }
+
+    function agregarLista() {
+      const lista = document.getElementById('listaEquipos').value.trim();
+      if (lista) {
+        const nuevos = lista.split('\n').map(e => e.trim()).filter(e => e && !equipos.includes(e));
+        equipos = equipos.concat(nuevos);
+        document.getElementById('listaEquipos').value = '';
+        mostrarEquipos();
+      }
+    }
+
+    function mostrarEquipos() {
+      document.getElementById('equiposLista').innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
+    }
+
+    function sortearGrupos() {
+      if (equipos.length !== 32) {
+        alert("Debes agregar exactamente 32 equipos para sortear.");
+        return;
+      }
+
+      // Mezclar equipos
+      const mezclados = equipos.slice().sort(() => Math.random() - 0.5);
+
+      // Distribuir en 8 grupos
+      const grupos = {};
+      const letras = 'ABCDEFGH'.split('');
+      letras.forEach((letra, i) => {
+        grupos[letra] = mezclados.slice(i * 4, (i + 1) * 4);
+      });
+
+      // Mostrar resultados
+      const contenedor = document.getElementById('gruposResultado');
+      contenedor.innerHTML = '';
+      letras.forEach(letra => {
+        const div = document.createElement('div');
+        div.className = 'grupo';
+        div.innerHTML = `<h3>Grupo ${letra}</h3><ul>` +
+          grupos[letra].map(eq => `<li>${eq}</li>`).join('') +
+          `</ul>`;
+        contenedor.appendChild(div);
+      });
+    }
+  </script>
 
 </body>
 </html>
