@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>COPA WIOG – Mundial Estilizado</title>
+  <title>COPA WIOG – Mundial Completo Estilizado</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -95,10 +95,18 @@
   </style>
 </head>
 <body>
-<h1>🏆 COPA WIOG – Mundial Estilizado 🏆</h1>
-<textarea id="listaEquipos" rows="8" cols="40" placeholder="Pega 32 equipos, uno por línea"></textarea><br>
+<h1>🏆 COPA WIOG – Mundial Estilizado</h1>
+
+<h3>Agregar equipos</h3>
+<input type="text" id="equipoInput" placeholder="Equipo individual" />
+<button onclick="agregarEquipo()">Agregar</button><br>
+<textarea id="listaEquipos" rows="6" cols="40" placeholder="Pega aquí una lista de equipos (uno por línea)"></textarea><br>
+<button onclick="agregarLista()">Agregar Lista</button><br>
+<div id="equiposLista"></div>
+
 <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
 <div id="grupos"></div>
+
 <hr>
 <h2>Fase Eliminatoria</h2>
 <button onclick="generarEliminatoria()">🏁 Clasificar a Octavos</button>
@@ -111,8 +119,137 @@
 <div class="campeon" id="campeon"></div>
 
 <script>
-// misma lógica JS funcional como la versión anterior (omitida aquí por espacio)
-// Se insertaría aquí exactamente el mismo JS de la versión funcional
+let equipos = [];
+const letras = 'ABCDEFGH'.split('');
+let gruposGlobal = {};
+let clasificados = [];
+
+function agregarEquipo() {
+  const input = document.getElementById('equipoInput');
+  const nombre = input.value.trim();
+  if (nombre && !equipos.includes(nombre)) {
+    equipos.push(nombre);
+    input.value = '';
+    mostrarEquipos();
+  }
+}
+
+function agregarLista() {
+  const lista = document.getElementById('listaEquipos').value.trim();
+  if (lista) {
+    const nuevos = lista.split('\n').map(e => e.trim()).filter(e => e && !equipos.includes(e));
+    equipos = equipos.concat(nuevos);
+    document.getElementById('listaEquipos').value = '';
+    mostrarEquipos();
+  }
+}
+
+function mostrarEquipos() {
+  document.getElementById('equiposLista').innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
+}
+
+function sortearGrupos() {
+  if (equipos.length !== 32) {
+    alert("Debes agregar exactamente 32 equipos.");
+    return;
+  }
+  const mezclados = equipos.slice().sort(() => Math.random() - 0.5);
+  const grupos = {};
+  letras.forEach((l, i) => grupos[l] = mezclados.slice(i*4, (i+1)*4));
+  gruposGlobal = grupos;
+  mostrarGrupos(grupos);
+}
+
+function mostrarGrupos(grupos) {
+  const container = document.getElementById('grupos');
+  container.innerHTML = '';
+  for (let grupo in grupos) {
+    const eq = grupos[grupo];
+    const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+    let html = `<div class='grupo'><h3>Grupo ${grupo}</h3><ul>${eq.map(e => `<li>${e}</li>`).join('')}</ul><hr>`;
+    partidos.forEach((p, i) => {
+      html += `<div>${eq[p[0]]} <input type="number" id="g${grupo}${i}a" /> - <input type="number" id="g${grupo}${i}b" /> ${eq[p[1]]}</div>`;
+    });
+    html += `<button onclick="calcularTabla('${grupo}', ${JSON.stringify(eq).replace(/"/g, '&quot;')})">Ver Tabla</button>
+             <div id="tabla_${grupo}"></div></div>`;
+    container.innerHTML += html;
+  }
+}
+
+function calcularTabla(grupo, eq) {
+  const orden = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+  const stats = {};
+  eq.forEach(e => stats[e] = {PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, DG:0, Puntos:0});
+  orden.forEach((p,i) => {
+    const g1 = parseInt(document.getElementById(`g${grupo}${i}a`).value);
+    const g2 = parseInt(document.getElementById(`g${grupo}${i}b`).value);
+    if (isNaN(g1) || isNaN(g2)) return;
+    const A = eq[p[0]], B = eq[p[1]];
+    stats[A].PJ++; stats[B].PJ++;
+    stats[A].GF += g1; stats[A].GC += g2;
+    stats[B].GF += g2; stats[B].GC += g1;
+    if (g1 > g2) { stats[A].PG++; stats[B].PP++; stats[A].Puntos += 3; }
+    else if (g1 < g2) { stats[B].PG++; stats[A].PP++; stats[B].Puntos += 3; }
+    else { stats[A].PE++; stats[B].PE++; stats[A].Puntos +=1; stats[B].Puntos +=1; }
+  });
+  eq.forEach(e => stats[e].DG = stats[e].GF - stats[e].GC);
+  const tabla = eq.map(e => ({Equipo: e, ...stats[e]}))
+    .sort((a,b) => b.Puntos - a.Puntos || b.DG - a.DG || b.GF - a.GF);
+  let html = `<table class='tabla'><tr><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr>`;
+  tabla.forEach(t => {
+    html += `<tr><td>${t.Equipo}</td><td>${t.PJ}</td><td>${t.PG}</td><td>${t.PE}</td><td>${t.PP}</td><td>${t.GF}</td><td>${t.GC}</td><td>${t.DG}</td><td>${t.Puntos}</td></tr>`;
+  });
+  html += "</table>";
+  document.getElementById(`tabla_${grupo}`).innerHTML = html;
+  tabla.slice(0,2).forEach(t => clasificados.push(t.Equipo));
+}
+
+function generarEliminatoria() {
+  if (clasificados.length !== 16) return alert("Clasifica los grupos antes de continuar.");
+  const emparejamientos = [
+    [clasificados[0], clasificados[9]], [clasificados[2], clasificados[11]],
+    [clasificados[4], clasificados[13]], [clasificados[6], clasificados[15]],
+    [clasificados[1], clasificados[8]], [clasificados[3], clasificados[10]],
+    [clasificados[5], clasificados[12]], [clasificados[7], clasificados[14]]
+  ];
+  crearRonda('octavos', emparejamientos, 'cuartos');
+}
+
+function crearRonda(idContenedor, partidos, siguienteRonda) {
+  const cont = document.getElementById(idContenedor);
+  cont.innerHTML = '';
+  partidos.forEach((p, i) => {
+    const mid = `${idContenedor}_${i}`;
+    cont.innerHTML += `<div class='match' id='${mid}'>
+      ${p[0]} <input id='${mid}a' type='number' /> - 
+      <input id='${mid}b' type='number' /> ${p[1]} 
+      <br><button onclick="avanzar('${mid}', '${p[0]}', '${p[1]}', '${siguienteRonda}')">Ganador</button>
+    </div>`;
+  });
+}
+
+function avanzar(id, e1, e2, next) {
+  const g1 = parseInt(document.getElementById(`${id}a`).value);
+  const g2 = parseInt(document.getElementById(`${id}b`).value);
+  if (isNaN(g1) || isNaN(g2)) return alert("Faltan goles");
+  let ganador = g1 > g2 ? e1 : g1 < g2 ? e2 : prompt("Empate. Escribe el ganador:");
+  const ronda = document.getElementById(next);
+  if (!ronda.dataset.equipos) ronda.dataset.equipos = '';
+  let eqs = ronda.dataset.equipos.split(',').filter(Boolean);
+  eqs.push(ganador);
+  ronda.dataset.equipos = eqs.join(',');
+  if (eqs.length % 2 === 0) crearRonda(next, chunkArray(eqs, 2), next === 'cuartos' ? 'semis' : next === 'semis' ? 'final' : '');
+  if (next === 'final' && eqs.length === 2) setTimeout(() => {
+    const g = eqs[Math.random() > 0.5 ? 0 : 1];
+    document.getElementById('campeon').innerText = `🏆 CAMPEÓN: ${g}`;
+  }, 500);
+}
+
+function chunkArray(arr, size) {
+  const res = [];
+  for (let i = 0; i < arr.length; i += size) res.push(arr.slice(i, i + size));
+  return res;
+}
 </script>
 </body>
 </html>
