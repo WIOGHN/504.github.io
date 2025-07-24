@@ -1,52 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>SORTEO WIOG</title>
+  <meta charset="UTF-8" />
+  <title>COPA WIOG – Mundial Automático</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f9fafc;
-      color: #222;
-      text-align: center;
-      padding: 60px;
-    }
-
-    h1 {
-      color: #1e88e5;
-      font-size: 48px;
-    }
-
-    p {
-      font-size: 18px;
-      margin: 30px 0;
-    }
-
-    a.boton {
-      display: inline-block;
-      background-color: #1e88e5;
-      color: #fff;
-      padding: 12px 24px;
-      text-decoration: none;
-      border-radius: 8px;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-
-    a.boton:hover {
-      background-color: #1669bb;
-    }
-
-    footer {
-      margin-top: 80px;
-      font-size: 14px;
-      color: #888;
-    }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 20px; text-align: center; }
+    .grupo { background: #fff; padding: 20px; margin: 20px; border: 1px solid #ccc; display: inline-block; vertical-align: top; width: 320px; }
+    .grupo h3 { color: #0077cc; }
+    .partido input { width: 40px; text-align: center; }
+    .tabla { margin-top: 20px; border-collapse: collapse; width: 100%; }
+    .tabla th, .tabla td { border: 1px solid #ccc; padding: 6px; font-size: 14px; }
+    .tabla th { background-color: #0077cc; color: #fff; }
+    textarea, input, button { margin: 5px; padding: 8px; }
   </style>
 </head>
 <body>
-  <h1>SORTEO WIOG</h1>
-  <p>Bienvenidos al sorteo más esperado. Pronto podrás participar, ¡mantente atento!</p>
-  <footer>© 2025 WIOG | Todos los derechos reservados</footer>
-</body>
-</html>
+
+  <h1>🏆 COPA WIOG – Grupos y Tabla de Posiciones 🏆</h1>
+
+  <textarea id="listaEquipos" rows="8" cols="40" placeholder="Pega 32 equipos, uno por línea"></textarea><br />
+  <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
+
+  <div id="grupos"></div>
+
+  <script>
+    let equipos = [];
+    const letras = "ABCDEFGH".split("");
+
+    function sortearGrupos() {
+      equipos = document.getElementById('listaEquipos').value.trim().split('\n').map(e => e.trim()).filter(e => e);
+      if (equipos.length !== 32) return alert("Debes ingresar exactamente 32 equipos.");
+      equipos = equipos.sort(() => Math.random() - 0.5);
+      const grupos = {};
+      letras.forEach((l, i) => grupos[l] = equipos.slice(i*4, (i+1)*4));
+      mostrarGrupos(grupos);
+    }
+
+    function mostrarGrupos(grupos) {
+      const container = document.getElementById('grupos');
+      container.innerHTML = '';
+      for (let letra of letras) {
+        const eq = grupos[letra];
+        const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+        let html = `<div class='grupo'><h3>Grupo ${letra}</h3><ul>${eq.map(e => `<li>${e}</li>`).join('')}</ul><hr>`;
+        partidos.forEach((p, i) => {
+          html += `
+            <div>
+              ${eq[p[0]]}
+              <input id="${letra}${i}a" type="number" min="0" />
+              -
+              <input id="${letra}${i}b" type="number" min="0" />
+              ${eq[p[1]]}
+            </div>
+          `;
+        });
+        html += `<button onclick="calcularTabla('${letra}', ${JSON.stringify(eq).replace(/"/g, '&quot;')})">Ver Tabla</button><div id="tabla_${letra}"></div></div>`;
+        container.innerHTML += html;
+      }
+    }
+
+    function calcularTabla(grupo, eq) {
+      const stats = {};
+      eq.forEach(e => stats[e] = {PJ:0,PG:0,PE:0,PP:0,GF:0,GC:0,DG:0,Puntos:0});
+      const orden = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+      orden.forEach((p,i) => {
+        const g1 = parseInt(document.getElementById(`${grupo}${i}a`).value);
+        const g2 = parseInt(document.getElementById(`${grupo}${i}b`
