@@ -2,253 +2,131 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>COPA WIOG – Mundial Completo Estilizado</title>
+  <title>Copa WIOG - Llave Eliminatoria FIFA Style</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      background-color: #800000;
       color: #fff;
-      text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
       padding: 20px;
+      text-align: center;
     }
-    h1, h2, h3 {
+    h1 {
       color: #ffd700;
-      text-shadow: 1px 1px 2px #000;
     }
-    textarea, input, button {
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      font-size: 14px;
-    }
-    button {
-      background-color: #ffd700;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:hover {
-      background-color: #ffc400;
-    }
-    .grupo {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid #ffd700;
-      border-radius: 10px;
-      padding: 15px;
-      margin: 10px;
-      width: 300px;
-      display: inline-block;
-      vertical-align: top;
-      box-shadow: 0 0 10px #000;
-    }
-    .grupo ul {
-      list-style: none;
-      padding: 0;
-    }
-    .grupo li {
-      padding: 4px;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-    .tabla {
-      margin-top: 10px;
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    .tabla th, .tabla td {
-      border: 1px solid #ddd;
-      padding: 4px;
-      background: rgba(255,255,255,0.9);
-      color: #000;
-    }
-    .faseKO {
+    .bracket {
       display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 30px;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
       margin-top: 40px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
     }
-    .ronda {
+    .round {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 20px;
     }
     .match {
-      background: rgba(255, 255, 255, 0.15);
-      border: 2px solid #64dd17;
-      border-radius: 8px;
-      padding: 10px;
-      width: 240px;
-      color: #fff;
-      box-shadow: 0 0 8px rgba(0,0,0,0.6);
-    }
-    .final {
-      background-color: #ff6f00;
+      background-color: #fff;
+      color: #000;
+      border-radius: 6px;
+      padding: 6px 10px;
       font-weight: bold;
+      position: relative;
+      min-width: 120px;
+      text-align: center;
     }
-    .campeon {
-      font-size: 20px;
-      color: #00e676;
-      margin-top: 30px;
+    .center {
+      padding: 0 30px;
+    }
+    .center img {
+      height: 120px;
+    }
+    input {
+      width: 30px;
+      margin: 0 5px;
+    }
+    button {
+      margin-top: 6px;
+      padding: 4px 10px;
+      border: none;
+      background: #ffd700;
+      color: #000;
+      border-radius: 5px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-<h1>🏆 COPA WIOG – Mundial Estilizado</h1>
 
-<h3>Agregar equipos</h3>
-<input type="text" id="equipoInput" placeholder="Equipo individual" />
-<button onclick="agregarEquipo()">Agregar</button><br>
-<textarea id="listaEquipos" rows="6" cols="40" placeholder="Pega aquí una lista de equipos (uno por línea)"></textarea><br>
-<button onclick="agregarLista()">Agregar Lista</button><br>
-<div id="equiposLista"></div>
+<h1>🏆 Llave Eliminatoria Copa WIOG</h1>
 
-<button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
-<div id="grupos"></div>
+<div class="bracket">
+  <div class="round" id="ronda-octavos-izq">
+    <div class="match" id="oi0">Equipo A1 <input type="number" id="oi0a"> - <input type="number" id="oi0b"> Equipo B2<br><button onclick="avanzar('oi0','qizq',0)">Ganador</button></div>
+    <div class="match" id="oi1">Equipo C1 <input type="number" id="oi1a"> - <input type="number" id="oi1b"> Equipo D2<br><button onclick="avanzar('oi1','qizq',1)">Ganador</button></div>
+    <div class="match" id="oi2">Equipo E1 <input type="number" id="oi2a"> - <input type="number" id="oi2b"> Equipo F2<br><button onclick="avanzar('oi2','qizq',2)">Ganador</button></div>
+    <div class="match" id="oi3">Equipo G1 <input type="number" id="oi3a"> - <input type="number" id="oi3b"> Equipo H2<br><button onclick="avanzar('oi3','qizq',3)">Ganador</button></div>
+  </div>
 
-<hr>
-<h2>Fase Eliminatoria</h2>
-<button onclick="generarEliminatoria()">🏁 Clasificar a Octavos</button>
-<div class="faseKO">
-  <div class="ronda" id="octavos"><h3>Octavos</h3></div>
-  <div class="ronda" id="cuartos"><h3>Cuartos</h3></div>
-  <div class="ronda" id="semis"><h3>Semis</h3></div>
-  <div class="ronda" id="final"><h3>Final</h3></div>
+  <div class="round" id="qizq">
+    <div class="match" id="qi0">-</div>
+    <div class="match" id="qi1">-</div>
+  </div>
+
+  <div class="round" id="sizq">
+    <div class="match" id="si0">-</div>
+  </div>
+
+  <div class="center">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/FIFA_World_Cup_Trophy.svg/120px-FIFA_World_Cup_Trophy.svg.png" alt="Trofeo">
+    <div class="match final" id="final">-</div>
+    <div class="match" id="campeon">🏆 Campeón: -</div>
+  </div>
+
+  <div class="round" id="sder">
+    <div class="match" id="sd0">-</div>
+  </div>
+
+  <div class="round" id="qder">
+    <div class="match" id="qd0">-</div>
+    <div class="match" id="qd1">-</div>
+  </div>
+
+  <div class="round" id="ronda-octavos-der">
+    <div class="match" id="od0">Equipo B1 <input type="number" id="od0a"> - <input type="number" id="od0b"> Equipo A2<br><button onclick="avanzar('od0','qder',0)">Ganador</button></div>
+    <div class="match" id="od1">Equipo D1 <input type="number" id="od1a"> - <input type="number" id="od1b"> Equipo C2<br><button onclick="avanzar('od1','qder',1)">Ganador</button></div>
+    <div class="match" id="od2">Equipo F1 <input type="number" id="od2a"> - <input type="number" id="od2b"> Equipo E2<br><button onclick="avanzar('od2','qder',2)">Ganador</button></div>
+    <div class="match" id="od3">Equipo H1 <input type="number" id="od3a"> - <input type="number" id="od3b"> Equipo G2<br><button onclick="avanzar('od3','qder',3)">Ganador</button></div>
+  </div>
 </div>
-<div class="campeon" id="campeon"></div>
 
 <script>
-let equipos = [];
-const letras = 'ABCDEFGH'.split('');
-let gruposGlobal = {};
-let clasificados = [];
-
-function agregarEquipo() {
-  const input = document.getElementById('equipoInput');
-  const nombre = input.value.trim();
-  if (nombre && !equipos.includes(nombre)) {
-    equipos.push(nombre);
-    input.value = '';
-    mostrarEquipos();
+function avanzar(idOrigen, idDestino, index) {
+  const a = parseInt(document.getElementById(idOrigen + 'a').value);
+  const b = parseInt(document.getElementById(idOrigen + 'b').value);
+  const texto = document.getElementById(idOrigen).innerText.split('\n')[0];
+  const partes = texto.split(/\d\s?-\s?/);
+  const equipo1 = partes[0].trim();
+  const equipo2 = partes[1].trim();
+  let ganador = '-';
+  if (!isNaN(a) && !isNaN(b)) {
+    if (a > b) ganador = equipo1;
+    else if (b > a) ganador = equipo2;
+    else ganador = prompt("Empate: escribe el nombre del ganador:");
   }
-}
+  const destinos = document.querySelectorAll('#' + idDestino + ' .match');
+  destinos[index].innerText = ganador;
 
-function agregarLista() {
-  const lista = document.getElementById('listaEquipos').value.trim();
-  if (lista) {
-    const nuevos = lista.split('\n').map(e => e.trim()).filter(e => e && !equipos.includes(e));
-    equipos = equipos.concat(nuevos);
-    document.getElementById('listaEquipos').value = '';
-    mostrarEquipos();
-  }
-}
-
-function mostrarEquipos() {
-  document.getElementById('equiposLista').innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
-}
-
-function sortearGrupos() {
-  if (equipos.length !== 32) {
-    alert("Debes agregar exactamente 32 equipos.");
-    return;
-  }
-  const mezclados = equipos.slice().sort(() => Math.random() - 0.5);
-  const grupos = {};
-  letras.forEach((l, i) => grupos[l] = mezclados.slice(i*4, (i+1)*4));
-  gruposGlobal = grupos;
-  mostrarGrupos(grupos);
-}
-
-function mostrarGrupos(grupos) {
-  const container = document.getElementById('grupos');
-  container.innerHTML = '';
-  for (let grupo in grupos) {
-    const eq = grupos[grupo];
-    const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
-    let html = `<div class='grupo'><h3>Grupo ${grupo}</h3><ul>${eq.map(e => `<li>${e}</li>`).join('')}</ul><hr>`;
-    partidos.forEach((p, i) => {
-      html += `<div>${eq[p[0]]} <input type="number" id="g${grupo}${i}a" /> - <input type="number" id="g${grupo}${i}b" /> ${eq[p[1]]}</div>`;
-    });
-    html += `<button onclick="calcularTabla('${grupo}', ${JSON.stringify(eq).replace(/"/g, '&quot;')})">Ver Tabla</button>
-             <div id="tabla_${grupo}"></div></div>`;
-    container.innerHTML += html;
-  }
-}
-
-function calcularTabla(grupo, eq) {
-  const orden = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
-  const stats = {};
-  eq.forEach(e => stats[e] = {PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, DG:0, Puntos:0});
-  orden.forEach((p,i) => {
-    const g1 = parseInt(document.getElementById(`g${grupo}${i}a`).value);
-    const g2 = parseInt(document.getElementById(`g${grupo}${i}b`).value);
-    if (isNaN(g1) || isNaN(g2)) return;
-    const A = eq[p[0]], B = eq[p[1]];
-    stats[A].PJ++; stats[B].PJ++;
-    stats[A].GF += g1; stats[A].GC += g2;
-    stats[B].GF += g2; stats[B].GC += g1;
-    if (g1 > g2) { stats[A].PG++; stats[B].PP++; stats[A].Puntos += 3; }
-    else if (g1 < g2) { stats[B].PG++; stats[A].PP++; stats[B].Puntos += 3; }
-    else { stats[A].PE++; stats[B].PE++; stats[A].Puntos +=1; stats[B].Puntos +=1; }
-  });
-  eq.forEach(e => stats[e].DG = stats[e].GF - stats[e].GC);
-  const tabla = eq.map(e => ({Equipo: e, ...stats[e]}))
-    .sort((a,b) => b.Puntos - a.Puntos || b.DG - a.DG || b.GF - a.GF);
-  let html = `<table class='tabla'><tr><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr>`;
-  tabla.forEach(t => {
-    html += `<tr><td>${t.Equipo}</td><td>${t.PJ}</td><td>${t.PG}</td><td>${t.PE}</td><td>${t.PP}</td><td>${t.GF}</td><td>${t.GC}</td><td>${t.DG}</td><td>${t.Puntos}</td></tr>`;
-  });
-  html += "</table>";
-  document.getElementById(`tabla_${grupo}`).innerHTML = html;
-  tabla.slice(0,2).forEach(t => clasificados.push(t.Equipo));
-}
-
-function generarEliminatoria() {
-  if (clasificados.length !== 16) return alert("Clasifica los grupos antes de continuar.");
-  const emparejamientos = [
-    [clasificados[0], clasificados[9]], [clasificados[2], clasificados[11]],
-    [clasificados[4], clasificados[13]], [clasificados[6], clasificados[15]],
-    [clasificados[1], clasificados[8]], [clasificados[3], clasificados[10]],
-    [clasificados[5], clasificados[12]], [clasificados[7], clasificados[14]]
-  ];
-  crearRonda('octavos', emparejamientos, 'cuartos');
-}
-
-function crearRonda(idContenedor, partidos, siguienteRonda) {
-  const cont = document.getElementById(idContenedor);
-  cont.innerHTML = '';
-  partidos.forEach((p, i) => {
-    const mid = `${idContenedor}_${i}`;
-    cont.innerHTML += `<div class='match' id='${mid}'>
-      ${p[0]} <input id='${mid}a' type='number' /> - 
-      <input id='${mid}b' type='number' /> ${p[1]} 
-      <br><button onclick="avanzar('${mid}', '${p[0]}', '${p[1]}', '${siguienteRonda}')">Ganador</button>
-    </div>`;
-  });
-}
-
-function avanzar(id, e1, e2, next) {
-  const g1 = parseInt(document.getElementById(`${id}a`).value);
-  const g2 = parseInt(document.getElementById(`${id}b`).value);
-  if (isNaN(g1) || isNaN(g2)) return alert("Faltan goles");
-  let ganador = g1 > g2 ? e1 : g1 < g2 ? e2 : prompt("Empate. Escribe el ganador:");
-  const ronda = document.getElementById(next);
-  if (!ronda.dataset.equipos) ronda.dataset.equipos = '';
-  let eqs = ronda.dataset.equipos.split(',').filter(Boolean);
-  eqs.push(ganador);
-  ronda.dataset.equipos = eqs.join(',');
-  if (eqs.length % 2 === 0) crearRonda(next, chunkArray(eqs, 2), next === 'cuartos' ? 'semis' : next === 'semis' ? 'final' : '');
-  if (next === 'final' && eqs.length === 2) setTimeout(() => {
-    const g = eqs[Math.random() > 0.5 ? 0 : 1];
-    document.getElementById('campeon').innerText = `🏆 CAMPEÓN: ${g}`;
-  }, 500);
-}
-
-function chunkArray(arr, size) {
-  const res = [];
-  for (let i = 0; i < arr.length; i += size) res.push(arr.slice(i, i + size));
-  return res;
+  // conectar a siguiente fase automáticamente
+  if (idDestino === 'qizq' && index < 2) document.querySelectorAll('#sizq .match')[0].innerText = '-';
+  if (idDestino === 'qder' && index < 2) document.querySelectorAll('#sder .match')[0].innerText = '-';
+  if (idDestino === 'sizq') document.querySelector('#final').innerText = '-';
+  if (idDestino === 'sder') document.querySelector('#final').innerText = '-';
+  if (idDestino === 'final') document.getElementById('campeon').innerText = "🏆 Campeón: " + ganador;
 }
 </script>
 </body>
