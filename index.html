@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>COPA WIOG – Sorteo de Grupos</title>
+  <title>COPA WIOG – Grupos y Resultados</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -22,18 +22,28 @@
     }
 
     .grupo {
-      margin: 20px auto;
-      padding: 10px;
+      margin: 20px;
+      padding: 15px;
       background: #fff;
       border: 1px solid #ccc;
-      width: 200px;
+      width: 280px;
       display: inline-block;
       text-align: left;
+      vertical-align: top;
     }
 
     .grupo h3 {
-      margin: 0 0 10px;
+      margin-top: 0;
       color: #0077cc;
+    }
+
+    .partido {
+      margin: 10px 0;
+    }
+
+    .partido input {
+      width: 40px;
+      text-align: center;
     }
 
     #equiposLista {
@@ -51,7 +61,7 @@
 </head>
 <body>
 
-  <h1>🏆 COPA WIOG – Sorteo de Grupos 🏆</h1>
+  <h1>🏆 COPA WIOG – Sorteo y Resultados 🏆</h1>
 
   <div>
     <input type="text" id="equipoInput" placeholder="Agregar equipo individual" />
@@ -102,27 +112,58 @@
         return;
       }
 
-      // Mezclar equipos
       const mezclados = equipos.slice().sort(() => Math.random() - 0.5);
-
-      // Distribuir en 8 grupos
-      const grupos = {};
       const letras = 'ABCDEFGH'.split('');
+      const grupos = {};
       letras.forEach((letra, i) => {
         grupos[letra] = mezclados.slice(i * 4, (i + 1) * 4);
       });
 
-      // Mostrar resultados
+      mostrarGruposYPartidos(grupos);
+    }
+
+    function mostrarGruposYPartidos(grupos) {
       const contenedor = document.getElementById('gruposResultado');
       contenedor.innerHTML = '';
-      letras.forEach(letra => {
+
+      for (const grupo in grupos) {
         const div = document.createElement('div');
         div.className = 'grupo';
-        div.innerHTML = `<h3>Grupo ${letra}</h3><ul>` +
-          grupos[letra].map(eq => `<li>${eq}</li>`).join('') +
-          `</ul>`;
+
+        const equiposGrupo = grupos[grupo];
+        const partidos = generarPartidosMundial(equiposGrupo);
+
+        div.innerHTML = `<h3>Grupo ${grupo}</h3><ul>${equiposGrupo.map(e => `<li>${e}</li>`).join('')}</ul><hr><h4>Partidos</h4>`;
+
+        partidos.forEach((p, idx) => {
+          const partidoDiv = document.createElement('div');
+          partidoDiv.className = 'partido';
+          partidoDiv.innerHTML = `
+            ${p[0]} 
+            <input type="number" min="0" id="g${grupo}${idx}a" placeholder="0" /> 
+            - 
+            <input type="number" min="0" id="g${grupo}${idx}b" placeholder="0" /> 
+            ${p[1]}
+          `;
+          div.appendChild(partidoDiv);
+        });
+
         contenedor.appendChild(div);
-      });
+      }
+    }
+
+    function generarPartidosMundial(equipos) {
+      if (equipos.length !== 4) return [];
+
+      const [A, B, C, D] = equipos;
+      return [
+        [A, B],
+        [C, D],
+        [A, C],
+        [B, D],
+        [A, D],
+        [B, C]
+      ];
     }
   </script>
 
