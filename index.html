@@ -1,171 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>COPA WIOG – Grupos y Resultados</title>
+  <meta charset="UTF-8" />
+  <title>COPA WIOG – Mundial Automático</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f4f8;
-      padding: 40px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #0077cc;
-    }
-
-    input, textarea, button {
-      margin: 10px;
-      padding: 10px;
-      font-size: 16px;
-    }
-
-    .grupo {
-      margin: 20px;
-      padding: 15px;
-      background: #fff;
-      border: 1px solid #ccc;
-      width: 280px;
-      display: inline-block;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    .grupo h3 {
-      margin-top: 0;
-      color: #0077cc;
-    }
-
-    .partido {
-      margin: 10px 0;
-    }
-
-    .partido input {
-      width: 40px;
-      text-align: center;
-    }
-
-    #equiposLista {
-      margin-top: 20px;
-      font-weight: bold;
-    }
-
-    .grupos-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 20px; text-align: center; }
+    .grupo { background: #fff; padding: 20px; margin: 20px; border: 1px solid #ccc; display: inline-block; vertical-align: top; width: 320px; }
+    .grupo h3 { color: #0077cc; }
+    .partido input { width: 40px; text-align: center; }
+    .tabla { margin-top: 20px; border-collapse: collapse; width: 100%; }
+    .tabla th, .tabla td { border: 1px solid #ccc; padding: 6px; font-size: 14px; }
+    .tabla th { background-color: #0077cc; color: #fff; }
+    textarea, input, button { margin: 5px; padding: 8px; }
   </style>
 </head>
 <body>
 
-  <h1>🏆 COPA WIOG – Sorteo y Resultados 🏆</h1>
+  <h1>🏆 COPA WIOG – Grupos y Tabla de Posiciones 🏆</h1>
 
-  <div>
-    <input type="text" id="equipoInput" placeholder="Agregar equipo individual" />
-    <button onclick="agregarEquipo()">Agregar</button>
-  </div>
-
-  <div>
-    <textarea id="listaEquipos" rows="6" cols="40" placeholder="Pega aquí una lista de equipos (uno por línea)"></textarea><br>
-    <button onclick="agregarLista()">Agregar Lista</button>
-  </div>
-
-  <div id="equiposLista"></div>
-
+  <textarea id="listaEquipos" rows="8" cols="40" placeholder="Pega 32 equipos, uno por línea"></textarea><br />
   <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
 
-  <div id="gruposResultado" class="grupos-container"></div>
+  <div id="grupos"></div>
 
   <script>
     let equipos = [];
-
-    function agregarEquipo() {
-      const input = document.getElementById('equipoInput');
-      const nombre = input.value.trim();
-      if (nombre && !equipos.includes(nombre)) {
-        equipos.push(nombre);
-        input.value = '';
-        mostrarEquipos();
-      }
-    }
-
-    function agregarLista() {
-      const lista = document.getElementById('listaEquipos').value.trim();
-      if (lista) {
-        const nuevos = lista.split('\n').map(e => e.trim()).filter(e => e && !equipos.includes(e));
-        equipos = equipos.concat(nuevos);
-        document.getElementById('listaEquipos').value = '';
-        mostrarEquipos();
-      }
-    }
-
-    function mostrarEquipos() {
-      document.getElementById('equiposLista').innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
-    }
+    const letras = "ABCDEFGH".split("");
 
     function sortearGrupos() {
-      if (equipos.length !== 32) {
-        alert("Debes agregar exactamente 32 equipos para sortear.");
-        return;
-      }
-
-      const mezclados = equipos.slice().sort(() => Math.random() - 0.5);
-      const letras = 'ABCDEFGH'.split('');
+      equipos = document.getElementById('listaEquipos').value.trim().split('\n').map(e => e.trim()).filter(e => e);
+      if (equipos.length !== 32) return alert("Debes ingresar exactamente 32 equipos.");
+      equipos = equipos.sort(() => Math.random() - 0.5);
       const grupos = {};
-      letras.forEach((letra, i) => {
-        grupos[letra] = mezclados.slice(i * 4, (i + 1) * 4);
-      });
-
-      mostrarGruposYPartidos(grupos);
+      letras.forEach((l, i) => grupos[l] = equipos.slice(i*4, (i+1)*4));
+      mostrarGrupos(grupos);
     }
 
-    function mostrarGruposYPartidos(grupos) {
-      const contenedor = document.getElementById('gruposResultado');
-      contenedor.innerHTML = '';
-
-      for (const grupo in grupos) {
-        const div = document.createElement('div');
-        div.className = 'grupo';
-
-        const equiposGrupo = grupos[grupo];
-        const partidos = generarPartidosMundial(equiposGrupo);
-
-        div.innerHTML = `<h3>Grupo ${grupo}</h3><ul>${equiposGrupo.map(e => `<li>${e}</li>`).join('')}</ul><hr><h4>Partidos</h4>`;
-
-        partidos.forEach((p, idx) => {
-          const partidoDiv = document.createElement('div');
-          partidoDiv.className = 'partido';
-          partidoDiv.innerHTML = `
-            ${p[0]} 
-            <input type="number" min="0" id="g${grupo}${idx}a" placeholder="0" /> 
-            - 
-            <input type="number" min="0" id="g${grupo}${idx}b" placeholder="0" /> 
-            ${p[1]}
+    function mostrarGrupos(grupos) {
+      const container = document.getElementById('grupos');
+      container.innerHTML = '';
+      for (let letra of letras) {
+        const eq = grupos[letra];
+        const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+        let html = `<div class='grupo'><h3>Grupo ${letra}</h3><ul>${eq.map(e => `<li>${e}</li>`).join('')}</ul><hr>`;
+        partidos.forEach((p, i) => {
+          html += `
+            <div>
+              ${eq[p[0]]}
+              <input id="${letra}${i}a" type="number" min="0" />
+              -
+              <input id="${letra}${i}b" type="number" min="0" />
+              ${eq[p[1]]}
+            </div>
           `;
-          div.appendChild(partidoDiv);
         });
-
-        contenedor.appendChild(div);
+        html += `<button onclick="calcularTabla('${letra}', ${JSON.stringify(eq).replace(/"/g, '&quot;')})">Ver Tabla</button><div id="tabla_${letra}"></div></div>`;
+        container.innerHTML += html;
       }
     }
 
-    function generarPartidosMundial(equipos) {
-      if (equipos.length !== 4) return [];
-
-      const [A, B, C, D] = equipos;
-      return [
-        [A, B],
-        [C, D],
-        [A, C],
-        [B, D],
-        [A, D],
-        [B, C]
-      ];
-    }
-  </script>
-
-</body>
-</html>
+    function calcularTabla(grupo, eq) {
+      const stats = {};
+      eq.forEach(e => stats[e] = {PJ:0,PG:0,PE:0,PP:0,GF:0,GC:0,DG:0,Puntos:0});
+      const orden = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+      orden.forEach((p,i) => {
+        const g1 = parseInt(document.getElementById(`${grupo}${i}a`).value);
+        const g2 = parseInt(document.getElementById(`${grupo}${i}b`
