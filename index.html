@@ -221,6 +221,43 @@
       background-color: #f8d7da;
       border-color: #dc3545;
     }
+    
+
+    .grupo .partido input {
+      width: 22px !important;
+      height: 20px;
+      font-size: 12px;
+      padding: 2px;
+      text-align: center;
+      margin: 0 2px;
+    }
+    
+
+    #grupos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .grupo {
+      flex: 1 1 calc(33.33% - 40px);
+      max-width: 340px;
+      min-width: 300px;
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 900px) {
+      .grupo {
+        flex: 1 1 calc(50% - 30px);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .grupo {
+        flex: 1 1 100%;
+      }
+    }
     </style>
 </head>
 <body>
