@@ -636,7 +636,7 @@
 <div id="grupos"></div>
 <hr/>
 <h2>Fase Eliminatoria</h2>
-<button onclick="clasificarAOctavos()">🏁 Clasificar a Octavos</button>
+<!-- Botón eliminado: clasificación automática habilitada -->
 <div class="bracket">
 <div class="round" id="octavosIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 <div class="round" id="cuartosIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
@@ -815,7 +815,42 @@ function generarTabla(grupo, eq) {
   document.getElementById(`tabla_${grupo}`).innerHTML = html;
   clasificados = clasificados.filter(e => !eq.includes(e));
   clasificados = clasificados.concat(tabla.slice(0,2).map(t => t.Equipo));
+  if (clasificados.length === 16) {
+    llenarOctavos();
+  }
 }
+
+function llenarOctavos() {
+  const emparejamientos = [
+    [clasificados[0], clasificados[3]],
+    [clasificados[4], clasificados[7]],
+    [clasificados[8], clasificados[11]],
+    [clasificados[12], clasificados[15]],
+    [clasificados[2], clasificados[1]],
+    [clasificados[6], clasificados[5]],
+    [clasificados[10], clasificados[9]],
+    [clasificados[14], clasificados[13]]
+  ];
+
+  const contenedores = [
+    ...document.querySelectorAll("#octavosIzq .match"),
+    ...document.querySelectorAll("#octavosDer .match")
+  ];
+
+  emparejamientos.forEach((pair, idx) => {
+    const span = contenedores[idx].querySelectorAll("span");
+    const inputs = contenedores[idx].querySelectorAll("input");
+    if (span.length >= 2) {
+      span[0].innerText = pair[0];
+      span[1].innerText = pair[1];
+    }
+    if (inputs.length >= 2) {
+      inputs[0].value = '';
+      inputs[1].value = '';
+    }
+  });
+}
+
 </script>
 </body>
 </html>
