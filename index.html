@@ -4,59 +4,80 @@
   <meta charset="UTF-8">
   <title>COPA WIOG – Mundial Completo con Llave Visual</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #1f1c2c, #928dab);
-      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top, #0f0f0f 0%, #1a1a1a 100%);
+      color: #f1f1f1;
       text-align: center;
-      padding: 20px;
+      padding: 30px;
+      margin: 0;
     }
     h1, h2, h3 {
       color: #ffd700;
-      text-shadow: 1px 1px 2px #000;
+      text-shadow: 2px 2px 4px #000;
+      margin-bottom: 15px;
     }
     textarea, input, button {
-      padding: 8px;
-      border-radius: 6px;
+      padding: 10px;
+      border-radius: 8px;
       border: none;
       font-size: 14px;
+      margin: 5px 0;
+      font-family: inherit;
+    }
+    textarea {
+      resize: vertical;
+      background-color: #1e1e1e;
+      color: #fff;
+      border: 1px solid #444;
+    }
+    input[type="text"], input[type="number"] {
+      background-color: #2a2a2a;
+      color: #fff;
+      border: 1px solid #444;
     }
     button {
-      background-color: #ffd700;
+      background: linear-gradient(to right, #ffd700, #ffc400);
       color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: 30px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+      border: none;
     }
     button:hover {
-      background-color: #ffc400;
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(255, 215, 0, 0.5);
     }
     .grupo {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid #ffd700;
-      border-radius: 10px;
-      padding: 10px;
-      margin: 10px;
-      width: 250px;
+      background: #1f1f1f;
+      border: 2px solid #ffd700;
+      border-radius: 14px;
+      padding: 16px;
+      margin: 15px;
+      width: 270px;
       display: inline-block;
       vertical-align: top;
-      box-shadow: 0 0 10px #000;
-      font-size: 13px;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+      transition: transform 0.3s;
+    }
+    .grupo:hover {
+      transform: translateY(-5px);
     }
     .grupo ul {
       list-style: none;
       padding: 0;
+      margin-bottom: 10px;
     }
     .grupo li {
-      padding: 4px;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
     .partido {
-      margin: 5px 0;
-    }
-    .partido input {
-      width: 30px;
-      margin: 0 2px;
+      margin: 6px 0;
+      font-size: 13px;
     }
     .tabla {
       margin-top: 10px;
@@ -65,18 +86,19 @@
       font-size: 12px;
     }
     .tabla th, .tabla td {
-      border: 1px solid #ddd;
-      padding: 4px;
-      background: rgba(255,255,255,0.95);
+      border: 1px solid #444;
+      padding: 6px;
+      background: #fff;
       color: #000;
     }
     .bracket {
       display: flex;
       justify-content: center;
       flex-wrap: nowrap;
-      gap: 20px;
+      gap: 24px;
       overflow-x: auto;
       margin-top: 40px;
+      padding: 10px;
     }
     .round {
       display: flex;
@@ -86,193 +108,40 @@
     .match {
       background-color: #fff;
       color: #000;
-      border-radius: 6px;
-      padding: 6px 10px;
+      border-radius: 10px;
+      padding: 10px 14px;
       font-weight: bold;
-      min-width: 140px;
+      min-width: 150px;
+      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
     }
     .final {
-      background: #ff6f00;
+      background: linear-gradient(to right, #ff6f00, #ff9100);
       color: #fff;
     }
     .campeon {
-      margin-top: 30px;
-      font-size: 22px;
+      margin-top: 40px;
+      font-size: 28px;
+      font-weight: bold;
       color: #00e676;
+      text-shadow: 0 0 10px #00e676;
+    }
+    #equiposAgregados {
+      color: #ffeb3b;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    ::selection {
+      background: #ffd700;
+      color: #000;
+    }
+    @media (max-width: 768px) {
+      .grupo { width: 90%; }
+      .bracket { flex-wrap: wrap; gap: 10px; }
+      .round { gap: 14px; }
     }
   </style>
 </head>
 <body>
-  <h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1>
-
-  <!-- Entrada principal de equipos -->
-  <textarea id="textareaEquiposLista" rows="6" cols="40" placeholder="Pega aquí los 32 equipos (uno por línea)"></textarea><br>
-
-  <h3>Agregar Equipos</h3>
-  <input type="text" id="equipoInput" placeholder="Nombre del equipo" />
-  <button onclick="agregarEquipo()">Agregar</button><br>
-
-  <textarea id="textareaAgregarLista" rows="6" cols="40" placeholder="Pega aquí los equipos (uno por línea)"></textarea><br>
-  <button onclick="agregarLista()">Agregar Lista</button>
-  <div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
-
-  <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
-  <div id="grupos"></div>
-  <hr>
-
-  <h2>Fase Eliminatoria</h2>
-  <button onclick="clasificarAOctavos()">🏁 Clasificar a Octavos</button>
-  <div class="bracket">
-    <div class="round" id="octavosIzq"></div>
-    <div class="round" id="cuartosIzq"></div>
-    <div class="round" id="semisIzq"></div>
-    <div class="round" id="final"></div>
-    <div class="round" id="semisDer"></div>
-    <div class="round" id="cuartosDer"></div>
-    <div class="round" id="octavosDer"></div>
-  </div>
-  <div class="campeon" id="campeon"></div>
-
-<script>
-let equipos = [];
-let gruposGlobal = {};
-let clasificados = [];
-
-function sortearGrupos() {
-  const lista = document.getElementById("textareaEquiposLista").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
-  if (lista.length !== 32) return alert("Debes ingresar exactamente 32 equipos.");
-  equipos = lista;
-  const mezclados = [...equipos].sort(() => Math.random() - 0.5);
-  const letras = 'ABCDEFGH'.split('');
-  gruposGlobal = {};
-  letras.forEach((letra, i) => {
-    gruposGlobal[letra] = mezclados.slice(i * 4, (i + 1) * 4);
-  });
-  mostrarGrupos();
-}
-
-function mostrarGrupos() {
-  const cont = document.getElementById("grupos");
-  cont.innerHTML = '';
-  for (let grupo in gruposGlobal) {
-    const eq = gruposGlobal[grupo];
-    const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
-    let html = `<div class='grupo'><h3>Grupo ${grupo}</h3><ul>${eq.map(e => `<li>${e}</li>`).join('')}</ul>`;
-    partidos.forEach((p, i) => {
-      html += `<div class="partido">${eq[p[0]]} <input type="number" id="g${grupo}${i}a"> - <input type="number" id="g${grupo}${i}b"> ${eq[p[1]]}</div>`;
-    });
-    html += `<button onclick="generarTabla('${grupo}', ${JSON.stringify(eq).replace(/"/g, '&quot;')})">📊 Tabla</button>
-             <div id="tabla_${grupo}"></div></div>`;
-    cont.innerHTML += html;
-  }
-}
-
-function generarTabla(grupo, eq) {
-  const orden = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
-  const stats = {};
-  eq.forEach(e => stats[e] = {PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, DG:0, Pts:0});
-  orden.forEach((p,i) => {
-    const g1 = parseInt(document.getElementById(`g${grupo}${i}a`).value);
-    const g2 = parseInt(document.getElementById(`g${grupo}${i}b`).value);
-    if (isNaN(g1) || isNaN(g2)) return;
-    const A = eq[p[0]], B = eq[p[1]];
-    stats[A].PJ++; stats[B].PJ++;
-    stats[A].GF += g1; stats[A].GC += g2;
-    stats[B].GF += g2; stats[B].GC += g1;
-    if (g1 > g2) { stats[A].PG++; stats[B].PP++; stats[A].Pts += 3; }
-    else if (g1 < g2) { stats[B].PG++; stats[A].PP++; stats[B].Pts += 3; }
-    else { stats[A].PE++; stats[B].PE++; stats[A].Pts +=1; stats[B].Pts +=1; }
-  });
-  eq.forEach(e => stats[e].DG = stats[e].GF - stats[e].GC);
-  const tabla = eq.map(e => ({Equipo: e, ...stats[e]})).sort((a,b) => b.Pts - a.Pts || b.DG - a.DG || b.GF - a.GF);
-  let html = `<table class='tabla'><tr><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr>`;
-  tabla.forEach(t => {
-    html += `<tr><td>${t.Equipo}</td><td>${t.PJ}</td><td>${t.PG}</td><td>${t.PE}</td><td>${t.PP}</td><td>${t.GF}</td><td>${t.GC}</td><td>${t.DG}</td><td>${t.Pts}</td></tr>`;
-  });
-  html += "</table>";
-  document.getElementById(`tabla_${grupo}`).innerHTML = html;
-  clasificados = clasificados.concat(tabla.slice(0,2).map(t => t.Equipo));
-}
-
-function clasificarAOctavos() {
-  if (clasificados.length !== 16) return alert("Asegúrate de generar todas las tablas de grupo.");
-  const izq = clasificados.slice(0, 8);
-  const der = clasificados.slice(8, 16);
-  const octavosIzq = document.getElementById("octavosIzq");
-  const octavosDer = document.getElementById("octavosDer");
-  octavosIzq.innerHTML = '';
-  octavosDer.innerHTML = '';
-  for (let i = 0; i < 4; i++) {
-    octavosIzq.innerHTML += generarPartidoHTML(`oz${i}`, izq[i*2], izq[i*2+1], 'cuartosIzq');
-    octavosDer.innerHTML += generarPartidoHTML(`od${i}`, der[i*2], der[i*2+1], 'cuartosDer');
-  }
-}
-
-function generarPartidoHTML(id, e1, e2, siguienteRonda) {
-  return `<div class='match' id='${id}'>${e1} <input type='number' id='${id}a'> - <input type='number' id='${id}b'> ${e2}
-    <br><button onclick="autoAvanzar('${id}','${e1}','${e2}','${siguienteRonda}')">▶</button></div>`;
-}
-
-function autoAvanzar(id, e1, e2, ronda) {
-  const g1 = parseInt(document.getElementById(id + 'a').value);
-  const g2 = parseInt(document.getElementById(id + 'b').value);
-  if (isNaN(g1) || isNaN(g2)) return alert("Faltan goles");
-
-  let nuevoGanador = g1 > g2 ? e1 : g1 < g2 ? e2 : prompt("Empate. Escribe el nombre del ganador:");
-  const cont = document.getElementById(ronda);
-  let eqs = cont.dataset.equipos ? cont.dataset.equipos.split(',').filter(Boolean) : [];
-
-  const indexMatch = id.includes('_') ? parseInt(id.split('_')[1]) : eqs.length;
-  eqs[indexMatch] = nuevoGanador;
-
-  cont.dataset.equipos = eqs.join(',');
-  renderRonda(ronda, eqs);
-}
-
-function renderRonda(id, eqs) {
-  const cont = document.getElementById(id);
-  cont.innerHTML = '';
-  cont.dataset.equipos = eqs.join(',');
-
-  if (eqs.length % 2 !== 0) return;
-
-  for (let i = 0; i < eqs.length; i += 2) {
-    const next = id === 'cuartosIzq' ? 'semisIzq' :
-                 id === 'cuartosDer' ? 'semisDer' :
-                 id === 'semisIzq' ? 'final' :
-                 id === 'semisDer' ? 'final' : '';
-    cont.innerHTML += generarPartidoHTML(`${id}_${i}`, eqs[i], eqs[i+1], next);
-  }
-
-  if (id === 'final' && eqs.length === 2) {
-    document.getElementById('final').innerHTML = generarPartidoHTML('finalMatch', eqs[0], eqs[1], 'campeon');
-  } else if (id === 'campeon' && eqs.length === 1) {
-    document.getElementById('campeon').innerText = "🏆 CAMPEÓN: " + eqs[0];
-  }
-}
-
-function agregarEquipo() {
-  const input = document.getElementById("equipoInput");
-  const nombre = input.value.trim();
-  if (nombre && !equipos.includes(nombre)) {
-    equipos.push(nombre);
-    input.value = '';
-    mostrarEquipos();
-  }
-}
-
-function agregarLista() {
-  const lista = document.getElementById("textareaAgregarLista").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
-  lista.forEach(e => {
-    if (e && !equipos.includes(e)) equipos.push(e);
-  });
-  document.getElementById("textareaAgregarLista").value = '';
-  mostrarEquipos();
-}
-
-function mostrarEquipos() {
-  document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
-}
-</script>
+  <!-- Full content will be inserted in next step -->
 </body>
 </html>
