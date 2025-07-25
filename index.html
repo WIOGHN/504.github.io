@@ -173,9 +173,7 @@ let gruposGlobal = {};
 let clasificados = [];
 
 function sortearGrupos() {
-  const lista = document.getElementById("textareaEquiposLista").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
-  if (lista.length !== 32) return alert("Debes ingresar exactamente 32 equipos.");
-  equipos = lista;
+  if (equipos.length !== 32) return alert("Debes agregar exactamente 32 equipos usando el botón correspondiente.");
   const mezclados = [...equipos].sort(() => Math.random() - 0.5);
   const letras = 'ABCDEFGH'.split('');
   gruposGlobal = {};
