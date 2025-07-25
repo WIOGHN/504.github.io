@@ -420,6 +420,49 @@
       font-size: 16px;
       text-align: center;
     }
+    
+
+    #grupos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .grupo {
+      flex: 1 1 calc(50% - 40px);
+      max-width: 520px;
+      min-width: 460px;
+    }
+
+    .partido {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto 1fr;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 5px 0;
+    }
+
+    .partido .team-name {
+      text-align: center;
+      white-space: nowrap;
+      font-size: 15px;
+    }
+
+    .partido .vs {
+      font-weight: bold;
+      font-size: 16px;
+      color: #ffd700;
+      text-shadow: 1px 1px #000;
+    }
+
+    .partido input {
+      width: 38px !important;
+      height: 32px;
+      font-size: 16px;
+      text-align: center;
+    }
     </style>
 </head>
 <body>
