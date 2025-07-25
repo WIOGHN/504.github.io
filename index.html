@@ -571,6 +571,10 @@
   text-align: center;
   font-weight: bold;
 }
+
+.match input {
+  color: #000 !important;
+}
 </style>
 </head>
 <body>
@@ -681,6 +685,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+function agregarEquipo() {
+  const input = document.getElementById("equipoInput");
+  const nombre = input.value.trim();
+  if (nombre && !equipos.includes(nombre)) {
+    equipos.push(nombre);
+    input.value = '';
+    mostrarEquipos();
+  }
+}
+
+function agregarLista() {
+  const lista = document.getElementById("listaEquipos").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
+  lista.forEach(e => {
+    if (e && !equipos.includes(e)) equipos.push(e);
+  });
+  document.getElementById("listaEquipos").value = '';
+  mostrarEquipos();
+}
+
+function mostrarEquipos() {
+  document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
+}
 </script>
 </body>
 </html>
