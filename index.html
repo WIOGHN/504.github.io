@@ -104,18 +104,27 @@
 </head>
 <body>
   <h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1>
-  <textarea id="listaEquipos" rows="6" cols="40" placeholder="Pega aquí los 32 equipos (uno por línea)"></textarea><br>
-  
+
+  <!-- Ingreso principal de equipos -->
+  <textarea id="textareaEquiposLista" rows="6" cols="40" placeholder="Pega aquí los 32 equipos (uno por línea)"></textarea><br>
+
+  <!-- Agregar equipos individualmente -->
   <h3>Agregar Equipos</h3>
   <input type="text" id="equipoInput" placeholder="Nombre del equipo" />
   <button onclick="agregarEquipo()">Agregar</button><br>
-  <textarea id="listaEquipos" rows="6" cols="40" placeholder="Pega aquí los equipos (uno por línea)"></textarea><br>
+
+  <!-- Agregar lista adicional -->
+  <textarea id="textareaAgregarLista" rows="6" cols="40" placeholder="Pega aquí los equipos (uno por línea)"></textarea><br>
   <button onclick="agregarLista()">Agregar Lista</button>
+
   <div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
 
+  <!-- Sorteo y grupos -->
   <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
   <div id="grupos"></div>
   <hr>
+
+  <!-- Llaves -->
   <h2>Fase Eliminatoria</h2>
   <button onclick="clasificarAOctavos()">🏁 Clasificar a Octavos</button>
   <div class="bracket">
@@ -135,7 +144,7 @@ let gruposGlobal = {};
 let clasificados = [];
 
 function sortearGrupos() {
-  const lista = document.getElementById("listaEquipos").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
+  const lista = document.getElementById("textareaEquiposLista").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
   if (lista.length !== 32) return alert("Debes ingresar exactamente 32 equipos.");
   equipos = lista;
   const mezclados = [...equipos].sort(() => Math.random() - 0.5);
@@ -251,18 +260,17 @@ function agregarEquipo() {
 }
 
 function agregarLista() {
-  const lista = document.getElementById("listaEquipos").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
+  const lista = document.getElementById("textareaAgregarLista").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
   lista.forEach(e => {
     if (e && !equipos.includes(e)) equipos.push(e);
   });
-  document.getElementById("listaEquipos").value = '';
+  document.getElementById("textareaAgregarLista").value = '';
   mostrarEquipos();
 }
 
 function mostrarEquipos() {
   document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
 }
-
 </script>
 </body>
 </html>
