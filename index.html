@@ -606,7 +606,8 @@
 <div class="round" id="octavosDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 </div>
 <div class="campeon" id="campeon"></div>
-<script>
+<script>var equipos = [];
+
 document.addEventListener("DOMContentLoaded", () => {
   const roundOrder = ['octavosIzq', 'cuartosIzq', 'semisIzq', 'semisDer', 'cuartosDer', 'octavosDer', 'final'];
 
