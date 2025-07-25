@@ -108,13 +108,22 @@
       gap: 20px;
     }
     .match {
-      background-color: #fff;
-      color: #000;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-weight: bold;
-      min-width: 150px;
-      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+      background-color: #fefefe;
+      color: #111;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-weight: 600;
+      font-size: 12px;
+      min-width: 110px;
+      max-width: 130px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      line-height: 1.2;
+      transition: transform 0.2s ease;
+    }
+
+    .match:hover {
+      transform: scale(1.03);
+      background-color: #fffbe6;
     }
     .final {
       background: linear-gradient(to right, #ff6f00, #ff9100);
@@ -141,7 +150,40 @@
       .bracket { flex-wrap: wrap; gap: 10px; }
       .round { gap: 14px; }
     }
-  </style>
+  
+
+    .match.winner {
+      background-color: #d4edda !important;
+      border: 2px solid #28a745 !important;
+      box-shadow: 0 0 8px #28a745;
+    }
+
+    .match input {
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      text-align: center;
+      width: 28px;
+      font-size: 12px;
+    }
+
+    .match button {
+      background-color: #ffd700;
+      color: #000;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 10px;
+      margin-top: 4px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .match button:hover {
+      background-color: #ffc400;
+      transform: scale(1.05);
+    }
+    </style>
 </head>
 <body>
 <h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1>
@@ -258,7 +300,16 @@ function autoAvanzar(id, e1, e2, ronda) {
   eqs[indexMatch] = nuevoGanador;
 
   cont.dataset.equipos = eqs.join(',');
+  
+  const matchDiv = document.getElementById(id);
+  if (matchDiv) {
+    matchDiv.classList.remove('winner');
+    if (ganador === e1 || ganador === e2) {
+      matchDiv.classList.add('winner');
+    }
+  }
   renderRonda(ronda, eqs);
+        
 }
 
 function renderRonda(id, eqs) {
