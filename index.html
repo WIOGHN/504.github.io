@@ -501,6 +501,51 @@
     .tabla tr.top-team td {
       background-color: #b9fbc0 !important;
     }
+    
+
+    .bracket {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      margin-top: 40px;
+      flex-wrap: nowrap;
+    }
+
+    .round {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      min-width: 160px;
+    }
+
+    .match {
+      background-color: #ffffff;
+      color: #000;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-weight: bold;
+      min-width: 140px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.3);
+    }
+
+    .match input {
+      width: 28px;
+      height: 26px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .campeon {
+      margin-top: 30px;
+      font-size: 22px;
+      color: #00e676;
+    }
     </style>
 </head>
 <body>
@@ -518,13 +563,13 @@
 <h2>Fase Eliminatoria</h2>
 <button onclick="clasificarAOctavos()">🏁 Clasificar a Octavos</button>
 <div class="bracket">
-<div class="round" id="octavosIzq"><div class="match">Partido 1</div><div class="match">Partido 2</div><div class="match">Partido 3</div><div class="match">Partido 4</div></div>
-<div class="round" id="cuartosIzq"><div class="match">Partido 1</div><div class="match">Partido 2</div></div>
-<div class="round" id="semisIzq"><div class="match">Partido 1</div></div>
-<div class="round" id="final"><div class="match">Partido 1</div></div>
-<div class="round" id="semisDer"><div class="match">Partido 1</div></div>
-<div class="round" id="cuartosDer"><div class="match">Partido 1</div><div class="match">Partido 2</div></div>
-<div class="round" id="octavosDer"><div class="match">Partido 1</div><div class="match">Partido 2</div><div class="match">Partido 3</div><div class="match">Partido 4</div></div>
+<div class="round" id="octavosIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
+<div class="round" id="cuartosIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
+<div class="round" id="semisIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
+<div class="round" id="final"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
+<div class="round" id="semisDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
+<div class="round" id="cuartosDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
+<div class="round" id="octavosDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 </div>
 <div class="campeon" id="campeon"></div>
 <script>
@@ -691,6 +736,77 @@ document.addEventListener("keydown", function(e) {
     }
   }
 });
+
+function prepararAutoAvance() {
+  const rounds = ['octavosIzq','cuartosIzq','semisIzq','semisDer','cuartosDer','octavosDer','final'];
+
+  rounds.forEach(ronda => {
+    const contenedor = document.getElementById(ronda);
+    if (!contenedor) return;
+    const matches = contenedor.querySelectorAll('.match');
+
+    matches.forEach((match, i) => {
+      const inputs = match.querySelectorAll("input");
+      if (inputs.length < 2) return;
+      const [inputA, inputB] = inputs;
+
+      inputA.addEventListener("change", () => autoAvanzar(match, inputA, inputB, ronda, i));
+      inputB.addEventListener("change", () => autoAvanzar(match, inputA, inputB, ronda, i));
+    });
+  });
+}
+
+function autoAvanzar(match, inputA, inputB, ronda, index) {
+  const scoreA = parseInt(inputA.value);
+  const scoreB = parseInt(inputB.value);
+  const spans = match.querySelectorAll("span");
+  if (isNaN(scoreA) || isNaN(scoreB)) return;
+
+  let ganador = scoreA > scoreB ? spans[0].innerText
+               : scoreB > scoreA ? spans[1].innerText
+               : prompt("Empate. Escribe el nombre del ganador:");
+
+  const nextMap = {
+    'octavosIzq': 'cuartosIzq',
+    'cuartosIzq': 'semisIzq',
+    'semisIzq': 'final',
+    'octavosDer': 'cuartosDer',
+    'cuartosDer': 'semisDer',
+    'semisDer': 'final'
+  };
+
+  const siguienteRonda = nextMap[ronda];
+  if (!siguienteRonda) return;
+
+  const nextCont = document.getElementById(siguienteRonda);
+  if (!nextCont) return;
+
+  const nextMatch = nextCont.querySelectorAll('.match')[Math.floor(index / 2)];
+  if (!nextMatch) return;
+
+  const nextSpans = nextMatch.querySelectorAll("span");
+  const nextInputs = nextMatch.querySelectorAll("input");
+  const targetIndex = index % 2;
+
+  if (nextSpans.length >= 2 && nextInputs.length >= 2) {
+    nextSpans[targetIndex].innerText = ganador;
+    nextInputs[targetIndex].value = "";
+  }
+
+  if (siguienteRonda === 'final') {
+    const finalMatch = document.getElementById('finalMatch');
+    if (finalMatch) {
+      const champSpans = finalMatch.querySelectorAll("span");
+      const champInputs = finalMatch.querySelectorAll("input");
+      if (champSpans.length >= 2 && champInputs.length >= 2) {
+        champSpans[targetIndex].innerText = ganador;
+        champInputs[targetIndex].value = "";
+      }
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", prepararAutoAvance);
 </script>
 </body>
 </html>
