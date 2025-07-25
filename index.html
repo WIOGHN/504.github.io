@@ -715,6 +715,37 @@ function agregarLista() {
 function mostrarEquipos() {
   document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
 }
+
+function sortearGrupos() {
+  if (equipos.length !== 32) {
+    alert("Debes ingresar exactamente 32 equipos.");
+    return;
+  }
+  const mezclados = [...equipos].sort(() => Math.random() - 0.5);
+  const letras = 'ABCDEFGH'.split('');
+  gruposGlobal = {};
+  letras.forEach((letra, i) => {
+    gruposGlobal[letra] = mezclados.slice(i * 4, (i + 1) * 4);
+  });
+  clasificados = [];  // reset
+  mostrarGrupos();
+}
+
+function mostrarGrupos() {
+  const cont = document.getElementById("grupos");
+  cont.innerHTML = '';
+  for (let grupo in gruposGlobal) {
+    const eq = gruposGlobal[grupo];
+    const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+    let html = `<div class='grupo'><h3>Grupo ${grupo}</h3><ul>${eq.map(e => `<li>${e}</li>`).join('')}</ul>`;
+    partidos.forEach((p, i) => {
+      html += `<div class="partido">${eq[p[0]]} <input type="number" id="g${grupo}${i}a"> - <input type="number" id="g${grupo}${i}b"> ${eq[p[1]]}</div>`;
+    });
+    html += `<button onclick="generarTabla('${grupo}', ${JSON.stringify(eq).replace(/"/g, '&quot;')})">📊 Tabla</button>
+             <div id="tabla_${grupo}"></div></div>`;
+    cont.innerHTML += html;
+  }
+}
 </script>
 </body>
 </html>
