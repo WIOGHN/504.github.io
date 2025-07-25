@@ -105,26 +105,21 @@
 <body>
   <h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1>
 
-  <!-- Ingreso principal de equipos -->
+  <!-- Entrada principal de equipos -->
   <textarea id="textareaEquiposLista" rows="6" cols="40" placeholder="Pega aquí los 32 equipos (uno por línea)"></textarea><br>
 
-  <!-- Agregar equipos individualmente -->
   <h3>Agregar Equipos</h3>
   <input type="text" id="equipoInput" placeholder="Nombre del equipo" />
   <button onclick="agregarEquipo()">Agregar</button><br>
 
-  <!-- Agregar lista adicional -->
   <textarea id="textareaAgregarLista" rows="6" cols="40" placeholder="Pega aquí los equipos (uno por línea)"></textarea><br>
   <button onclick="agregarLista()">Agregar Lista</button>
-
   <div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
 
-  <!-- Sorteo y grupos -->
   <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
   <div id="grupos"></div>
   <hr>
 
-  <!-- Llaves -->
   <h2>Fase Eliminatoria</h2>
   <button onclick="clasificarAOctavos()">🏁 Clasificar a Octavos</button>
   <div class="bracket">
@@ -222,11 +217,14 @@ function autoAvanzar(id, e1, e2, ronda) {
   const g1 = parseInt(document.getElementById(id + 'a').value);
   const g2 = parseInt(document.getElementById(id + 'b').value);
   if (isNaN(g1) || isNaN(g2)) return alert("Faltan goles");
-  let ganador = g1 > g2 ? e1 : g1 < g2 ? e2 : prompt("Empate. Escribe el nombre del ganador:");
+
+  let nuevoGanador = g1 > g2 ? e1 : g1 < g2 ? e2 : prompt("Empate. Escribe el nombre del ganador:");
   const cont = document.getElementById(ronda);
-  if (!cont.dataset.equipos) cont.dataset.equipos = '';
-  let eqs = cont.dataset.equipos.split(',').filter(Boolean);
-  eqs.push(ganador);
+  let eqs = cont.dataset.equipos ? cont.dataset.equipos.split(',').filter(Boolean) : [];
+
+  const indexMatch = id.includes('_') ? parseInt(id.split('_')[1]) : eqs.length;
+  eqs[indexMatch] = nuevoGanador;
+
   cont.dataset.equipos = eqs.join(',');
   renderRonda(ronda, eqs);
 }
@@ -234,7 +232,10 @@ function autoAvanzar(id, e1, e2, ronda) {
 function renderRonda(id, eqs) {
   const cont = document.getElementById(id);
   cont.innerHTML = '';
+  cont.dataset.equipos = eqs.join(',');
+
   if (eqs.length % 2 !== 0) return;
+
   for (let i = 0; i < eqs.length; i += 2) {
     const next = id === 'cuartosIzq' ? 'semisIzq' :
                  id === 'cuartosDer' ? 'semisDer' :
@@ -242,6 +243,7 @@ function renderRonda(id, eqs) {
                  id === 'semisDer' ? 'final' : '';
     cont.innerHTML += generarPartidoHTML(`${id}_${i}`, eqs[i], eqs[i+1], next);
   }
+
   if (id === 'final' && eqs.length === 2) {
     document.getElementById('final').innerHTML = generarPartidoHTML('finalMatch', eqs[0], eqs[1], 'campeon');
   } else if (id === 'campeon' && eqs.length === 1) {
