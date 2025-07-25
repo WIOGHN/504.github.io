@@ -632,6 +632,10 @@
 <textarea cols="40" id="listaEquipos" placeholder="" rows="6"></textarea><br/>
 <button onclick="agregarLista()">Agregar Lista</button>
 <div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
+<h3>💾 Guardar Torneo</h3>
+<button onclick="guardarTorneo()">Guardar Estado</button>
+<button onclick="cargarTorneo()">Cargar Estado</button>
+
 <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
 <div id="grupos"></div>
 <hr/>
@@ -886,6 +890,49 @@ document.addEventListener("keydown", function(e) {
   inputs[nextIndex].focus();
   inputs[nextIndex].select();
 });
+
+
+
+function guardarTorneo() {
+  const estado = {
+    equipos,
+    gruposGlobal,
+    clasificados,
+    resultados: {}
+  };
+
+  document.querySelectorAll('.grupo input[type="number"]').forEach(input => {
+    if (input.id) {
+      estado.resultados[input.id] = input.value;
+    }
+  });
+
+  localStorage.setItem("torneoWiog", JSON.stringify(estado));
+  alert("Torneo guardado con éxito.");
+}
+
+function cargarTorneo() {
+  const data = localStorage.getItem("torneoWiog");
+  if (!data) {
+    alert("No hay un torneo guardado.");
+    return;
+  }
+
+  const estado = JSON.parse(data);
+  equipos = estado.equipos || [];
+  gruposGlobal = estado.gruposGlobal || {};
+  clasificados = estado.clasificados || [];
+
+  mostrarEquipos();
+  mostrarGrupos();
+
+  setTimeout(() => {
+    Object.entries(estado.resultados).forEach(([id, val]) => {
+      const input = document.getElementById(id);
+      if (input) input.value = val;
+    });
+  }, 300); // esperar a que los inputs existan
+}
 
 </script>
 </body>
