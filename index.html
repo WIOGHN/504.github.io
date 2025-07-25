@@ -168,6 +168,9 @@
     }
 
     .match input {
+  width: 24px !important;
+  padding: 2px;
+
       background-color: #f0f0f0;
       border: 1px solid #ccc;
       border-radius: 4px;
@@ -191,6 +194,28 @@
     .match button:hover {
       background-color: #ffc400;
       transform: scale(1.05);
+    }
+    
+
+    .match input:focus {
+      outline: none;
+      border-color: #ffd700;
+      box-shadow: 0 0 4px #ffd700;
+    }
+
+    .match span {
+      display: inline-block;
+      min-width: 50px;
+    }
+
+    .match .score-winner {
+      background-color: #d4edda;
+      border-color: #28a745;
+    }
+
+    .match .score-loser {
+      background-color: #f8d7da;
+      border-color: #dc3545;
     }
     </style>
 </head>
