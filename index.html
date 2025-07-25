@@ -546,7 +546,24 @@
       font-size: 22px;
       color: #00e676;
     }
-    </style>
+    
+.match input {
+  width: 38px !important;
+  height: 32px !important;
+  font-size: 16px !important;
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 5px 2px #00e676; }
+  50% { box-shadow: 0 0 15px 4px #00e676; }
+  100% { box-shadow: 0 0 5px 2px #00e676; }
+}
+.winner-highlight {
+  border: 2px solid #00e676 !important;
+  animation: glow 1s ease-in-out infinite;
+  background-color: #e0ffe8 !important;
+}
+</style>
 </head>
 <body>
 <h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1>
@@ -554,7 +571,7 @@
 <h3>Agregar Equipos</h3>
 <input id="equipoInput" placeholder="Nombre del equipo" type="text"/>
 <button onclick="agregarEquipo()">Agregar</button><br/>
-<textarea cols="40" id="textareaAgregarLista" placeholder="" rows="6"></textarea><br/>
+<textarea cols="40" id="listaEquipos" placeholder="" rows="6"></textarea><br/>
 <button onclick="agregarLista()">Agregar Lista</button>
 <div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
 <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
@@ -619,6 +636,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const idx = i % 2;
         if (nextSpans.length > idx && nextInputs.length > idx) {
+          // Highlight winner
+          spans[scoreA > scoreB ? 0 : 1].classList.add("winner-highlight");
+          spans[scoreA < scoreB ? 0 : 1].classList.remove("winner-highlight");
           nextSpans[idx].innerText = winner;
           nextInputs[idx].value = '';
         }
@@ -640,7 +660,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const champ = sa > sb ? fs[0].innerText :
                             sb > sa ? fs[1].innerText :
                             prompt("Final empatada. Escribe el campeón:");
-              document.getElementById("campeon").innerText = "🏆 CAMPEÓN: " + champ;
+              document.getElementById("campeon").innerHTML = "🏆 <span class='winner-highlight'>" + champ + "</span>";
             };
             fa.addEventListener("change", autoFinal);
             fb.addEventListener("change", autoFinal);
