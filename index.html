@@ -397,6 +397,29 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    
+
+    .partido {
+      display: grid;
+      grid-template-columns: 1fr auto auto 1fr;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .partido .team-name {
+      min-width: 120px;
+      white-space: nowrap;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    .partido input {
+      width: 38px !important;
+      height: 32px;
+      font-size: 16px;
+      text-align: center;
+    }
     </style>
 </head>
 <body>
