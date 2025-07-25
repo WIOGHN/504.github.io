@@ -851,6 +851,42 @@ function llenarOctavos() {
   });
 }
 
+
+document.addEventListener("keydown", function(e) {
+  const isInput = document.activeElement.tagName === "INPUT" &&
+                  document.activeElement.type === "number" &&
+                  document.activeElement.id.startsWith("g");
+
+  if (!isInput) return;
+
+  const inputs = Array.from(document.querySelectorAll('.grupo input[type="number"]'));
+  const index = inputs.indexOf(document.activeElement);
+  if (index === -1) return;
+
+  let nextIndex = index;
+
+  switch (e.key) {
+    case "ArrowRight":
+      nextIndex = (index + 1) % inputs.length;
+      break;
+    case "ArrowLeft":
+      nextIndex = (index - 1 + inputs.length) % inputs.length;
+      break;
+    case "ArrowDown":
+      nextIndex = (index + 2) % inputs.length;
+      break;
+    case "ArrowUp":
+      nextIndex = (index - 2 + inputs.length) % inputs.length;
+      break;
+    default:
+      return; // no scroll if not arrow
+  }
+
+  e.preventDefault();
+  inputs[nextIndex].focus();
+  inputs[nextIndex].select();
+});
+
 </script>
 </body>
 </html>
