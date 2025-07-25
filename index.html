@@ -580,6 +580,26 @@
   text-align: center;
   color: #000 !important;
 }
+
+#final .match {
+  background-color: #ff9800 !important;
+  color: #fff;
+  border: 2px solid #fff;
+  box-shadow: 0 0 10px #ffc107;
+}
+#campeon {
+  margin-top: 10px;
+  font-size: 24px;
+  color: #00e676;
+  font-weight: bold;
+}
+#trophy {
+  margin-top: 10px;
+  max-width: 100px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
 </style>
 </head>
 <body>
@@ -605,7 +625,7 @@
 <div class="round" id="cuartosDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 <div class="round" id="octavosDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 </div>
-<div class="campeon" id="campeon"></div>
+<div class="campeon" id="campeon"></div><img id="trophy" src="https://cdn-icons-png.flaticon.com/512/2583/2583341.png"/>
 <script>var equipos = [];
 
 document.addEventListener("DOMContentLoaded", () => {
