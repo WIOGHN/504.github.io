@@ -345,6 +345,32 @@
       height: 28px;
       font-size: 15px;
     }
+    
+
+    .partido {
+      display: grid;
+      grid-template-columns: 1fr auto auto 1fr;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 6px 0;
+    }
+
+    .partido .team-name {
+      text-align: right;
+      font-weight: 500;
+    }
+
+    .partido .team-name:last-child {
+      text-align: left;
+    }
+
+    .partido input {
+      width: 36px !important;
+      height: 30px;
+      font-size: 15px;
+      text-align: center;
+    }
     </style>
 </head>
 <body>
