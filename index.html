@@ -944,6 +944,36 @@ function cargarTorneo() {
   }, 300); // esperar a que los inputs existan
 }
 
+
+
+function verificarYGenerarEliminatoria() {
+  const letras = 'ABCDEFGH'.split('');
+  let completos = true;
+  for (let grupo of letras) {
+    for (let i = 0; i < 6; i++) {
+      const a = document.getElementById(`g${grupo}${i}a`);
+      const b = document.getElementById(`g${grupo}${i}b`);
+      if (!a || !b || a.value === '' || b.value === '') {
+        completos = false;
+        break;
+      }
+    }
+    if (!completos) break;
+  }
+  if (completos) {
+    letras.forEach(g => {
+      const eq = gruposGlobal[g];
+      generarTabla(g, eq);
+    });
+  }
+}
+
+// Activar la función al cambiar cualquier input de grupos
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('.grupo input[type="number"]').forEach(input => {
+    input.addEventListener("change", verificarYGenerarEliminatoria);
+  });
+});
 </script>
 </body>
 </html>
