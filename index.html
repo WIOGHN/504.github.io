@@ -651,9 +651,48 @@
 <div class="round" id="octavosDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 </div>
 <div class="campeon" id="campeon"></div><img id="trophy" src="https://cdn-icons-png.flaticon.com/512/2583/2583341.png"/>
-<script>var equipos = [];
+<script>
 
 document.addEventListener("DOMContentLoaded", () => {
+  var equipos = [];
+
+  function mostrarEquipos() {
+    const cont = document.getElementById("equiposAgregados");
+    if (cont) {
+      cont.innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
+    }
+  }
+
+  window.agregarEquipo = function() {
+    const input = document.getElementById("equipoInput");
+    const nombre = input.value.trim();
+    if (nombre && !equipos.includes(nombre)) {
+      equipos.push(nombre);
+      input.value = '';
+      mostrarEquipos();
+    } else if (!nombre) {
+      alert("Por favor escribe el nombre del equipo.");
+    } else {
+      alert("Ese equipo ya fue agregado.");
+    }
+  }
+
+  window.agregarLista = function() {
+    const textarea = document.getElementById("listaEquipos");
+    const texto = textarea.value.trim();
+    if (!texto) return;
+
+    const lista = texto.split(/\r?\n/).map(e => e.trim()).filter(Boolean);
+    lista.forEach(nombre => {
+      if (nombre && !equipos.includes(nombre)) {
+        equipos.push(nombre);
+      }
+    });
+
+    textarea.value = '';
+    mostrarEquipos();
+  }
+
   const roundOrder = ['octavosIzq', 'cuartosIzq', 'semisIzq', 'semisDer', 'cuartosDer', 'octavosDer', 'final'];
 
   roundOrder.forEach(ronda => {
@@ -973,39 +1012,12 @@ function cargarTorneo() {
 }
 
 
-var equipos = [];
 
-function mostrarEquipos() {
-  const cont = document.getElementById("equiposAgregados");
-  if (cont) {
-    cont.innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
-  }
+
 }
 
-function agregarEquipo() {
-  const input = document.getElementById("equipoInput");
-  const nombre = input.value.trim();
-  if (nombre && !equipos.includes(nombre)) {
-    equipos.push(nombre);
-    input.value = '';
-    mostrarEquipos();
-  } else if (!nombre) {
-    alert("Por favor escribe el nombre del equipo.");
-  } else {
-    alert("Ese equipo ya fue agregado.");
-  }
 }
 
-function agregarLista() {
-  const textarea = document.getElementById("listaEquipos");
-  const texto = textarea.value.trim();
-  if (!texto) return;
-
-  const lista = texto.split(/\r?\n/).map(e => e.trim()).filter(Boolean);
-  lista.forEach(nombre => {
-    if (nombre && !equipos.includes(nombre)) {
-      equipos.push(nombre);
-    }
   });
 
   textarea.value = '';
