@@ -931,6 +931,27 @@ function cargarTorneo() {
       const input = document.getElementById(id);
       if (input) input.value = val;
     });
+  
+    // Restaurar detección de ganador en la final
+    const finalMatch = document.querySelector('#final .match');
+    if (finalMatch) {
+      const fs = finalMatch.querySelectorAll("span");
+      const fi = finalMatch.querySelectorAll("input");
+      if (fs.length === 2 && fi.length === 2) {
+        const autoFinal = () => {
+          const sa = parseInt(fi[0].value);
+          const sb = parseInt(fi[1].value);
+          if (isNaN(sa) || isNaN(sb)) return;
+          const champ = sa > sb ? fs[0].innerText :
+                        sb > sa ? fs[1].innerText :
+                        prompt("Final empatada. Escribe el campeón:");
+          document.getElementById("campeon").innerHTML = "🏆 <span class='winner-highlight'>" + champ + "</span>";
+        };
+        fi[0].addEventListener("change", autoFinal);
+        fi[1].addEventListener("change", autoFinal);
+      }
+    }
+
   }, 300); // esperar a que los inputs existan
 }
 
