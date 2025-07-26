@@ -635,7 +635,6 @@
 <h3>💾 Guardar Torneo</h3>
 <button onclick="guardarTorneo()">Guardar Estado</button>
 <button onclick="cargarTorneo()">Cargar Estado</button>
-
 <button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
 <div id="grupos"></div>
 <hr/>
@@ -706,6 +705,7 @@ document.addEventListener("DOMContentLoaded", () => {
           nextInputs[idx].value = '';
         }
 
+        
         // Final winner
         if (nextRound === 'final') {
           const final = document.getElementById('final');
@@ -714,10 +714,17 @@ document.addEventListener("DOMContentLoaded", () => {
           const fi = finalMatch.querySelectorAll("input");
 
           if (fs.length === 2 && fi.length === 2) {
-            const [fa, fb] = fi;
+            if (ronda === 'semisIzq') {
+              fs[0].innerText = winner;
+              fi[0].value = '';
+            } else if (ronda === 'semisDer') {
+              fs[1].innerText = winner;
+              fi[1].value = '';
+            }
+
             const autoFinal = () => {
-              const sa = parseInt(fa.value);
-              const sb = parseInt(fb.value);
+              const sa = parseInt(fi[0].value);
+              const sb = parseInt(fi[1].value);
               if (isNaN(sa) || isNaN(sb)) return;
 
               const champ = sa > sb ? fs[0].innerText :
@@ -725,9 +732,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             prompt("Final empatada. Escribe el campeón:");
               document.getElementById("campeon").innerHTML = "🏆 <span class='winner-highlight'>" + champ + "</span>";
             };
-            fa.addEventListener("change", autoFinal);
-            fb.addEventListener("change", autoFinal);
+            fi[0].addEventListener("change", autoFinal);
+            fi[1].addEventListener("change", autoFinal);
           }
+        }
+
         }
       };
 
