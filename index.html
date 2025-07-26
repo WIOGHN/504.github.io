@@ -677,18 +677,41 @@ document.addEventListener("DOMContentLoaded", () => {
                      scoreB > scoreA ? spans[1].innerText :
                      prompt("Empate. Escribe el nombre del ganador:");
 
+        
         const nextMap = {
           'octavosIzq': 'cuartosIzq',
           'cuartosIzq': 'semisIzq',
-          'semisIzq': 'final',
+          'semisIzq': 'final-izq',
           'octavosDer': 'cuartosDer',
           'cuartosDer': 'semisDer',
-          'semisDer': 'final'
+          'semisDer': 'final-der'
         };
         const nextRound = nextMap[ronda];
         if (!nextRound) return;
 
-        const nextContainer = document.getElementById(nextRound);
+        let nextContainer, idx;
+        if (nextRound === 'final-izq' || nextRound === 'final-der') {
+          const finalMatch = document.getElementById('final').querySelector('.match');
+          const spans = finalMatch.querySelectorAll('span');
+          const inputs = finalMatch.querySelectorAll('input');
+          if (!spans.length || !inputs.length) return;
+
+          const scoreA = parseInt(inputA.value);
+          const scoreB = parseInt(inputB.value);
+          let winner = scoreA > scoreB ? spans[0].innerText :
+                       scoreB > scoreA ? spans[1].innerText :
+                       prompt("Empate. Escribe el nombre del ganador:");
+          const actualWinner = scoreA > scoreB ? match.querySelectorAll("span")[0].innerText :
+                              scoreB > scoreA ? match.querySelectorAll("span")[1].innerText :
+                              prompt("Empate. Escribe el nombre del ganador:");
+
+          const finalIdx = nextRound === 'final-izq' ? 0 : 1;
+          spans[finalIdx].innerText = actualWinner;
+          inputs[finalIdx].value = '';
+          return;
+        }
+
+        nextContainer = document.getElementById(nextRound);
         if (!nextContainer) return;
 
         const nextMatch = nextContainer.querySelectorAll('.match')[Math.floor(i / 2)];
@@ -697,42 +720,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const nextSpans = nextMatch.querySelectorAll("span");
         const nextInputs = nextMatch.querySelectorAll("input");
 
-        const idx = i % 2;
+        idx = i % 2;
         if (nextSpans.length > idx && nextInputs.length > idx) {
-          // Highlight winner
+          const scoreA = parseInt(inputA.value);
+          const scoreB = parseInt(inputB.value);
+          const spans = match.querySelectorAll("span");
+          let winner = scoreA > scoreB ? spans[0].innerText :
+                       scoreB > scoreA ? spans[1].innerText :
+                       prompt("Empate. Escribe el nombre del ganador:");
           spans[scoreA > scoreB ? 0 : 1].classList.add("winner-highlight");
           spans[scoreA < scoreB ? 0 : 1].classList.remove("winner-highlight");
+
           nextSpans[idx].innerText = winner;
           nextInputs[idx].value = '';
         }
-
-        // Final winner
-        if (nextRound === 'final') {
-          const final = document.getElementById('final');
-          const finalMatch = final.querySelector('.match');
-          const fs = finalMatch.querySelectorAll("span");
-          const fi = finalMatch.querySelectorAll("input");
-
-          if (fs.length === 2 && fi.length === 2) {
-            const [fa, fb] = fi;
-            const autoFinal = () => {
-              const sa = parseInt(fa.value);
-              const sb = parseInt(fb.value);
-              if (isNaN(sa) || isNaN(sb)) return;
-
-              const champ = sa > sb ? fs[0].innerText :
-                            sb > sa ? fs[1].innerText :
-                            prompt("Final empatada. Escribe el campeón:");
-              document.getElementById("campeon").innerHTML = "🏆 <span class='winner-highlight'>" + champ + "</span>";
-            };
-            fa.addEventListener("change", autoFinal);
-            fb.addEventListener("change", autoFinal);
-          }
-        }
-      };
-
-      inputA.addEventListener("change", checkAndAdvance);
-      inputB.addEventListener("change", checkAndAdvance);
+inputB.addEventListener("change", checkAndAdvance);
     });
   });
 });
@@ -951,6 +953,29 @@ function cargarTorneo() {
         fi[1].addEventListener("change", autoFinal);
       }
     }
+
+  
+    // Restaurar detección de ganador en la final con ambos inputs funcionales
+    const final = document.getElementById('final');
+    const finalMatch = final.querySelector('.match');
+    const fs = finalMatch.querySelectorAll("span");
+    const fi = finalMatch.querySelectorAll("input");
+
+    function evaluarFinal() {
+      const score1 = parseInt(fi[0].value);
+      const score2 = parseInt(fi[1].value);
+      if (isNaN(score1) || isNaN(score2)) return;
+
+      let ganador = "";
+      if (score1 > score2) ganador = fs[0].innerText;
+      else if (score2 > score1) ganador = fs[1].innerText;
+      else ganador = prompt("Final empatada. Escribe el campeón:");
+
+      document.getElementById("campeon").innerHTML = "🏆 <span class='winner-highlight'>" + ganador + "</span>";
+    }
+
+    fi[0].addEventListener("input", evaluarFinal);
+    fi[1].addEventListener("input", evaluarFinal);
 
   }, 300); // esperar a que los inputs existan
 }
