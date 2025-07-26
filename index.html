@@ -624,25 +624,7 @@
 </style>
 </head>
 <body>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- Botón eliminado: clasificación automática habilitada -->
-
-
-
 <template id="modoCompleto"><h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1><br/><h3>Agregar Equipos</h3><input id="equipoInput" placeholder="Nombre del equipo" type="text"/><button onclick="agregarEquipo()">Agregar</button><br/><textarea cols="40" id="listaEquipos" placeholder="" rows="6"></textarea><br/><button onclick="agregarLista()">Agregar Lista</button><div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div><h3>💾 Guardar Torneo</h3><button onclick="guardarTorneo()">Guardar Estado</button><button onclick="cargarTorneo()">Cargar Estado</button><button onclick="sortearGrupos()">🎲 Sortear Grupos</button><div id="grupos"></div><hr/><button onclick="abrirEliminacionDirecta()">⚔️ Jugar Solo Eliminación Directa (16 equipos)</button><h2>Fase Eliminatoria</h2><div class="bracket">
 <div class="round" id="octavosIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 <div class="round" id="cuartosIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
@@ -994,7 +976,7 @@ function mostrarSoloEliminacionDirecta() {
 function regresarAlModoCompleto() {
   document.body.innerHTML = document.getElementById("modoCompleto").innerHTML;
 }
-</script><template id="modoEliminacionDirecta"><button onclick="regresarAlModoCompleto()" style="margin-top:20px;">🔙 Volver al Modo Completo</button><body>
+</script><template id="modoEliminacionDirecta"><button onclick="regresarAlModoCompleto()" style="margin-top:20px;">🔙 Volver al Modo Completo</button>
 <h1>⚔️ Eliminación Directa - 16 Equipos</h1>
 <p>Introduce los nombres de 16 equipos:</p>
 <textarea cols="40" id="equipos" placeholder="Un equipo por línea" rows="8"></textarea><br/>
@@ -1073,5 +1055,5 @@ function regresarAlModoCompleto() {
       }
     }
   </script>
-</body></template></template></body>
+</template></template></body>
 </html>
