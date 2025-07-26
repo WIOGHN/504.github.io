@@ -624,26 +624,23 @@
 </style>
 </head>
 <body>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1>
+<br/>
+<h3>Agregar Equipos</h3>
+<input id="equipoInput" placeholder="Nombre del equipo" type="text"/>
+<button onclick="agregarEquipo()">Agregar</button><br/>
+<textarea cols="40" id="listaEquipos" placeholder="" rows="6"></textarea><br/>
+<button onclick="agregarLista()">Agregar Lista</button>
+<div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
+<h3>💾 Guardar Torneo</h3>
+<button onclick="guardarTorneo()">Guardar Estado</button>
+<button onclick="cargarTorneo()">Cargar Estado</button>
+<button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
+<div id="grupos"></div>
+<hr/>
+<h2>Fase Eliminatoria</h2>
 <!-- Botón eliminado: clasificación automática habilitada -->
-
-
-
-<template id="modoCompleto"><h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1><br/><h3>Agregar Equipos</h3><input id="equipoInput" placeholder="Nombre del equipo" type="text"/><button onclick="agregarEquipo()">Agregar</button><br/><textarea cols="40" id="listaEquipos" placeholder="" rows="6"></textarea><br/><button onclick="agregarLista()">Agregar Lista</button><div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div><h3>💾 Guardar Torneo</h3><button onclick="guardarTorneo()">Guardar Estado</button><button onclick="cargarTorneo()">Cargar Estado</button><button onclick="sortearGrupos()">🎲 Sortear Grupos</button><div id="grupos"></div><hr/><button onclick="abrirEliminacionDirecta()">⚔️ Jugar Solo Eliminación Directa (16 equipos)</button><h2>Fase Eliminatoria</h2><div class="bracket">
+<div class="bracket">
 <div class="round" id="octavosIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 <div class="round" id="cuartosIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 <div class="round" id="semisIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
@@ -651,7 +648,9 @@
 <div class="round" id="semisDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 <div class="round" id="cuartosDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
 <div class="round" id="octavosDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
-</div><div class="campeon" id="campeon"></div><img id="trophy" src="https://cdn-icons-png.flaticon.com/512/2583/2583341.png"/><script>var equipos = [];
+</div>
+<div class="campeon" id="campeon"></div><img id="trophy" src="https://cdn-icons-png.flaticon.com/512/2583/2583341.png"/>
+<script>var equipos = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   const roundOrder = ['octavosIzq', 'cuartosIzq', 'semisIzq', 'semisDer', 'cuartosDer', 'octavosDer', 'final'];
@@ -945,127 +944,6 @@ function cargarTorneo() {
   }, 300); // esperar a que los inputs existan
 }
 
-
-
-function verificarYGenerarEliminatoria() {
-  const letras = 'ABCDEFGH'.split('');
-  let completos = true;
-  for (let grupo of letras) {
-    for (let i = 0; i < 6; i++) {
-      const a = document.getElementById(`g${grupo}${i}a`);
-      const b = document.getElementById(`g${grupo}${i}b`);
-      if (!a || !b || a.value === '' || b.value === '') {
-        completos = false;
-        break;
-      }
-    }
-    if (!completos) break;
-  }
-  if (completos) {
-    clasificados = []; // reset antes de recálculo
-    letras.forEach(g => {
-      const eq = gruposGlobal[g];
-      generarTabla(g, eq);
-    });
-    if (clasificados.length === 16) {
-      llenarOctavos();
-    }
-  }
-}
-
-// Activar la función al cambiar cualquier input de grupos
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll('.grupo input[type="number"]').forEach(input => {
-    input.addEventListener("change", verificarYGenerarEliminatoria);
-  });
-});
-
-
-function abrirEliminacionDirecta() {
-  window.open("eliminacion-directa.html", "_blank");
-}
-
-
-function mostrarSoloEliminacionDirecta() {
-  document.body.innerHTML = document.getElementById("modoEliminacionDirecta").innerHTML;
-}
-
-function regresarAlModoCompleto() {
-  document.body.innerHTML = document.getElementById("modoCompleto").innerHTML;
-}
-</script></template><template id="modoEliminacionDirecta"><button onclick="regresarAlModoCompleto()" style="margin-top:20px;">🔙 Volver al Modo Completo</button>
-
-
-<br/><button onclick="iniciarLlave()">Generar Llave</button><div class="bracket" id="bracket" style="display:none;">
-<div class="round" id="octavos"></div>
-<div class="round" id="cuartos"></div>
-<div class="round" id="semis"></div>
-<div class="round" id="final"></div>
-</div><div class="campeon" id="campeon"></div><script>
-    function iniciarLlave() {
-      const nombres = document.getElementById("equipos").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
-      if (nombres.length !== 16) {
-        alert("Debes ingresar exactamente 16 equipos.");
-        return;
-      }
-      const rondas = {
-        octavos: nombres.map((e, i) => i % 2 === 0 ? [nombres[i], nombres[i + 1]] : null).filter(Boolean),
-        cuartos: [[], [], [], []],
-        semis: [[], []],
-        final: [[]]
-      };
-      document.getElementById("bracket").style.display = "flex";
-      construirRonda("octavos", rondas.octavos, "cuartos", 0);
-    }
-
-    function construirRonda(id, enfrentamientos, siguienteId, nivel) {
-      const cont = document.getElementById(id);
-      cont.innerHTML = '';
-      enfrentamientos.forEach((pair, i) => {
-        const div = document.createElement("div");
-        div.className = "match";
-        div.innerHTML = `
-          <span>${pair[0]}</span><input type="number" min="0">
-          <span>${pair[1]}</span><input type="number">
-        `;
-        const inputs = div.querySelectorAll("input");
-        inputs[0].addEventListener("change", () => decidirGanador(inputs, pair, i, siguienteId, nivel));
-        inputs[1].addEventListener("change", () => decidirGanador(inputs, pair, i, siguienteId, nivel));
-        cont.appendChild(div);
-      });
-    }
-
-    function decidirGanador(inputs, pair, idx, siguienteId, nivel) {
-      const a = parseInt(inputs[0].value);
-      const b = parseInt(inputs[1].value);
-      if (isNaN(a) || isNaN(b)) return;
-      let ganador = '';
-      if (a > b) ganador = pair[0];
-      else if (b > a) ganador = pair[1];
-      else ganador = prompt("Empate. Ingresa el equipo ganador:");
-      if (!ganador) return;
-      const siguiente = { 0: "cuartos", 1: "semis", 2: "final", 3: "campeon" };
-      if (siguienteId === "campeon") {
-        document.getElementById("campeon").innerText = "🏆 Campeón: " + ganador;
-      } else {
-        const cont = document.getElementById(siguienteId);
-        if (!cont.matches(".round")) return;
-        const hijos = cont.querySelectorAll(".match");
-        if (!hijos[idx >> 1]) {
-          const div = document.createElement("div");
-          div.className = "match";
-          div.innerHTML = `<span>${ganador}</span><input type="number" min="0"><span></span><input type="number" min="0">`;
-          const inputsNuevos = div.querySelectorAll("input");
-          inputsNuevos[0].addEventListener("change", () => decidirGanador(inputsNuevos, [ganador, ""], idx >> 1, siguiente[nivel + 1], nivel + 1));
-          inputsNuevos[1].addEventListener("change", () => decidirGanador(inputsNuevos, [ganador, ""], idx >> 1, siguiente[nivel + 1], nivel + 1));
-          cont.appendChild(div);
-        } else {
-          const span = hijos[idx >> 1].querySelectorAll("span");
-          span[idx % 2].innerText = ganador;
-          const input = hijos[idx >> 1].querySelectorAll("input");
-          input[idx % 2].value = "";
-        }
-      }
-    }
-  </script></template></body>
+</script>
+</body>
 </html>
