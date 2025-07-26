@@ -911,7 +911,7 @@ function guardarTorneo() {
     resultados: {}
   };
 
-  document.querySelectorAll('.grupo input[type="number"]').forEach(input => {
+  document.querySelectorAll('input[type="number"]').forEach(input => {
     if (input.id) {
       estado.resultados[input.id] = input.value;
     }
