@@ -629,7 +629,7 @@
 <h3>Agregar Equipos</h3>
 <input id="equipoInput" placeholder="Nombre del equipo" type="text"/>
 <button onclick="agregarEquipo()">Agregar</button><br/>
-<textarea cols="40" id="listaEquipos" placeholder="" rows="6"></textarea><br/>
+<textarea cols="40" id="listaEquipos" placeholder="Escribe un equipo por línea" rows="6"></textarea><br/>
 <button onclick="agregarLista()">Agregar Lista</button>
 <div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
 <h3>💾 Guardar Torneo</h3>
@@ -739,6 +739,7 @@ inputB.addEventListener("change", checkAndAdvance);
   });
 });
 
+
 function agregarEquipo() {
   const input = document.getElementById("equipoInput");
   const nombre = input.value.trim();
@@ -746,21 +747,35 @@ function agregarEquipo() {
     equipos.push(nombre);
     input.value = '';
     mostrarEquipos();
+  } else if (!nombre) {
+    alert("Por favor escribe el nombre del equipo.");
+  } else {
+    alert("Ese equipo ya fue agregado.");
   }
 }
+
+}
+
 
 
 function agregarLista() {
   const textarea = document.getElementById("listaEquipos");
-  if (!textarea) return;
-  const lista = textarea.value.trim().split(/
-|,/).map(e => e.trim()).filter(Boolean);
-  lista.forEach(e => {
-    if (e && !equipos.includes(e)) equipos.push(e);
+  const texto = textarea.value.trim();
+  if (!texto) return;
+
+  const lista = texto.split(/
+?
+/).map(e => e.trim()).filter(Boolean);
+  lista.forEach(nombre => {
+    if (nombre && !equipos.includes(nombre)) {
+      equipos.push(nombre);
+    }
   });
+
   textarea.value = '';
   mostrarEquipos();
 }
+
 
 
 function mostrarEquipos() {
