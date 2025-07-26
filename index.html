@@ -961,10 +961,14 @@ function verificarYGenerarEliminatoria() {
     if (!completos) break;
   }
   if (completos) {
+    clasificados = []; // reset antes de recálculo
     letras.forEach(g => {
       const eq = gruposGlobal[g];
       generarTabla(g, eq);
     });
+    if (clasificados.length === 16) {
+      llenarOctavos();
+    }
   }
 }
 
