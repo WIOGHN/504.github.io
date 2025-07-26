@@ -692,6 +692,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const nextMatch = nextContainer.querySelectorAll('.match')[Math.floor(i / 2)];
         if (!nextMatch) return;
+        if (nextRound === 'final') {
+          const finalContainer = document.getElementById('final');
+          const finalMatch = finalContainer.querySelector('.match');
+          const finalSpans = finalMatch.querySelectorAll('span');
+          if (ronda === 'semisIzq' && finalSpans.length >= 1) {
+            finalSpans[0].innerText = winner;
+          } else if (ronda === 'semisDer' && finalSpans.length >= 2) {
+            finalSpans[1].innerText = winner;
+          }
+        }
+
 
         const nextSpans = nextMatch.querySelectorAll("span");
         const nextInputs = nextMatch.querySelectorAll("input");
@@ -705,7 +716,6 @@ document.addEventListener("DOMContentLoaded", () => {
           nextInputs[idx].value = '';
         }
 
-        
         // Final winner
         if (nextRound === 'final') {
           const final = document.getElementById('final');
@@ -714,17 +724,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const fi = finalMatch.querySelectorAll("input");
 
           if (fs.length === 2 && fi.length === 2) {
-            if (ronda === 'semisIzq') {
-              fs[0].innerText = winner;
-              fi[0].value = '';
-            } else if (ronda === 'semisDer') {
-              fs[1].innerText = winner;
-              fi[1].value = '';
-            }
-
+            const [fa, fb] = fi;
             const autoFinal = () => {
-              const sa = parseInt(fi[0].value);
-              const sb = parseInt(fi[1].value);
+              const sa = parseInt(fa.value);
+              const sb = parseInt(fb.value);
               if (isNaN(sa) || isNaN(sb)) return;
 
               const champ = sa > sb ? fs[0].innerText :
@@ -732,11 +735,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             prompt("Final empatada. Escribe el campeón:");
               document.getElementById("campeon").innerHTML = "🏆 <span class='winner-highlight'>" + champ + "</span>";
             };
-            fi[0].addEventListener("change", autoFinal);
-            fi[1].addEventListener("change", autoFinal);
+            fa.addEventListener("change", autoFinal);
+            fb.addEventListener("change", autoFinal);
           }
-        }
-
         }
       };
 
