@@ -740,36 +740,12 @@ inputB.addEventListener("change", checkAndAdvance);
 });
 
 
-function agregarEquipo() {
-  const input = document.getElementById("equipoInput");
-  const nombre = input.value.trim();
-  if (nombre && !equipos.includes(nombre)) {
-    equipos.push(nombre);
-    input.value = '';
-    mostrarEquipos();
-  } else if (!nombre) {
-    alert("Por favor escribe el nombre del equipo.");
-  } else {
-    alert("Ese equipo ya fue agregado.");
-  }
 }
 
 }
 
 
 
-function agregarLista() {
-  const textarea = document.getElementById("listaEquipos");
-  const texto = textarea.value.trim();
-  if (!texto) return;
-
-  const lista = texto.split(/
-?
-/).map(e => e.trim()).filter(Boolean);
-  lista.forEach(nombre => {
-    if (nombre && !equipos.includes(nombre)) {
-      equipos.push(nombre);
-    }
   });
 
   textarea.value = '';
@@ -778,9 +754,6 @@ function agregarLista() {
 
 
 
-function mostrarEquipos() {
-  document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
-}
 
 function sortearGrupos() {
   if (equipos.length !== 32) {
@@ -997,6 +970,46 @@ function cargarTorneo() {
     fi[1].addEventListener("input", evaluarFinal);
 
   }, 300); // esperar a que los inputs existan
+}
+
+
+var equipos = [];
+
+function mostrarEquipos() {
+  const cont = document.getElementById("equiposAgregados");
+  if (cont) {
+    cont.innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
+  }
+}
+
+function agregarEquipo() {
+  const input = document.getElementById("equipoInput");
+  const nombre = input.value.trim();
+  if (nombre && !equipos.includes(nombre)) {
+    equipos.push(nombre);
+    input.value = '';
+    mostrarEquipos();
+  } else if (!nombre) {
+    alert("Por favor escribe el nombre del equipo.");
+  } else {
+    alert("Ese equipo ya fue agregado.");
+  }
+}
+
+function agregarLista() {
+  const textarea = document.getElementById("listaEquipos");
+  const texto = textarea.value.trim();
+  if (!texto) return;
+
+  const lista = texto.split(/\r?\n/).map(e => e.trim()).filter(Boolean);
+  lista.forEach(nombre => {
+    if (nombre && !equipos.includes(nombre)) {
+      equipos.push(nombre);
+    }
+  });
+
+  textarea.value = '';
+  mostrarEquipos();
 }
 
 </script>
