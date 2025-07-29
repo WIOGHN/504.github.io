@@ -621,6 +621,28 @@
   border: 2px solid #fff;
   box-shadow: 0 0 6px #ffa726;
 }
+
+    /* Fase eliminatoria en dorado */
+    #octavosIzq .match,
+    #octavosDer .match,
+    #cuartosIzq .match,
+    #cuartosDer .match,
+    #semisIzq .match,
+    #semisDer .match,
+    #final .match {
+      background: linear-gradient(to bottom, #fff8dc, #ffd700) !important;
+      color: #000 !important;
+      border: 2px solid #fff;
+      box-shadow: 0 0 8px #ffd700;
+      animation: goldGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes goldGlow {
+      0% { box-shadow: 0 0 6px #ffd700; }
+      50% { box-shadow: 0 0 20px #ffc400; }
+      100% { box-shadow: 0 0 6px #ffd700; }
+    }
+
 </style>
 </head>
 <body>
