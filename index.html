@@ -1058,6 +1058,12 @@ function sortearFaseDirecta() {
 
 function crearPartidos(equipos, containerId, titulo) {
   let container = document.getElementById(containerId);
+  if (!container) {
+    container = document.createElement("div");
+    container.id = containerId;
+    container.className = "eliminatoria-container";
+    document.body.appendChild(container);
+  }
   container.innerHTML = "";
   const h3 = document.createElement("h3");
   h3.textContent = titulo;
