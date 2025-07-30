@@ -999,10 +999,10 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 <hr/>
 
-
-<br/>
-
-
+<p>Ingresa 16 equipos y genera los cruces de octavos directamente:</p>
+<textarea cols="40" id="equiposDirectos" placeholder="16 equipos, uno por línea" rows="6"></textarea><br/>
+<button onclick="sortearEliminatoriaDirecta()">Sortear Octavos Aleatoriamente</button>
+<div class="bracket" id="eliminatoriaDirecta" style="margin-top:30px;"></div>
 <script>
 function sortearEliminatoriaDirecta() {
   const textarea = document.getElementById("equiposDirectos");
