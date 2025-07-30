@@ -1174,8 +1174,8 @@ function actualizarRonda(containerId, ganadores) {
   for (let i = 0; i < divs.length; i++) {
     const spans = divs[i].querySelectorAll("span");
     if (spans.length === 2) {
-      spans[0].textContent = ganadores[i * 2] || '';
-      spans[1].textContent = ganadores[i * 2 + 1] || '';
+      if (ganadores[i * 2] !== undefined) spans[0].textContent = ganadores[i * 2];
+      if (ganadores[i * 2 + 1] !== undefined) spans[1].textContent = ganadores[i * 2 + 1];
       spans[0].textContent = ganadores[i * 2];
       spans[1].textContent = ganadores[i * 2 + 1];
     }
