@@ -1035,92 +1035,76 @@ function sortearFaseDirecta() {
     const j = Math.floor(Math.random() * (i + 1));
     [jugadores[i], jugadores[j]] = [jugadores[j], jugadores[i]];
   }
-  avanzarRondaFaseDirecta(jugadores, "contenedorFaseDirecta", 1);
+  crearLlaveRonda(jugadores, "Octavos de Final", "cuartosContainer", avanzarACuartos);
 }
 
-function avanzarRondaFaseDirecta(jugadores, contenedorId, ronda) {
-  const container = document.getElementById(contenedorId);
-  container.innerHTML = "";
-  let siguienteRonda = [];
-  for (let i = 0; i < jugadores.length; i += 2) {
-    const div = document.createElement("div");
-    div.className = "match";
-    const boton1 = document.createElement("button");
-    boton1.textContent = jugadores[i];
-    boton1.onclick = () => {
-      siguienteRonda.push(jugadores[i]);
-      if (siguienteRonda.length === jugadores.length / 2) {
-        const nuevoId = contenedorId + "_ronda" + (ronda + 1);
-        let nuevaDiv = document.getElementById(nuevoId);
-        if (!nuevaDiv) {
-          nuevaDiv = document.createElement("div");
-          nuevaDiv.id = nuevoId;
-          nuevaDiv.className = "eliminatoria-container";
-          container.parentNode.appendChild(nuevaDiv);
-        }
-        avanzarRondaFaseDirecta(siguienteRonda, nuevoId, ronda + 1);
-        if (jugadores.length === 8 && ronda === 1) {
-          mostrarEquiposCuartos(siguienteRonda);
-        }
-      }
-    };
-    const boton2 = document.createElement("button");
-    boton2.textContent = jugadores[i + 1];
-    boton2.onclick = () => {
-      siguienteRonda.push(jugadores[i + 1]);
-      if (siguienteRonda.length === jugadores.length / 2) {
-        const nuevoId = contenedorId + "_ronda" + (ronda + 1);
-        let nuevaDiv = document.getElementById(nuevoId);
-        if (!nuevaDiv) {
-          nuevaDiv = document.createElement("div");
-          nuevaDiv.id = nuevoId;
-          nuevaDiv.className = "eliminatoria-container";
-          container.parentNode.appendChild(nuevaDiv);
-        }
-        avanzarRondaFaseDirecta(siguienteRonda, nuevoId, ronda + 1);
-        if (jugadores.length === 8 && ronda === 1) {
-          mostrarEquiposCuartos(siguienteRonda);
-        }
-      }
-    };
-    div.appendChild(boton1);
-    div.appendChild(document.createTextNode(" vs "));
-    div.appendChild(boton2);
-    container.appendChild(div);
-  }
-  if (jugadores.length === 2) {
-    const ganadorFinal = document.createElement("h2");
-    ganadorFinal.style.color = '#00ffcc';
-    ganadorFinal.textContent = "🏆 Campeón: (elige un ganador arriba)";
-    container.appendChild(ganadorFinal);
-  }
-}
-
-function mostrarEquiposCuartos(equipos) {
-  let container = document.getElementById("equiposEnCuartos");
+function crearLlaveRonda(jugadores, tituloTexto, contenedorId, callbackAvance) {
+  let container = document.getElementById(contenedorId);
   if (!container) {
     container = document.createElement("div");
-    container.id = "equiposEnCuartos";
+    container.id = contenedorId;
     container.className = "eliminatoria-container";
     const titulo = document.createElement("h3");
-    titulo.textContent = "🏅 Equipos en Cuartos de Final";
+    titulo.textContent = tituloTexto;
     titulo.style.color = "#ffd700";
     container.appendChild(titulo);
     document.body.appendChild(container);
   } else {
     container.innerHTML = "";
     const titulo = document.createElement("h3");
-    titulo.textContent = "🏅 Equipos en Cuartos de Final";
+    titulo.textContent = tituloTexto;
     titulo.style.color = "#ffd700";
     container.appendChild(titulo);
   }
 
-  equipos.forEach(nombre => {
-    const div = document.createElement("div");
-    div.className = "match";
-    div.textContent = nombre;
-    container.appendChild(div);
-  });
+  let ganadores = [];
+  for (let i = 0; i < jugadores.length; i += 2) {
+    const matchDiv = document.createElement("div");
+    matchDiv.className = "match";
+
+    const b1 = document.createElement("button");
+    b1.textContent = jugadores[i];
+    b1.onclick = () => {
+      ganadores.push(jugadores[i]);
+      if (ganadores.length === jugadores.length / 2) {
+        callbackAvance(ganadores);
+      }
+    };
+
+    const b2 = document.createElement("button");
+    b2.textContent = jugadores[i + 1];
+    b2.onclick = () => {
+      ganadores.push(jugadores[i + 1]);
+      if (ganadores.length === jugadores.length / 2) {
+        callbackAvance(ganadores);
+      }
+    };
+
+    matchDiv.appendChild(b1);
+    matchDiv.appendChild(document.createTextNode(" vs "));
+    matchDiv.appendChild(b2);
+    container.appendChild(matchDiv);
+  }
+}
+
+function avanzarACuartos(ganadores) {
+  crearLlaveRonda(ganadores, "Cuartos de Final", "semisContainer", avanzarASemis);
+}
+
+function avanzarASemis(ganadores) {
+  crearLlaveRonda(ganadores, "Semifinales", "finalContainer", avanzarAFinal);
+}
+
+function avanzarAFinal(ganadores) {
+  crearLlaveRonda(ganadores, "Final", "campeonContainer", mostrarCampeon);
+}
+
+function mostrarCampeon(finalistas) {
+  const container = document.getElementById("campeonContainer");
+  const mensaje = document.createElement("h2");
+  mensaje.textContent = "🏆 Campeón: (elige un ganador arriba)";
+  mensaje.style.color = "#00ffcc";
+  container.appendChild(mensaje);
 }
 </script>
 </body>
