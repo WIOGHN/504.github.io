@@ -1053,47 +1053,30 @@ function sortearFaseDirecta() {
   crearPartidos(new Array(4).fill(""), "semisContainer", "Semifinales");
   crearPartidos(new Array(2).fill(""), "finalContainer", "Final");
   crearFinal();
-bindInputEvents();
-
-  crearPartidos(new Array(8).fill(""), "cuartosContainer", "Cuartos de Final");
-  crearPartidos(new Array(4).fill(""), "semisContainer", "Semifinales");
-  crearPartidos(new Array(2).fill(""), "finalContainer", "Final");
-  crearFinal();
-bindInputEvents();
+  bindAutoEvaluar();
 }
 
 function crearPartidos(equipos, containerId, titulo) {
   let container = document.getElementById(containerId);
-  if (!container) {
-    container = document.createElement("div");
-    container.id = containerId;
-    container.className = "eliminatoria-container";
-    const h3 = document.createElement("h3");
-    h3.textContent = titulo;
-    h3.style.color = "#ffd700";
-    container.appendChild(h3);
-    document.body.appendChild(container);
-  } else {
-    container.innerHTML = "";
-    const h3 = document.createElement("h3");
-    h3.textContent = titulo;
-    h3.style.color = "#ffd700";
-    container.appendChild(h3);
-  }
+  container.innerHTML = "";
+  const h3 = document.createElement("h3");
+  h3.textContent = titulo;
+  h3.style.color = "#ffd700";
+  container.appendChild(h3);
 
   for (let i = 0; i < equipos.length; i += 2) {
     const matchDiv = document.createElement("div");
     matchDiv.className = "match";
 
     const span1 = document.createElement("span");
-    span1.textContent = equipos[i] ? equipos[i] : '';
+    span1.textContent = equipos[i] || "";
     const input1 = document.createElement("input");
     input1.type = "number";
     input1.min = "0";
     input1.style.width = "40px";
 
     const span2 = document.createElement("span");
-    span2.textContent = equipos[i + 1] ? equipos[i + 1] : '';
+    span2.textContent = equipos[i + 1] || "";
     const input2 = document.createElement("input");
     input2.type = "number";
     input2.min = "0";
@@ -1109,15 +1092,13 @@ function crearPartidos(equipos, containerId, titulo) {
   }
 }
 
-function crearFinal() {
-  const boton = document.createElement("button");
-  boton.textContent = "Evaluar Resultados y Avanzar";
-  boton.style.marginTop = "20px";
-  boton.onclick = evaluarRondas;
-  document.body.appendChild(boton);
+function bindAutoEvaluar() {
+  document.querySelectorAll("input[type='number']").forEach(input => {
+    input.addEventListener("input", evaluarAutomatica);
+  });
 }
 
-function evaluarRondas() {
+function evaluarAutomatica() {
   const octavos = obtenerGanadores("octavosContainer");
   actualizarRonda("cuartosContainer", octavos);
 
@@ -1144,17 +1125,18 @@ function evaluarRondas() {
 
 function obtenerGanadores(containerId) {
   const container = document.getElementById(containerId);
-  const divs = container.querySelectorAll(".match");
+  const matches = container.querySelectorAll(".match");
   let ganadores = [];
 
-  divs.forEach(div => {
-    const spans = div.querySelectorAll("span");
-    const inputs = div.querySelectorAll("input");
+  matches.forEach(match => {
+    const spans = match.querySelectorAll("span");
+    const inputs = match.querySelectorAll("input");
     if (spans.length === 2 && inputs.length === 2) {
-      const nombre1 = spans[0].textContent.trim();
-      const nombre2 = spans[1].textContent.trim();
+      const nombre1 = spans[0].textContent;
+      const nombre2 = spans[1].textContent;
       const goles1 = parseInt(inputs[0].value);
       const goles2 = parseInt(inputs[1].value);
+
       if (!isNaN(goles1) && !isNaN(goles2)) {
         if (goles1 > goles2) {
           ganadores.push(nombre1);
@@ -1168,58 +1150,26 @@ function obtenerGanadores(containerId) {
   return ganadores;
 }
 
-
 function actualizarRonda(containerId, ganadores) {
   const container = document.getElementById(containerId);
-  const divs = container.querySelectorAll(".match");
-  for (let i = 0; i < divs.length; i++) {
-    const spans = divs[i].getElementsByTagName("span");
-    if (spans.length >= 2) {
-      spans[0].textContent = ganadores[i * 2] !== undefined ? ganadores[i * 2] : "";
-      spans[1].textContent = ganadores[i * 2 + 1] !== undefined ? ganadores[i * 2 + 1] : "";
-    }
-  }
-}
+  const matches = container.querySelectorAll(".match");
 
-  const container = document.getElementById(containerId);
-  const divs = container.querySelectorAll(".match");
-  for (let i = 0; i < divs.length; i++) {
-    const spans = divs[i].querySelectorAll("span");
+  for (let i = 0; i < matches.length; i++) {
+    const spans = matches[i].getElementsByTagName("span");
     if (spans.length === 2) {
-      if (ganadores[i * 2] !== undefined) spans[0].textContent = ganadores[i * 2];
-      if (ganadores[i * 2 + 1] !== undefined) spans[1].textContent = ganadores[i * 2 + 1];
-      spans[0].textContent = ganadores[i * 2];
-      spans[1].textContent = ganadores[i * 2 + 1];
+      spans[0].textContent = ganadores[i * 2] || "";
+      spans[1].textContent = ganadores[i * 2 + 1] || "";
     }
   }
 }
 
-function bindInputEvents() {
-  document.querySelectorAll("input[type='number']").forEach(input => {
-    input.addEventListener("input", () => {
-      const octavos = obtenerGanadores("octavosContainer");
-      actualizarRonda("cuartosContainer", octavos);
-
-      const cuartos = obtenerGanadores("cuartosContainer");
-      actualizarRonda("semisContainer", cuartos);
-
-      const semis = obtenerGanadores("semisContainer");
-      actualizarRonda("finalContainer", semis);
-
-      const final = obtenerGanadores("finalContainer");
-      const container = document.getElementById("campeonContainer") || document.createElement("div");
-      container.id = "campeonContainer";
-      container.className = "eliminatoria-container";
-      container.innerHTML = "<h3 style='color:#ffd700'>🏆 Campeón</h3>";
-      if (final.length === 1) {
-        const ganador = document.createElement("div");
-        ganador.className = "match";
-        ganador.textContent = final[0];
-        container.appendChild(ganador);
-      }
-      document.body.appendChild(container);
-    });
-  });
+function crearFinal() {
+  if (!document.getElementById("campeonContainer")) {
+    const container = document.createElement("div");
+    container.id = "campeonContainer";
+    container.className = "eliminatoria-container";
+    document.body.appendChild(container);
+  }
 }
 </script>
 <div class="eliminatoria-container" id="cuartosContainer">
