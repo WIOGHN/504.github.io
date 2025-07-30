@@ -674,7 +674,6 @@ input[type='number'] {
 </style>
 </head>
 <body>
-
 <div id="llaveVisual" style="display:flex; flex-direction: row; justify-content: center; gap: 40px; margin-top: 40px;">
 <div class="eliminatoria-columna" id="octavosContainer"></div>
 <div class="eliminatoria-columna" id="cuartosContainer"></div>
@@ -1074,7 +1073,7 @@ function sortearFaseDirecta() {
   }
 
   crearPartidos(jugadores, "octavosContainer", "Octavos de Final");
-  crearPartidos(new Array(8).fill(""), "cuartosContainer", "Cuartos de Final");
+    crearPartidos(new Array(8).fill("").map((_,i)=>"Equipo "+(i+1)), "cuartosContainer", "Cuartos de Final");
   crearPartidos(new Array(4).fill(""), "semisContainer", "Semifinales");
   crearPartidos(new Array(2).fill(""), "finalContainer", "Final");
   crearFinal();
