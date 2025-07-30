@@ -1021,76 +1021,84 @@ function sortearEliminatoriaDirecta() {
   }
 }
 </script>
-
 <br/>
-
 <div class="eliminatoria-container" id="contenedorFaseDirecta"></div>
+
+
 <script>
-function sortearFaseDirecta() {
-  const textarea = document.getElementById("jugadoresFaseDirecta");
-  let jugadores = textarea.value.trim().split("\n").map(j => j.trim()).filter(j => j);
-  if (jugadores.length !== 16) {
-    alert("Debes ingresar exactamente 16 equipos.");
-    return;
-  }
-  for (let i = jugadores.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [jugadores[i], jugadores[j]] = [jugadores[j], jugadores[i]];
-  }
-  avanzarRondaFaseDirecta(jugadores, "contenedorFaseDirecta", 1);
+function crearBracketResultados(equipos) {
+  const contenedor = document.getElementById("contenedorFaseDirecta");
+  contenedor.innerHTML = "";
+  generarRonda(equipos, contenedor, 1);
 }
 
-function avanzarRondaFaseDirecta(jugadores, contenedorId, ronda) {
-  const container = document.getElementById(contenedorId);
-  container.innerHTML = "";
-  let siguienteRonda = [];
+function generarRonda(jugadores, contenedor, ronda) {
+  let siguiente = [];
+  const rondaDiv = document.createElement("div");
+  rondaDiv.className = "eliminatoria-container";
+
   for (let i = 0; i < jugadores.length; i += 2) {
-    const div = document.createElement("div");
-    div.className = "match";
-    const boton1 = document.createElement("button");
-    boton1.textContent = jugadores[i];
-    boton1.onclick = () => {
-      siguienteRonda.push(jugadores[i]);
-      if (siguienteRonda.length === jugadores.length / 2) {
-        const nuevoId = contenedorId + "_ronda" + (ronda + 1);
-        let nuevaDiv = document.getElementById(nuevoId);
-        if (!nuevaDiv) {
-          nuevaDiv = document.createElement("div");
-          nuevaDiv.id = nuevoId;
-          nuevaDiv.className = "eliminatoria-container";
-          container.parentNode.appendChild(nuevaDiv);
+    const match = document.createElement("div");
+    match.className = "match";
+
+    const eq1 = document.createElement("span");
+    eq1.textContent = jugadores[i];
+    const score1 = document.createElement("input");
+    score1.type = "number";
+    score1.min = 0;
+    score1.style.width = "40px";
+
+    const eq2 = document.createElement("span");
+    eq2.textContent = jugadores[i + 1];
+    const score2 = document.createElement("input");
+    score2.type = "number";
+    score2.min = 0;
+    score2.style.width = "40px";
+
+    const vs = document.createElement("span");
+    vs.textContent = " vs ";
+
+    score1.onchange = score2.onchange = () => {
+      const val1 = parseInt(score1.value);
+      const val2 = parseInt(score2.value);
+      if (!isNaN(val1) && !isNaN(val2)) {
+        if (val1 === val2) {
+          alert("No puede haber empate. Elige un ganador.");
+        } else {
+          const ganador = val1 > val2 ? jugadores[i] : jugadores[i + 1];
+          siguiente.push(ganador);
+          if (siguiente.length === jugadores.length / 2) {
+            generarRonda(siguiente, contenedor, ronda + 1);
+          }
         }
-        avanzarRondaFaseDirecta(siguienteRonda, nuevoId, ronda + 1);
       }
     };
-    const boton2 = document.createElement("button");
-    boton2.textContent = jugadores[i + 1];
-    boton2.onclick = () => {
-      siguienteRonda.push(jugadores[i + 1]);
-      if (siguienteRonda.length === jugadores.length / 2) {
-        const nuevoId = contenedorId + "_ronda" + (ronda + 1);
-        let nuevaDiv = document.getElementById(nuevoId);
-        if (!nuevaDiv) {
-          nuevaDiv = document.createElement("div");
-          nuevaDiv.id = nuevoId;
-          nuevaDiv.className = "eliminatoria-container";
-          container.parentNode.appendChild(nuevaDiv);
-        }
-        avanzarRondaFaseDirecta(siguienteRonda, nuevoId, ronda + 1);
-      }
-    };
-    div.appendChild(boton1);
-    div.appendChild(document.createTextNode(" vs "));
-    div.appendChild(boton2);
-    container.appendChild(div);
+
+    match.appendChild(eq1);
+    match.appendChild(score1);
+    match.appendChild(vs);
+    match.appendChild(eq2);
+    match.appendChild(score2);
+    rondaDiv.appendChild(match);
   }
+
   if (jugadores.length === 2) {
-    const ganadorFinal = document.createElement("h2");
-    ganadorFinal.style.color = '#00ffcc';
-    ganadorFinal.textContent = "🏆 Campeón: (elige un ganador arriba)";
-    container.appendChild(ganadorFinal);
+    const msg = document.createElement("h2");
+    msg.style.color = "#00ffcc";
+    msg.textContent = "🏆 Campeón: (determinado por resultado)";
+    rondaDiv.appendChild(msg);
   }
+
+  contenedor.appendChild(rondaDiv);
 }
+
+// AUTO DEMO (puedes conectar esto a una entrada real si lo deseas)
+crearBracketResultados([
+  "Equipo A", "Equipo B", "Equipo C", "Equipo D",
+  "Equipo E", "Equipo F", "Equipo G", "Equipo H",
+  "Equipo I", "Equipo J", "Equipo K", "Equipo L",
+  "Equipo M", "Equipo N", "Equipo O", "Equipo P"
+]);
 </script>
 </body>
 </html>
