@@ -643,6 +643,17 @@
       100% { box-shadow: 0 0 6px #ffd700; }
     }
 
+
+input[type='number'] {
+  margin: 0 5px;
+}
+
+.eliminatoria-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
 </style>
 </head>
 <body>
@@ -1042,11 +1053,13 @@ function sortearFaseDirecta() {
   crearPartidos(new Array(4).fill(""), "semisContainer", "Semifinales");
   crearPartidos(new Array(2).fill(""), "finalContainer", "Final");
   crearFinal();
+bindInputEvents();
 
   crearPartidos(new Array(8).fill(""), "cuartosContainer", "Cuartos de Final");
   crearPartidos(new Array(4).fill(""), "semisContainer", "Semifinales");
   crearPartidos(new Array(2).fill(""), "finalContainer", "Final");
   crearFinal();
+bindInputEvents();
 }
 
 function crearPartidos(equipos, containerId, titulo) {
@@ -1160,14 +1173,43 @@ function actualizarRonda(containerId, ganadores) {
   const divs = container.querySelectorAll(".match");
   for (let i = 0; i < divs.length; i++) {
     const spans = divs[i].querySelectorAll("span");
-    if (spans.length === 2 && ganadores[i * 2] !== undefined && ganadores[i * 2 + 1] !== undefined) {
+    if (spans.length === 2) {
+      spans[0].textContent = ganadores[i * 2] || '';
+      spans[1].textContent = ganadores[i * 2 + 1] || '';
       spans[0].textContent = ganadores[i * 2];
       spans[1].textContent = ganadores[i * 2 + 1];
     }
   }
 }
-</script>
 
+function bindInputEvents() {
+  document.querySelectorAll("input[type='number']").forEach(input => {
+    input.addEventListener("input", () => {
+      const octavos = obtenerGanadores("octavosContainer");
+      actualizarRonda("cuartosContainer", octavos);
+
+      const cuartos = obtenerGanadores("cuartosContainer");
+      actualizarRonda("semisContainer", cuartos);
+
+      const semis = obtenerGanadores("semisContainer");
+      actualizarRonda("finalContainer", semis);
+
+      const final = obtenerGanadores("finalContainer");
+      const container = document.getElementById("campeonContainer") || document.createElement("div");
+      container.id = "campeonContainer";
+      container.className = "eliminatoria-container";
+      container.innerHTML = "<h3 style='color:#ffd700'>🏆 Campeón</h3>";
+      if (final.length === 1) {
+        const ganador = document.createElement("div");
+        ganador.className = "match";
+        ganador.textContent = final[0];
+        container.appendChild(ganador);
+      }
+      document.body.appendChild(container);
+    });
+  });
+}
+</script>
 <div class="eliminatoria-container" id="cuartosContainer">
 <h3 style="color:#ffd700">Cuartos de Final</h3>
 <div class="match"><span></span><input min="0" style="width:40px" type="number"/> vs <span></span><input min="0" style="width:40px" type="number"/></div>
