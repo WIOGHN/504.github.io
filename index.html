@@ -1059,6 +1059,9 @@ function avanzarRondaFaseDirecta(jugadores, contenedorId, ronda) {
           container.parentNode.appendChild(nuevaDiv);
         }
         avanzarRondaFaseDirecta(siguienteRonda, nuevoId, ronda + 1);
+        if (jugadores.length === 8 && ronda === 1) {
+          mostrarEquiposCuartos(siguienteRonda);
+        }
       }
     };
     const boton2 = document.createElement("button");
@@ -1075,6 +1078,9 @@ function avanzarRondaFaseDirecta(jugadores, contenedorId, ronda) {
           container.parentNode.appendChild(nuevaDiv);
         }
         avanzarRondaFaseDirecta(siguienteRonda, nuevoId, ronda + 1);
+        if (jugadores.length === 8 && ronda === 1) {
+          mostrarEquiposCuartos(siguienteRonda);
+        }
       }
     };
     div.appendChild(boton1);
@@ -1090,34 +1096,32 @@ function avanzarRondaFaseDirecta(jugadores, contenedorId, ronda) {
   }
 }
 
-
-// Mostrar visualmente los equipos que avanzan a cuartos
-function mostrarCuartos(jugadores, contenedorId) {
-  let siguienteRonda = [];
-  const divCuartos = document.createElement("div");
-  divCuartos.id = contenedorId + "_cuartos";
-  divCuartos.className = "eliminatoria-container";
-  const titulo = document.createElement("h3");
-  titulo.textContent = "🏅 Equipos en Cuartos de Final";
-  titulo.style.color = "#ffd700";
-  divCuartos.appendChild(titulo);
-  jugadores.forEach(j => {
-    const eq = document.createElement("div");
-    eq.className = "match";
-    eq.textContent = j;
-    divCuartos.appendChild(eq);
-  });
-  document.body.appendChild(divCuartos);
-}
-
-// Interceptar función original para inyectar cuartos
-const originalAvanzarRonda = avanzarRondaFaseDirecta;
-avanzarRondaFaseDirecta = function(jugadores, contenedorId, ronda) {
-  originalAvanzarRonda(jugadores, contenedorId, ronda);
-  if (jugadores.length === 8 && ronda === 2) {
-    mostrarCuartos(jugadores, contenedorId);
+function mostrarEquiposCuartos(equipos) {
+  let container = document.getElementById("equiposEnCuartos");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "equiposEnCuartos";
+    container.className = "eliminatoria-container";
+    const titulo = document.createElement("h3");
+    titulo.textContent = "🏅 Equipos en Cuartos de Final";
+    titulo.style.color = "#ffd700";
+    container.appendChild(titulo);
+    document.body.appendChild(container);
+  } else {
+    container.innerHTML = "";
+    const titulo = document.createElement("h3");
+    titulo.textContent = "🏅 Equipos en Cuartos de Final";
+    titulo.style.color = "#ffd700";
+    container.appendChild(titulo);
   }
-};
+
+  equipos.forEach(nombre => {
+    const div = document.createElement("div");
+    div.className = "match";
+    div.textContent = nombre;
+    container.appendChild(div);
+  });
+}
 </script>
 </body>
 </html>
