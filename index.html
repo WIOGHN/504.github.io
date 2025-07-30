@@ -643,6 +643,22 @@
       100% { box-shadow: 0 0 6px #ffd700; }
     }
 
+
+  .eliminatoria-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .match {
+    background: #333;
+    padding: 10px;
+    border-radius: 10px;
+    width: 300px;
+    display: flex;
+    justify-content: space-between;
+  }
 </style>
 </head>
 <body>
@@ -1023,8 +1039,6 @@ function sortearEliminatoriaDirecta() {
 </script>
 <br/>
 <div class="eliminatoria-container" id="contenedorFaseDirecta"></div>
-
-
 <script>
 function crearBracketResultados(equipos) {
   const contenedor = document.getElementById("contenedorFaseDirecta");
