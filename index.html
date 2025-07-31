@@ -1007,8 +1007,32 @@ function mezclarJugadores() {
   }
 
   const mezclados = [...lista].sort(() => Math.random() - 0.5);
-  const html = `<h4>🎲 Orden Mezclado</h4><ol>${mezclados.map(j => `<li>${j}</li>`).join('')}</ol>`;
+  const html = `<h4>🎲 Orden Mezclado</h4><div>${mezclados.map(j => `<div>${j}</div>`).join('')}</div>`;
   document.getElementById("resultadoJugadores").innerHTML = html;
+}
+
+function distribuirAOctavos() {
+  const lista = document.getElementById("jugadoresInput").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
+  if (lista.length !== 16) {
+    alert("Debes ingresar exactamente 16 jugadores.");
+    return;
+  }
+
+  const mezclados = [...lista].sort(() => Math.random() - 0.5);
+  const matches = document.querySelectorAll("#octavosPersonalizados .match");
+
+  mezclados.forEach((jugador, index) => {
+    const spanIndex = index % 2;
+    const matchIndex = Math.floor(index / 2);
+    const spans = matches[matchIndex].querySelectorAll("span");
+    if (spans[spanIndex]) {
+      spans[spanIndex].innerText = jugador;
+    }
+    const inputs = matches[matchIndex].querySelectorAll("input");
+    if (inputs[spanIndex]) {
+      inputs[spanIndex].value = '';
+    }
+  });
 }
 
 </script>
@@ -1020,6 +1044,24 @@ function mezclarJugadores() {
   <button onclick="mezclarJugadores()">🔀 Mezclar Jugadores</button>
 </div>
 <div id="resultadoJugadores" style="font-weight: bold; margin-top: 10px;"></div>
+
+<br/>
+<button onclick="distribuirAOctavos()">📦 Distribuir a Octavos</button>
+<div id="faseOctavos" style="margin-top: 20px;">
+  <h3>🧩 Fase de Octavos de Final</h3>
+  <div class="bracket">
+    <div class="round" id="octavosPersonalizados">
+      <div class="match"><span></span><input min="0" type="number"/> <span></span><input min="0" type="number"/></div>
+      <div class="match"><span></span><input min="0" type="number"/> <span></span><input min="0" type="number"/></div>
+      <div class="match"><span></span><input min="0" type="number"/> <span></span><input min="0" type="number"/></div>
+      <div class="match"><span></span><input min="0" type="number"/> <span></span><input min="0" type="number"/></div>
+      <div class="match"><span></span><input min="0" type="number"/> <span></span><input min="0" type="number"/></div>
+      <div class="match"><span></span><input min="0" type="number"/> <span></span><input min="0" type="number"/></div>
+      <div class="match"><span></span><input min="0" type="number"/> <span></span><input min="0" type="number"/></div>
+      <div class="match"><span></span><input min="0" type="number"/> <span></span><input min="0" type="number"/></div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
