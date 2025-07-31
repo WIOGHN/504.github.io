@@ -1035,6 +1035,46 @@ function distribuirAOctavos() {
   });
 }
 
+function avanzarACuartos() {
+  const octavosMatches = document.querySelectorAll("#octavosPersonalizados .match");
+  const ganadores = [];
+
+  for (const match of octavosMatches) {
+    const spans = match.querySelectorAll("span");
+    const inputs = match.querySelectorAll("input");
+
+    const score1 = parseInt(inputs[0].value);
+    const score2 = parseInt(inputs[1].value);
+
+    if (isNaN(score1) || isNaN(score2)) {
+      alert("Completa todos los resultados de octavos antes de continuar.");
+      return;
+    }
+
+    if (score1 === score2) {
+      const ganador = prompt(`Empate entre "${spans[0].innerText}" y "${spans[1].innerText}". Escribe el nombre del ganador:`);
+      if (!ganador) return;
+      ganadores.push(ganador);
+    } else {
+      ganadores.push(score1 > score2 ? spans[0].innerText : spans[1].innerText);
+    }
+  }
+
+  const cuartosMatches = document.querySelectorAll("#cuartosPersonalizados .match");
+  ganadores.forEach((jugador, i) => {
+    const spanIndex = i % 2;
+    const matchIndex = Math.floor(i / 2);
+    const spans = cuartosMatches[matchIndex].querySelectorAll("span");
+    if (spans[spanIndex]) {
+      spans[spanIndex].innerText = jugador;
+    }
+    const inputs = cuartosMatches[matchIndex].querySelectorAll("input");
+    if (inputs[spanIndex]) {
+      inputs[spanIndex].value = '';
+    }
+  });
+}
+
 </script>
 
 <hr/>
@@ -1083,6 +1123,32 @@ function distribuirAOctavos() {
         <span></span><input min="0" type="number"/>
         <span></span><input min="0" type="number"/>
       </div>
+    </div>
+  </div>
+</div>
+
+<br/>
+<button onclick="avanzarACuartos()">➡️ Pasar Ganadores a Cuartos</button>
+
+<br/>
+<h3>🏅 Fase de Cuartos de Final</h3>
+<div class="bracket" style="flex-wrap: wrap; justify-content: center;">
+  <div id="cuartosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
     </div>
   </div>
 </div>
