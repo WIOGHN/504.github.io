@@ -996,6 +996,30 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("change", verificarYGenerarEliminatoria);
   });
 });
+
+function mezclarJugadores() {
+  const textarea = document.getElementById("jugadoresInput");
+  const lista = textarea.value.trim().split("\n").map(e => e.trim()).filter(Boolean);
+
+  if (lista.length !== 16) {
+    alert("Debes ingresar exactamente 16 jugadores.");
+    return;
+  }
+
+  const mezclados = [...lista].sort(() => Math.random() - 0.5);
+  const html = `<h4>🎲 Orden Mezclado</h4><ol>${mezclados.map(j => `<li>${j}</li>`).join('')}</ol>`;
+  document.getElementById("resultadoJugadores").innerHTML = html;
+}
+
 </script>
+
+<hr/>
+<h2>🎯 Torneo Rápido de 16 Jugadores</h2>
+<div style="margin-bottom: 10px;">
+  <textarea id="jugadoresInput" rows="8" cols="40" placeholder="Escribe un jugador por línea..."></textarea><br/>
+  <button onclick="mezclarJugadores()">🔀 Mezclar Jugadores</button>
+</div>
+<div id="resultadoJugadores" style="font-weight: bold; margin-top: 10px;"></div>
+
 </body>
 </html>
