@@ -1115,6 +1115,62 @@ function avanzarASemis() {
   });
 }
 
+function avanzarAFinal() {
+  const semisMatches = document.querySelectorAll("#semisPersonalizados .match");
+  const ganadores = [];
+
+  for (const match of semisMatches) {
+    const spans = match.querySelectorAll("span");
+    const inputs = match.querySelectorAll("input");
+
+    const score1 = parseInt(inputs[0].value);
+    const score2 = parseInt(inputs[1].value);
+
+    if (isNaN(score1) || isNaN(score2)) {
+      alert("Completa todos los resultados de semifinales antes de continuar.");
+      return;
+    }
+
+    if (score1 === score2) {
+      const ganador = prompt(`Empate entre "${spans[0].innerText}" y "${spans[1].innerText}". Escribe el nombre del ganador:`);
+      if (!ganador) return;
+      ganadores.push(ganador);
+    } else {
+      ganadores.push(score1 > score2 ? spans[0].innerText : spans[1].innerText);
+    }
+  }
+
+  const finalMatch = document.querySelector("#finalPersonalizada .match");
+  const spans = finalMatch.querySelectorAll("span");
+  const inputs = finalMatch.querySelectorAll("input");
+
+  if (ganadores.length === 2 && spans.length === 2) {
+    spans[0].innerText = ganadores[0];
+    spans[1].innerText = ganadores[1];
+    inputs[0].value = '';
+    inputs[1].value = '';
+
+    // Detectar ganador automáticamente cuando se ingresan puntajes
+    const checkChampion = () => {
+      const s1 = parseInt(inputs[0].value);
+      const s2 = parseInt(inputs[1].value);
+      if (isNaN(s1) || isNaN(s2)) return;
+      let champion;
+      if (s1 === s2) {
+        champion = prompt(`Empate en la final. Escribe el nombre del campeón:`);
+      } else {
+        champion = s1 > s2 ? spans[0].innerText : spans[1].innerText;
+      }
+      if (champion) {
+        document.getElementById("campeonFinal").innerHTML = `🏆 Campeón: <span class='winner-highlight'>${champion}</span>`;
+      }
+    };
+
+    inputs[0].addEventListener("change", checkChampion);
+    inputs[1].addEventListener("change", checkChampion);
+  }
+}
+
 </script>
 
 <hr/>
@@ -1210,6 +1266,21 @@ function avanzarASemis() {
     </div>
   </div>
 </div>
+
+<br/>
+<button onclick="avanzarAFinal()">🥇 Pasar Ganadores a la Final</button>
+
+<br/>
+<h3>🏆 Gran Final</h3>
+<div class="bracket" style="flex-wrap: wrap; justify-content: center;">
+  <div id="finalPersonalizada" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+  </div>
+</div>
+<div id="campeonFinal" class="campeon" style="margin-top: 20px;"></div>
 
 </body>
 </html>
