@@ -1154,16 +1154,14 @@ function avanzarAFinal() {
       const s1 = parseInt(inputs[0].value);
       const s2 = parseInt(inputs[1].value);
       if (isNaN(s1) || isNaN(s2)) return;
-      let champion, goleador;
+      let champion;
       if (s1 === s2) {
         champion = prompt(`Empate en la final. Escribe el nombre del campeón:`);
       } else {
         champion = s1 > s2 ? spans[0].innerText : spans[1].innerText;
       }
-      goleador = s1 > s2 ? spans[0].innerText : (s2 > s1 ? spans[1].innerText : champion);
       if (champion) {
-        document.getElementById("campeonFinal").innerHTML = `🏆 Campeón: <span class='winner-highlight'>${champion}</span>`;
-        document.getElementById("goleadorFinalDestacado").innerText = goleador;
+        document.getElementById("campeonFinal").innerHTML = `<span style='color:#ffd700; font-size: 48px; font-weight:bold; text-shadow: 2px 2px 12px #ffd700;'>🏆 ${champion}</span>`;
       }
     };
 
@@ -1284,8 +1282,8 @@ function avanzarAFinal() {
 <div id="campeonFinal" class="campeon" style="margin-top: 20px;"></div>
 
 <br/>
-<h3>🌟 Campeón Goleador de la Final</h3>
-<div id="goleadorFinalDestacado" style="font-size: 30px; color: #ffd700; text-shadow: 2px 2px 8px #ff0, 0 0 20px #ffa726; font-weight: bold; margin-bottom: 40px;"></div>
+<h3>🏆 Campeón Absoluto</h3>
+<div id="campeonFinal" style="font-size: 40px; color: #ffd700; text-shadow: 2px 2px 8px #ff0, 0 0 30px #ffeb3b; font-weight: bold; margin-bottom: 40px;"></div>
 
 </body>
 </html>
