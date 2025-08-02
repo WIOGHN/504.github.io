@@ -814,7 +814,7 @@ function mostrarGrupos() {
   for (let grupo in gruposGlobal) {
     const eq = gruposGlobal[grupo];
     const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
-    let html = `<div class='grupo'><h3><input type="text" value="Grupo ${grupo}" class="titulo-grupo" style="font-size: 18px; font-weight: bold; text-align: center; background: transparent; border: none; color: #ffd700; width: 100%;" /></h3><ul>${eq.map(e => `<li>${e}</li>`).join('')}</ul>`;
+    let html = `<div class='grupo'><h3><input type="text" value="Grupo ${grupo}" class="titulo-grupo" style="font-size: 18px; font-weight: bold; text-align: center; background: transparent; border: none; color: #ffd700; width: 100%;" /></h3><ul>${eq.map(e => `<li><input type=\"text\" value=\"${e}\" class=\"nombre-equipo\" style=\"background:transparent; border:none; color:#fff; text-align:center; width:100%;\" /></li>`).join('')}</ul>`;
     partidos.forEach((p, i) => {
       html += `<div class="partido">${eq[p[0]]} <input type="number" id="g${grupo}${i}a"> - <input type="number" id="g${grupo}${i}b"> ${eq[p[1]]}</div>`;
     });
