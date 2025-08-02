@@ -789,57 +789,10 @@ function agregarLista() {
   mostrarEquipos();
 }
 
-
 function mostrarEquipos() {
-  const cont = document.getElementById("equiposAgregados");
-  cont.innerHTML = `<p>Equipos agregados (${equipos.length}):</p>`;
-  equipos.forEach((eq, index) => {
-    cont.innerHTML += `
-      <div style="margin: 4px 0;">
-        <span id="eqNombre${index}">${eq}</span>
-        <button onclick="editarNombreEquipo(${index})">✏️ Editar</button>
-        <span id="editor${index}" style="display:none;">
-          <input type="text" id="inputNuevo${index}" value="${eq}" style="width: 150px;">
-          <button onclick="guardarNuevoNombre(${index})">✅</button>
-        </span>
-      </div>`;
-  });
+  document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
 }
 
-function editarNombreEquipo(index) {
-  document.getElementById(`editor${index}`).style.display = 'inline';
-}
-
-
-function guardarNuevoNombre(index) {
-  const nuevoNombre = document.getElementById(`inputNuevo${index}`).value.trim();
-  const nombreViejo = equipos[index];
-  if (!nuevoNombre || equipos.includes(nuevoNombre)) {
-    alert("Nombre inválido o duplicado");
-    return;
-  }
-  equipos[index] = nuevoNombre;
-
-  // Actualizar en gruposGlobal
-  for (const grupo in gruposGlobal) {
-    const eqs = gruposGlobal[grupo];
-    gruposGlobal[grupo] = eqs.map(e => e === nombreViejo ? nuevoNombre : e);
-  }
-
-  // Actualizar los textos en partidos sin tocar valores de input
-  const partidos = document.querySelectorAll('.grupo .partido');
-  partidos.forEach(div => {
-    const spans = div.querySelectorAll('span, .team-name');
-    spans.forEach(span => {
-      if (span.innerText === nombreViejo) {
-        span.innerText = nuevoNombre;
-      }
-    });
-    div.innerHTML = div.innerHTML.replaceAll(nombreViejo, nuevoNombre);
-  });
-
-  mostrarEquipos();
-}
 function sortearGrupos() {
   if (equipos.length !== 32) {
     alert("Debes ingresar exactamente 32 equipos.");
@@ -1218,132 +1171,119 @@ function avanzarAFinal() {
 }
 
 </script>
+
 <hr/>
 <h2>🎯 Torneo Rápido de 16 Jugadores</h2>
 <div style="margin-bottom: 10px;">
-<textarea cols="40" id="jugadoresInput" placeholder="Escribe un jugador por línea..." rows="8"></textarea><br/>
-<button onclick="mezclarJugadores()">🔀 Mezclar Jugadores</button>
+  <textarea id="jugadoresInput" rows="8" cols="40" placeholder="Escribe un jugador por línea..."></textarea><br/>
+  <button onclick="mezclarJugadores()">🔀 Mezclar Jugadores</button>
 </div>
 <div id="resultadoJugadores" style="font-weight: bold; margin-top: 10px;"></div>
+
 <br/>
 <button onclick="distribuirAOctavos()">📦 Distribuir a Octavos</button>
 <div id="faseOctavos" style="margin-top: 20px;">
-<h3>🧩 Fase de Octavos de Final</h3>
-<div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-<div id="octavosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
+  <h3>🧩 Fase de Octavos de Final</h3>
+  <div class="bracket" style="flex-wrap: wrap; justify-content: center;">
+    <div id="octavosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+        <span></span><input min="0" type="number"/>
+        <span></span><input min="0" type="number"/>
+      </div>
+      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+        <span></span><input min="0" type="number"/>
+        <span></span><input min="0" type="number"/>
+      </div>
+      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+        <span></span><input min="0" type="number"/>
+        <span></span><input min="0" type="number"/>
+      </div>
+      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+        <span></span><input min="0" type="number"/>
+        <span></span><input min="0" type="number"/>
+      </div>
+      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+        <span></span><input min="0" type="number"/>
+        <span></span><input min="0" type="number"/>
+      </div>
+      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+        <span></span><input min="0" type="number"/>
+        <span></span><input min="0" type="number"/>
+      </div>
+      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+        <span></span><input min="0" type="number"/>
+        <span></span><input min="0" type="number"/>
+      </div>
+      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+        <span></span><input min="0" type="number"/>
+        <span></span><input min="0" type="number"/>
+      </div>
+    </div>
+  </div>
 </div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-</div>
-</div>
-</div>
+
 <br/>
 <button onclick="avanzarACuartos()">➡️ Pasar Ganadores a Cuartos</button>
+
 <br/>
 <h3>🏅 Fase de Cuartos de Final</h3>
 <div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-<div id="cuartosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
+  <div id="cuartosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+  </div>
 </div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-</div>
-</div>
+
 <br/>
 <button onclick="avanzarASemis()">⬆️ Pasar Ganadores a Semifinal</button>
+
 <br/>
 <h3>⚔️ Fase de Semifinales</h3>
 <div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-<div id="semisPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
+  <div id="semisPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+  </div>
 </div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-</div>
-</div>
+
 <br/>
 <button onclick="avanzarAFinal()">🥇 Pasar Ganadores a la Final</button>
+
 <br/>
 <h3>🏆 Gran Final</h3>
 <div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-<div id="finalPersonalizada" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
+  <div id="finalPersonalizada" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+      <span></span><input min="0" type="number"/>
+      <span></span><input min="0" type="number"/>
+    </div>
+  </div>
 </div>
-</div>
-</div>
-<div class="campeon" id="campeonFinal" style="margin-top: 20px;"></div>
+<div id="campeonFinal" class="campeon" style="margin-top: 20px;"></div>
+
 <br/>
 <h3>🏆 Campeón Absoluto</h3>
 <div id="campeonFinal" style="font-size: 40px; color: #ffd700; text-shadow: 2px 2px 8px #ff0, 0 0 30px #ffeb3b; font-weight: bold; margin-bottom: 40px;"></div>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const rounds = ['octavosIzq', 'cuartosIzq', 'semisIzq', 'final', 'semisDer', 'cuartosDer', 'octavosDer'];
-  rounds.forEach(roundId => {
-    const roundEl = document.getElementById(roundId);
-    if (!roundEl) return;
 
-    const matches = roundEl.querySelectorAll('.match');
-    matches.forEach(match => {
-      const spans = match.querySelectorAll('span');
-      spans.forEach((span) => {
-        span.style.cursor = 'pointer';
-        span.title = 'Haz clic para editar nombre';
-        span.addEventListener('click', () => {
-          const nuevoNombre = prompt('Editar nombre del equipo:', span.innerText);
-          if (nuevoNombre && nuevoNombre.trim()) {
-            span.innerText = nuevoNombre.trim();
-          }
-        });
-      });
-    });
-  });
-});
-</script></body>
+</body>
 </html>
