@@ -653,6 +653,9 @@
 <button onclick="agregarEquipo()">Agregar</button><br/>
 <textarea cols="40" id="listaEquipos" placeholder="" rows="6"></textarea><br/>
 <button onclick="agregarLista()">Agregar Lista</button>
+
+<br/><button onclick="actualizarTodosLosNombres()" style="margin-top:10px; background-color:#00e676; color:#000; font-weight:bold; border-radius:12px;">🔁 Aplicar Cambios de Nombres en Todas las Fases</button>
+
 <div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
 <h3>💾 Guardar Torneo</h3>
 <button onclick="guardarTorneo()">Guardar Estado</button>
@@ -776,7 +779,6 @@ function agregarEquipo() {
     equipos.push(nombre);
     input.value = '';
     mostrarEquipos();
-  setTimeout(aplicarVinculacionDeNombres, 200);
   }
 }
 
@@ -788,7 +790,6 @@ function agregarLista() {
   });
   textarea.value = '';
   mostrarEquipos();
-  setTimeout(aplicarVinculacionDeNombres, 200);
 }
 
 function mostrarEquipos() {
@@ -814,7 +815,6 @@ function sortearGrupos() {
   });
   clasificados = [];  // reset
   mostrarGrupos();
-  setTimeout(aplicarVinculacionDeNombres, 200);
 }
 
 function mostrarGrupos() {
@@ -823,9 +823,9 @@ function mostrarGrupos() {
   for (let grupo in gruposGlobal) {
     const eq = gruposGlobal[grupo];
     const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
-    let html = `<div class='grupo'><h3><input type=\"text\" value=\"Grupo ${grupo}" class="titulo-grupo" style="font-size: 18px; font-weight: bold; text-align: center; background: transparent; border: none; color: #ffd700; width: 100%;" /></h3><ul>${eq.map(e => `<li><input type=\"text\" value=\"${e}\" class=\"nombre-equipo\" style=\"background:transparent; border:none; color:#fff; text-align:center; width:100%;\" /></li>`).join('')}</ul>`;
+    let html = `<div class='grupo'><h3><input type="text" value="Grupo ${grupo}" class="titulo-grupo" style="font-size: 18px; font-weight: bold; text-align: center; background: transparent; border: none; color: #ffd700; width: 100%;" /></h3><ul>${eq.map(e => `<li><input type=\"text\" value=\"${e}\" class=\"nombre-equipo\" style=\"background:transparent; border:none; color:#fff; text-align:center; width:100%;\" /></li>`).join('')}</ul>`;
     partidos.forEach((p, i) => {
-      html += `<div class="partido">${crearSpanEquipo(eq.indexOf(eq[p[0]])).outerHTML} <input type=\"number\" id="g${grupo}${i}a"> - <input type="number" id="g${grupo}${i}b"> <input type=\"number\" /> ${crearSpanEquipo(eq.indexOf(eq[p[1]])).outerHTML}</div>`;
+      html += `<div class="partido">${eq[p[0]]} <input type="number" id="g${grupo}${i}a"> - <input type="number" id="g${grupo}${i}b"> ${eq[p[1]]}</div>`;
     });
     html += `<button onclick="generarTabla('${grupo}', ${JSON.stringify(eq).replace(/"/g, '&quot;')})">📊 Tabla</button>
              <div id="tabla_${grupo}"></div></div>`;
@@ -965,9 +965,7 @@ function cargarTorneo() {
   clasificados = estado.clasificados || [];
 
   mostrarEquipos();
-  setTimeout(aplicarVinculacionDeNombres, 200);
   mostrarGrupos();
-  setTimeout(aplicarVinculacionDeNombres, 200);
 
   setTimeout(() => {
     Object.entries(estado.resultados).forEach(([id, val]) => {
@@ -1008,12 +1006,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
-
 function mezclarJugadores() {
   const textarea = document.getElementById("jugadoresInput");
-  const lista = textarea.value.trim().split("
-").map(e => e.trim()).filter(Boolean);
+  const lista = textarea.value.trim().split("\n").map(e => e.trim()).filter(Boolean);
 
   if (lista.length !== 16) {
     alert("Debes ingresar exactamente 16 jugadores.");
@@ -1021,28 +1016,13 @@ function mezclarJugadores() {
   }
 
   const mezclados = [...lista].sort(() => Math.random() - 0.5);
-
-  const html = `<h4>🎲 Orden Mezclado</h4><div>` +
-    mezclados.map((j, i) =>
-      `<input type="text" value="${j}" data-jugador-index="${i}" class="jugadores-editables"
-      oninput="actualizarJugador(${i}, this.value)"
-      style="background:transparent; border:none; color:#fff; text-align:center; width:100%; margin:2px 0;" />`
-    ).join("") + `</div>`;
+  
+const html = `<h4>🎲 Orden Mezclado</h4><div>` + 
+mezclados.map((j, i) => `<input type="text" value="${j}" onchange="document.getElementById('jugadoresInput').value = document.querySelectorAll('.jugadores-editables')[${i}].value" class="jugadores-editables" style="background:transparent; border:none; color:#fff; text-align:center; width:100%; margin:2px 0;" />`).join('') +
+`</div>`;
 
   document.getElementById("resultadoJugadores").innerHTML = html;
 }
-
-const mezclados = [...lista].sort(() => Math.random() - 0.5);
-  const html = `<h4>🎲 Orden Mezclado</h4><div>` + 
-    mezclados.map((j, i) => 
-      `<input type="text" value="\${j}" data-jugador-index="\${i}" class="jugadores-editables"
-      oninput="actualizarJugador(\${i}, this.value)" 
-      style="background:transparent; border:none; color:#fff; text-align:center; width:100%; margin:2px 0;" />`
-    ).join("") + `</div>`;
-
-  document.getElementById("resultadoJugadores").innerHTML = html;
-}
-
 
 function distribuirAOctavos() {
   sincronizarJugadores();
@@ -1061,7 +1041,6 @@ function distribuirAOctavos() {
     const spans = matches[matchIndex].querySelectorAll("span");
     if (spans[spanIndex]) {
       spans[spanIndex].innerText = jugador;
-        spans[spanIndex].setAttribute("data-jugador-index", index);
     }
     const inputs = matches[matchIndex].querySelectorAll("input");
     if (inputs[spanIndex]) {
@@ -1102,7 +1081,6 @@ function avanzarACuartos() {
     const spans = cuartosMatches[matchIndex].querySelectorAll("span");
     if (spans[spanIndex]) {
       spans[spanIndex].innerText = jugador;
-        spans[spanIndex].setAttribute("data-jugador-index", index);
     }
     const inputs = cuartosMatches[matchIndex].querySelectorAll("input");
     if (inputs[spanIndex]) {
@@ -1143,7 +1121,6 @@ function avanzarASemis() {
     const spans = semisMatches[matchIndex].querySelectorAll("span");
     if (spans[spanIndex]) {
       spans[spanIndex].innerText = jugador;
-        spans[spanIndex].setAttribute("data-jugador-index", index);
     }
     const inputs = semisMatches[matchIndex].querySelectorAll("input");
     if (inputs[spanIndex]) {
@@ -1261,37 +1238,48 @@ function actualizarNombresEnFases() {
 document.addEventListener("DOMContentLoaded", actualizarNombresEnFases);
 
 
-function crearSpanEquipo(index) {
-  const span = document.createElement("span");
-  span.setAttribute("data-index", index);
-  span.innerText = equipos[index];
-  return span;
-}
+function actualizarTodosLosNombres() {
+  sincronizarNombresEquipos();
+  sincronizarJugadores();
 
-// Observador de nombres globales
-function aplicarVinculacionDeNombres() {
-  document.querySelectorAll('#equiposAgregados input').forEach((input, index) => {
-    input.addEventListener("input", () => {
-      equipos[index] = input.value;
-      document.querySelectorAll('span[data-index="' + index + '"]').forEach(span => {
-        span.innerText = input.value;
-      });
+  const todosLosNombresAntiguos = [];
+  const todosLosNombresNuevos = [];
+
+  // Para equipos (torneo de 32)
+  const inputsEquipos = document.querySelectorAll('#equiposAgregados input');
+  inputsEquipos.forEach((input, i) => {
+    const oldName = input.defaultValue;
+    const newName = input.value;
+    if (oldName !== newName) {
+      todosLosNombresAntiguos.push(oldName);
+      todosLosNombresNuevos.push(newName);
+      input.defaultValue = newName;
+    }
+  });
+
+  // Para jugadores (torneo de 16)
+  const inputsJugadores = document.querySelectorAll('.jugadores-editables');
+  inputsJugadores.forEach((input, i) => {
+    const oldName = input.defaultValue;
+    const newName = input.value;
+    if (oldName !== newName) {
+      todosLosNombresAntiguos.push(oldName);
+      todosLosNombresNuevos.push(newName);
+      input.defaultValue = newName;
+    }
+  });
+
+  // Reemplazar en todos los spans
+  const spans = document.querySelectorAll("span");
+  spans.forEach(span => {
+    todosLosNombresAntiguos.forEach((oldName, index) => {
+      if (span.innerText === oldName) {
+        span.innerText = todosLosNombresNuevos[index];
+      }
     });
   });
-}
 
-
-function actualizarJugador(index, nuevoNombre) {
-  // Actualizar textarea fuente
-  const lines = document.getElementById("jugadoresInput").value.trim().split("\n");
-  if (index < lines.length) {
-    lines[index] = nuevoNombre;
-    document.getElementById("jugadoresInput").value = lines.join("\n");
-  }
-  // Reflejar en spans vinculados
-  document.querySelectorAll(`span[data-jugador-index='${index}']`).forEach(span => {
-    span.innerText = nuevoNombre;
-  });
+  alert("✔️ Nombres actualizados en todas las fases.");
 }
 
 </script>
