@@ -1009,6 +1009,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+
 function mezclarJugadores() {
   const textarea = document.getElementById("jugadoresInput");
   const lista = textarea.value.trim().split("
@@ -1020,6 +1021,18 @@ function mezclarJugadores() {
   }
 
   const mezclados = [...lista].sort(() => Math.random() - 0.5);
+
+  const html = `<h4>🎲 Orden Mezclado</h4><div>` +
+    mezclados.map((j, i) =>
+      `<input type="text" value="${j}" data-jugador-index="${i}" class="jugadores-editables"
+      oninput="actualizarJugador(${i}, this.value)"
+      style="background:transparent; border:none; color:#fff; text-align:center; width:100%; margin:2px 0;" />`
+    ).join("") + `</div>`;
+
+  document.getElementById("resultadoJugadores").innerHTML = html;
+}
+
+const mezclados = [...lista].sort(() => Math.random() - 0.5);
   const html = `<h4>🎲 Orden Mezclado</h4><div>` + 
     mezclados.map((j, i) => 
       `<input type="text" value="\${j}" data-jugador-index="\${i}" class="jugadores-editables"
