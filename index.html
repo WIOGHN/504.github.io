@@ -1238,23 +1238,47 @@ function actualizarNombresEnFases() {
 document.addEventListener("DOMContentLoaded", actualizarNombresEnFases);
 
 
+
 function actualizarTodosLosNombres() {
   sincronizarNombresEquipos();
   sincronizarJugadores();
 
-  const todosLosNombresAntiguos = [];
-  const todosLosNombresNuevos = [];
+  const nombreMap = {};
 
   // Para equipos (torneo de 32)
   const inputsEquipos = document.querySelectorAll('#equiposAgregados input');
   inputsEquipos.forEach((input, i) => {
-    const oldName = input.defaultValue;
-    const newName = input.value;
-    if (oldName !== newName) {
-      todosLosNombresAntiguos.push(oldName);
-      todosLosNombresNuevos.push(newName);
+    const oldName = input.defaultValue.trim();
+    const newName = input.value.trim();
+    if (oldName && newName && oldName !== newName) {
+      nombreMap[oldName] = newName;
       input.defaultValue = newName;
     }
+  });
+
+  // Para jugadores (torneo de 16)
+  const inputsJugadores = document.querySelectorAll('.jugadores-editables');
+  inputsJugadores.forEach((input, i) => {
+    const oldName = input.defaultValue.trim();
+    const newName = input.value.trim();
+    if (oldName && newName && oldName !== newName) {
+      nombreMap[oldName] = newName;
+      input.defaultValue = newName;
+    }
+  });
+
+  // Reemplazar en todos los spans visibles del torneo
+  const spans = document.querySelectorAll("span");
+  spans.forEach(span => {
+    const texto = span.innerText.trim();
+    if (nombreMap[texto]) {
+      span.innerText = nombreMap[texto];
+    }
+  });
+
+  alert("✔️ Nombres actualizados correctamente en todas las fases del torneo.");
+}
+
   });
 
   // Para jugadores (torneo de 16)
