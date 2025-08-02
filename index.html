@@ -653,9 +653,6 @@
 <button onclick="agregarEquipo()">Agregar</button><br/>
 <textarea cols="40" id="listaEquipos" placeholder="" rows="6"></textarea><br/>
 <button onclick="agregarLista()">Agregar Lista</button>
-
-<br/><button onclick="actualizarTodosLosNombres()" style="margin-top:10px; background-color:#00e676; color:#000; font-weight:bold; border-radius:12px;">🔁 Aplicar Cambios de Nombres en Todas las Fases</button>
-
 <div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
 <h3>💾 Guardar Torneo</h3>
 <button onclick="guardarTorneo()">Guardar Estado</button>
@@ -793,16 +790,10 @@ function agregarLista() {
 }
 
 function mostrarEquipos() {
-  
-const listaEditable = equipos.map((e, i) => 
-  `<input type="text" value="${e}" onchange="equipos[${i}] = this.value" style='margin: 2px; padding: 4px; border-radius: 6px; background:#2a2a2a; color:#fff; border:1px solid #555; text-align:center;'>`
-).join(' ');
-document.getElementById("equiposAgregados").innerHTML = `Equipos agregados (${equipos.length}):<br/>` + listaEditable;
-
+  document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
 }
 
 function sortearGrupos() {
-  sincronizarNombresEquipos();
   if (equipos.length !== 32) {
     alert("Debes ingresar exactamente 32 equipos.");
     return;
@@ -823,7 +814,7 @@ function mostrarGrupos() {
   for (let grupo in gruposGlobal) {
     const eq = gruposGlobal[grupo];
     const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
-    let html = `<div class='grupo'><h3><input type="text" value="Grupo ${grupo}" class="titulo-grupo" style="font-size: 18px; font-weight: bold; text-align: center; background: transparent; border: none; color: #ffd700; width: 100%;" /></h3><ul>${eq.map(e => `<li><input type=\"text\" value=\"${e}\" class=\"nombre-equipo\" style=\"background:transparent; border:none; color:#fff; text-align:center; width:100%;\" /></li>`).join('')}</ul>`;
+    let html = `<div class='grupo'><h3>Grupo ${grupo}</h3><ul>${eq.map(e => `<li>${e}</li>`).join('')}</ul>`;
     partidos.forEach((p, i) => {
       html += `<div class="partido">${eq[p[0]]} <input type="number" id="g${grupo}${i}a"> - <input type="number" id="g${grupo}${i}b"> ${eq[p[1]]}</div>`;
     });
@@ -1016,16 +1007,11 @@ function mezclarJugadores() {
   }
 
   const mezclados = [...lista].sort(() => Math.random() - 0.5);
-  
-const html = `<h4>🎲 Orden Mezclado</h4><div>` + 
-mezclados.map((j, i) => `<input type="text" value="${j}" onchange="document.getElementById('jugadoresInput').value = document.querySelectorAll('.jugadores-editables')[${i}].value" class="jugadores-editables" style="background:transparent; border:none; color:#fff; text-align:center; width:100%; margin:2px 0;" />`).join('') +
-`</div>`;
-
+  const html = `<h4>🎲 Orden Mezclado</h4><div>${mezclados.map(j => `<div>${j}</div>`).join('')}</div>`;
   document.getElementById("resultadoJugadores").innerHTML = html;
 }
 
 function distribuirAOctavos() {
-  sincronizarJugadores();
   const lista = document.getElementById("jugadoresInput").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
   if (lista.length !== 16) {
     alert("Debes ingresar exactamente 16 jugadores.");
@@ -1185,241 +1171,141 @@ function avanzarAFinal() {
 }
 
 
-function sincronizarNombresEquipos() {
-  const inputs = document.querySelectorAll('#equiposAgregados input');
-  equipos = Array.from(inputs).map(input => input.value.trim());
-}
 
+function actualizarNombre(input) {
+  const id = input.dataset.id;
+  const nuevoNombre = input.value.trim();
+  const equipo = equipos.find(e => e.id === id);
+  if (!equipo) return;
+  const nombreAnterior = equipo.nombre;
+  equipo.nombre = nuevoNombre;
 
-function sincronizarJugadores() {
-  const inputs = document.querySelectorAll('.jugadores-editables');
-  const textarea = document.getElementById("jugadoresInput");
-  textarea.value = Array.from(inputs).map(input => input.value.trim()).join("\n");
-}
-
-
-function actualizarNombresEnFases() {
-  // 1. Para torneo de 32 equipos
-  sincronizarNombresEquipos();
-  // Actualizar todos los elementos <li> con inputs dentro de grupos
-  const grupos = document.querySelectorAll('.grupo');
-  grupos.forEach(grupo => {
-    const lis = grupo.querySelectorAll('li input');
-    lis.forEach(input => {
-      input.addEventListener("input", () => {
-        input.parentElement.setAttribute("data-equipo", input.value);
-        const oldName = input.defaultValue;
-        const newName = input.value;
-        // Buscar todos los spans y reemplazar coincidencias
-        document.querySelectorAll("span").forEach(span => {
-          if (span.innerText === oldName) span.innerText = newName;
-        });
-        input.defaultValue = newName;
-      });
-    });
-  });
-
-  // 2. Para torneo de 16 jugadores
-  const jugadorInputs = document.querySelectorAll('.jugadores-editables');
-  jugadorInputs.forEach(input => {
-    input.addEventListener("input", () => {
-      const oldName = input.defaultValue;
-      const newName = input.value;
-      // Reemplazar en spans
-      document.querySelectorAll("span").forEach(span => {
-        if (span.innerText === oldName) span.innerText = newName;
-      });
-      input.defaultValue = newName;
-    });
-  });
-}
-
-// Ejecutar después de DOM y después de acciones relevantes
-document.addEventListener("DOMContentLoaded", actualizarNombresEnFases);
-
-
-
-function actualizarTodosLosNombres() {
-  sincronizarNombresEquipos();
-  sincronizarJugadores();
-
-  const nombreMap = {};
-
-  // Para equipos (torneo de 32)
-  const inputsEquipos = document.querySelectorAll('#equiposAgregados input');
-  inputsEquipos.forEach((input, i) => {
-    const oldName = input.defaultValue.trim();
-    const newName = input.value.trim();
-    if (oldName && newName && oldName !== newName) {
-      nombreMap[oldName] = newName;
-      input.defaultValue = newName;
+  document.querySelectorAll("[data-name]").forEach(el => {
+    if (el.innerText === nombreAnterior) {
+      el.innerText = nuevoNombre;
+      el.setAttribute("data-name", nuevoNombre);
     }
   });
-
-  // Para jugadores (torneo de 16)
-  const inputsJugadores = document.querySelectorAll('.jugadores-editables');
-  inputsJugadores.forEach((input, i) => {
-    const oldName = input.defaultValue.trim();
-    const newName = input.value.trim();
-    if (oldName && newName && oldName !== newName) {
-      nombreMap[oldName] = newName;
-      input.defaultValue = newName;
-    }
-  });
-
-  // Reemplazar en todos los spans visibles del torneo
-  const spans = document.querySelectorAll("span");
-  spans.forEach(span => {
-    const texto = span.innerText.trim();
-    if (nombreMap[texto]) {
-      span.innerText = nombreMap[texto];
-    }
-  });
-
-  alert("✔️ Nombres actualizados correctamente en todas las fases del torneo.");
 }
 
-  });
-
-  // Para jugadores (torneo de 16)
-  const inputsJugadores = document.querySelectorAll('.jugadores-editables');
-  inputsJugadores.forEach((input, i) => {
-    const oldName = input.defaultValue;
-    const newName = input.value;
-    if (oldName !== newName) {
-      todosLosNombresAntiguos.push(oldName);
-      todosLosNombresNuevos.push(newName);
-      input.defaultValue = newName;
-    }
-  });
-
-  // Reemplazar en todos los spans
-  const spans = document.querySelectorAll("span");
-  spans.forEach(span => {
-    todosLosNombresAntiguos.forEach((oldName, index) => {
-      if (span.innerText === oldName) {
-        span.innerText = todosLosNombresNuevos[index];
-      }
-    });
-  });
-
-  alert("✔️ Nombres actualizados en todas las fases.");
+function generarId() {
+  return '_' + Math.random().toString(36).substr(2, 9);
 }
 
+function mostrarEquipos() {
+  const container = document.getElementById("equiposAgregados");
+  container.innerHTML = `Equipos agregados (${equipos.length}):<br/>`;
+  equipos.forEach(equipo => {
+    container.innerHTML += `
+      <input type="text" value="${equipo.nombre}" data-id="${equipo.id}" onchange="actualizarNombre(this)">
+      <br/>
+    `;
+  });
+}
 </script>
-
 <hr/>
 <h2>🎯 Torneo Rápido de 16 Jugadores</h2>
 <div style="margin-bottom: 10px;">
-  <textarea id="jugadoresInput" rows="8" cols="40" placeholder="Escribe un jugador por línea..."></textarea><br/>
-  <button onclick="mezclarJugadores()">🔀 Mezclar Jugadores</button>
+<textarea cols="40" id="jugadoresInput" placeholder="Escribe un jugador por línea..." rows="8"></textarea><br/>
+<button onclick="mezclarJugadores()">🔀 Mezclar Jugadores</button>
 </div>
 <div id="resultadoJugadores" style="font-weight: bold; margin-top: 10px;"></div>
-
 <br/>
 <button onclick="distribuirAOctavos()">📦 Distribuir a Octavos</button>
 <div id="faseOctavos" style="margin-top: 20px;">
-  <h3>🧩 Fase de Octavos de Final</h3>
-  <div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-    <div id="octavosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-        <span></span><input min="0" type="number"/>
-        <span></span><input min="0" type="number"/>
-      </div>
-      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-        <span></span><input min="0" type="number"/>
-        <span></span><input min="0" type="number"/>
-      </div>
-      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-        <span></span><input min="0" type="number"/>
-        <span></span><input min="0" type="number"/>
-      </div>
-      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-        <span></span><input min="0" type="number"/>
-        <span></span><input min="0" type="number"/>
-      </div>
-      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-        <span></span><input min="0" type="number"/>
-        <span></span><input min="0" type="number"/>
-      </div>
-      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-        <span></span><input min="0" type="number"/>
-        <span></span><input min="0" type="number"/>
-      </div>
-      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-        <span></span><input min="0" type="number"/>
-        <span></span><input min="0" type="number"/>
-      </div>
-      <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-        <span></span><input min="0" type="number"/>
-        <span></span><input min="0" type="number"/>
-      </div>
-    </div>
-  </div>
+<h3>🧩 Fase de Octavos de Final</h3>
+<div class="bracket" style="flex-wrap: wrap; justify-content: center;">
+<div id="octavosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
 </div>
-
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+</div>
+</div>
+</div>
 <br/>
 <button onclick="avanzarACuartos()">➡️ Pasar Ganadores a Cuartos</button>
-
 <br/>
 <h3>🏅 Fase de Cuartos de Final</h3>
 <div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-  <div id="cuartosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-      <span></span><input min="0" type="number"/>
-      <span></span><input min="0" type="number"/>
-    </div>
-    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-      <span></span><input min="0" type="number"/>
-      <span></span><input min="0" type="number"/>
-    </div>
-    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-      <span></span><input min="0" type="number"/>
-      <span></span><input min="0" type="number"/>
-    </div>
-    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-      <span></span><input min="0" type="number"/>
-      <span></span><input min="0" type="number"/>
-    </div>
-  </div>
+<div id="cuartosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
 </div>
-
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+</div>
+</div>
 <br/>
 <button onclick="avanzarASemis()">⬆️ Pasar Ganadores a Semifinal</button>
-
 <br/>
 <h3>⚔️ Fase de Semifinales</h3>
 <div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-  <div id="semisPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-      <span></span><input min="0" type="number"/>
-      <span></span><input min="0" type="number"/>
-    </div>
-    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-      <span></span><input min="0" type="number"/>
-      <span></span><input min="0" type="number"/>
-    </div>
-  </div>
+<div id="semisPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
 </div>
-
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
+</div>
+</div>
+</div>
 <br/>
 <button onclick="avanzarAFinal()">🥇 Pasar Ganadores a la Final</button>
-
 <br/>
 <h3>🏆 Gran Final</h3>
 <div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-  <div id="finalPersonalizada" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-    <div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-      <span></span><input min="0" type="number"/>
-      <span></span><input min="0" type="number"/>
-    </div>
-  </div>
+<div id="finalPersonalizada" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
+<span></span><input min="0" type="number"/>
+<span></span><input min="0" type="number"/>
 </div>
-<div id="campeonFinal" class="campeon" style="margin-top: 20px;"></div>
-
+</div>
+</div>
+<div class="campeon" id="campeonFinal" style="margin-top: 20px;"></div>
 <br/>
 <h3>🏆 Campeón Absoluto</h3>
 <div id="campeonFinal" style="font-size: 40px; color: #ffd700; text-shadow: 2px 2px 8px #ff0, 0 0 30px #ffeb3b; font-weight: bold; margin-bottom: 40px;"></div>
-
 </body>
 </html>
