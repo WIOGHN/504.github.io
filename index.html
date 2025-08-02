@@ -1194,6 +1194,46 @@ function sincronizarJugadores() {
   textarea.value = Array.from(inputs).map(input => input.value.trim()).join("\n");
 }
 
+
+function actualizarNombresEnFases() {
+  // 1. Para torneo de 32 equipos
+  sincronizarNombresEquipos();
+  // Actualizar todos los elementos <li> con inputs dentro de grupos
+  const grupos = document.querySelectorAll('.grupo');
+  grupos.forEach(grupo => {
+    const lis = grupo.querySelectorAll('li input');
+    lis.forEach(input => {
+      input.addEventListener("input", () => {
+        input.parentElement.setAttribute("data-equipo", input.value);
+        const oldName = input.defaultValue;
+        const newName = input.value;
+        // Buscar todos los spans y reemplazar coincidencias
+        document.querySelectorAll("span").forEach(span => {
+          if (span.innerText === oldName) span.innerText = newName;
+        });
+        input.defaultValue = newName;
+      });
+    });
+  });
+
+  // 2. Para torneo de 16 jugadores
+  const jugadorInputs = document.querySelectorAll('.jugadores-editables');
+  jugadorInputs.forEach(input => {
+    input.addEventListener("input", () => {
+      const oldName = input.defaultValue;
+      const newName = input.value;
+      // Reemplazar en spans
+      document.querySelectorAll("span").forEach(span => {
+        if (span.innerText === oldName) span.innerText = newName;
+      });
+      input.defaultValue = newName;
+    });
+  });
+}
+
+// Ejecutar después de DOM y después de acciones relevantes
+document.addEventListener("DOMContentLoaded", actualizarNombresEnFases);
+
 </script>
 
 <hr/>
