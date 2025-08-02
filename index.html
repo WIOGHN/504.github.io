@@ -769,22 +769,33 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
 function agregarEquipo() {
   const input = document.getElementById("equipoInput");
   const nombre = input.value.trim();
-  if (nombre && !equipos.includes(nombre)) {
-    equipos.push(nombre);
+  if (nombre && !equipos.find(e => e.nombre === nombre)) {
+    equipos.push({ id: generarId(), nombre });
     input.value = '';
     mostrarEquipos();
   }
 }
 
+}
+
+
 function agregarLista() {
   const textarea = document.getElementById("listaEquipos");
-  const lista = textarea.value.trim().split("\n").map(e => e.trim()).filter(Boolean);
+  const lista = textarea.value.trim().split("
+").map(e => e.trim()).filter(Boolean);
   lista.forEach(e => {
-    if (e && !equipos.includes(e)) equipos.push(e);
+    if (e && !equipos.find(eq => eq.nombre === e)) {
+      equipos.push({ id: generarId(), nombre: e });
+    }
   });
+  textarea.value = '';
+  mostrarEquipos();
+}
+);
   textarea.value = '';
   mostrarEquipos();
 }
