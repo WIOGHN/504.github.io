@@ -800,9 +800,6 @@ function agregarLista() {
   mostrarEquipos();
 }
 
-function mostrarEquipos() {
-  document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
-}
 
 function sortearGrupos() {
   if (equipos.length !== 32) {
@@ -1212,8 +1209,7 @@ function mostrarEquipos() {
       <br/>
     `;
   });
-}
-</script>
+}</script>
 <hr/>
 <h2>🎯 Torneo Rápido de 16 Jugadores</h2>
 <div style="margin-bottom: 10px;">
