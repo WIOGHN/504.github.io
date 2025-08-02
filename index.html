@@ -810,10 +810,13 @@ function mostrarEquipos() {
 }
 
 
+
 function actualizarEquipo(index, nuevoNombre) {
   equipos[index] = nuevoNombre.trim();
-  mostrarEquipos(); // Opcional: para refrescar en caso de orden
+  mostrarEquipos();
+  mostrarGrupos(); // Actualiza los grupos con los nuevos nombres
 }
+
 
 function eliminarEquipo(index) {
   equipos.splice(index, 1);
