@@ -1008,9 +1008,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
 function mezclarJugadores() {
   const textarea = document.getElementById("jugadoresInput");
-  const lista = textarea.value.trim().split("\n").map(e => e.trim()).filter(Boolean);
+  const lista = textarea.value.trim().split("
+").map(e => e.trim()).filter(Boolean);
 
   if (lista.length !== 16) {
     alert("Debes ingresar exactamente 16 jugadores.");
@@ -1018,16 +1020,16 @@ function mezclarJugadores() {
   }
 
   const mezclados = [...lista].sort(() => Math.random() - 0.5);
-  
-
-const html = `<h4>🎲 Orden Mezclado</h4><div>` + 
-mezclados.map((j, i) => `<input type="text" value="${j}" data-jugador-index="${i}" class="jugadores-editables"
-oninput="actualizarJugador(${i}, this.value)" style="background:transparent; border:none; color:#fff; text-align:center; width:100%; margin:2px 0;" />`)
- style="background:transparent; border:none; color:#fff; text-align:center; width:100%; margin:2px 0;" />`).join('') +
-`</div>`;
+  const html = `<h4>🎲 Orden Mezclado</h4><div>` + 
+    mezclados.map((j, i) => 
+      `<input type="text" value="\${j}" data-jugador-index="\${i}" class="jugadores-editables"
+      oninput="actualizarJugador(\${i}, this.value)" 
+      style="background:transparent; border:none; color:#fff; text-align:center; width:100%; margin:2px 0;" />`
+    ).join("") + `</div>`;
 
   document.getElementById("resultadoJugadores").innerHTML = html;
 }
+
 
 function distribuirAOctavos() {
   sincronizarJugadores();
