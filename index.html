@@ -810,6 +810,7 @@ function editarNombreEquipo(index) {
   document.getElementById(`editor${index}`).style.display = 'inline';
 }
 
+
 function guardarNuevoNombre(index) {
   const nuevoNombre = document.getElementById(`inputNuevo${index}`).value.trim();
   const nombreViejo = equipos[index];
@@ -825,14 +826,19 @@ function guardarNuevoNombre(index) {
     gruposGlobal[grupo] = eqs.map(e => e === nombreViejo ? nuevoNombre : e);
   }
 
-  // Actualizar partidos ya mostrados
-  const spans = document.querySelectorAll('.grupo .partido');
-  spans.forEach(div => {
+  // Actualizar los textos en partidos sin tocar valores de input
+  const partidos = document.querySelectorAll('.grupo .partido');
+  partidos.forEach(div => {
+    const spans = div.querySelectorAll('span, .team-name');
+    spans.forEach(span => {
+      if (span.innerText === nombreViejo) {
+        span.innerText = nuevoNombre;
+      }
+    });
     div.innerHTML = div.innerHTML.replaceAll(nombreViejo, nuevoNombre);
   });
 
   mostrarEquipos();
-  mostrarGrupos(); // Para que se regenere correctamente
 }
 function sortearGrupos() {
   if (equipos.length !== 32) {
