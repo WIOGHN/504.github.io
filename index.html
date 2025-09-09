@@ -1309,6 +1309,274 @@ function avanzarAFinal() {
 </div>
 
 <div id="clw-resultado" style="margin-top:20px;"></div>
+<!-- UEFA-STYLE DRAW MODE -->
+<style>
+  .clw-mode-tabs { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+  .clw-tab { background:#2a2a2a; color:#fff; border:1px solid #444; padding:6px 12px; border-radius:999px; cursor:pointer; font-weight:600; }
+  .clw-tab.active { background: linear-gradient(to right,#ffd700,#ffc400); color:#000; border:none; }
+  .clw-section { display:none; }
+  .clw-section.active { display:block; }
+  .bombo-wrap { display:flex; flex-wrap:wrap; gap:24px; justify-content:center; margin-top:16px; }
+  .bombo {
+    width: 360px; min-height: 360px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff8dc, #ffd700 60%, #caa400);
+    box-shadow: 0 0 20px rgba(255,215,0,0.6), inset 0 0 40px rgba(0,0,0,0.25);
+    position: relative; padding: 18px;
+  }
+  .bombo-title { position:absolute; top:-34px; width:100%; text-align:center; font-weight:800; color:#ffd700; text-shadow:2px 2px 6px #000; }
+  .bombo-list {
+    position:absolute; inset:18px; overflow:auto; border-radius:50%;
+    display:grid; grid-template-columns: 1fr 1fr; gap:8px; padding:14px;
+  }
+  .ball {
+    background:#fff; color:#111; font-weight:700; border-radius:999px; padding:8px 10px; text-align:center;
+    border:2px solid #eee; box-shadow:0 2px 6px rgba(0,0,0,.25);
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    user-select:none;
+  }
+  .ball:hover { transform: scale(1.03); }
+  .ball.highlight { background:#fff59d; box-shadow:0 0 18px #fff176; }
+  .ball.selected { background:#b9fbc0; border-color:#28a745; box-shadow:0 0 14px #28a745; }
+  .draw-controls { display:flex; gap:12px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+  .draw-stage { text-align:center; margin-top:8px; font-weight:700; color:#ffeb3b; }
+  .draw-results { max-width:980px; margin:18px auto; }
+  .draw-results table { width:100%; border-collapse:collapse; }
+  .draw-results th, .draw-results td { border:1px solid #444; padding:8px; background:#f9f9f9; color:#000; }
+  .draw-results th { background:#ffd700; color:#000; }
+  .pulse { animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%{ transform:scale(1)} 50%{ transform:scale(1.03)} 100%{ transform:scale(1)} }
+</style>
+
+<div class="clw-mode-tabs">
+  <div class="clw-tab" id="tab-instant">Emparejar al instante</div>
+  <div class="clw-tab active" id="tab-uefa">Sorteo estilo UEFA</div>
+</div>
+
+<div id="clw-instant" class="clw-section">
+  <!-- This reuses the existing instant pairing UI above (button already present) -->
+  <div class="draw-stage">Usa el botón “🎲 Sortear emparejamientos” para emparejar de golpe.</div>
+</div>
+
+<div id="clw-uefa" class="clw-section active">
+  <div class="draw-stage" id="clw-stage-text">Carga 36 jugadores y 36 equipos y pulsa “Iniciar sorteo”.</div>
+  <div class="bombo-wrap">
+    <div class="bombo" id="bombo-jug">
+      <div class="bombo-title">🟦 Bombo de Jugadores</div>
+      <div class="bombo-list" id="bombo-jug-list"></div>
+    </div>
+    <div class="bombo" id="bombo-eq">
+      <div class="bombo-title">🟨 Bombo de Equipos</div>
+      <div class="bombo-list" id="bombo-eq-list"></div>
+    </div>
+  </div>
+
+  <div class="draw-controls">
+    <button onclick="clwDrawInit()">🏁 Iniciar sorteo</button>
+    <button onclick="clwDrawNext()" id="clw-next-btn" disabled>🔔 Sacar siguiente</button>
+    <button onclick="clwDrawAuto()" id="clw-auto-btn" disabled>▶️ Auto</button>
+    <button onclick="clwDrawStop()" id="clw-stop-btn" disabled>⏸️ Detener</button>
+    <button onclick="clwDrawReset()">♻️ Reiniciar</button>
+  </div>
+
+  <div class="draw-results" id="clw-draw-results"></div>
+</div>
+
+<script>
+// ---- Tabs
+(function(){
+  const tInstant = document.getElementById('tab-instant');
+  const tUEFA = document.getElementById('tab-uefa');
+  const sInstant = document.getElementById('clw-instant');
+  const sUEFA = document.getElementById('clw-uefa');
+  tInstant.addEventListener('click', ()=>{
+    tInstant.classList.add('active'); tUEFA.classList.remove('active');
+    sInstant.classList.add('active'); sUEFA.classList.remove('active');
+  });
+  tUEFA.addEventListener('click', ()=>{
+    tUEFA.classList.add('active'); tInstant.classList.remove('active');
+    sUEFA.classList.add('active'); sInstant.classList.remove('active');
+  });
+})();
+
+// ---- UEFA draw logic
+let CLW_POOL_J = [];
+let CLW_POOL_E = [];
+let CLW_RESULTS = [];
+let CLW_AUTO = null;
+
+function clwRenderPool(listEl, arr) {
+  listEl.innerHTML = '';
+  arr.forEach((name, idx) => {
+    const div = document.createElement('div');
+    div.className = 'ball';
+    div.dataset.index = String(idx);
+    div.textContent = name;
+    listEl.appendChild(div);
+  });
+}
+
+function clwDrawInit() {
+  const jugadores = clwGetList('clw-jugadores');
+  const equipos = clwGetList('clw-equipos');
+  clwUpdateCounts();
+
+  if (jugadores.length !== 36 || equipos.length !== 36) {
+    alert('Debes ingresar exactamente 36 jugadores y 36 equipos.');
+    return;
+  }
+
+  // Validar duplicados
+  if ((new Set(jugadores)).size !== jugadores.length) {
+    alert('Hay jugadores duplicados.');
+    return;
+  }
+  if ((new Set(equipos)).size !== equipos.length) {
+    alert('Hay equipos duplicados.');
+    return;
+  }
+
+  CLW_POOL_J = [...jugadores];
+  CLW_POOL_E = [...equipos];
+  CLW_RESULTS = [];
+  clwRenderPool(document.getElementById('bombo-jug-list'), CLW_POOL_J);
+  clwRenderPool(document.getElementById('bombo-eq-list'), CLW_POOL_E);
+  document.getElementById('clw-draw-results').innerHTML = '';
+  document.getElementById('clw-stage-text').innerText = 'Sorteo iniciado. Pulsa “Sacar siguiente”.';
+  document.getElementById('clw-next-btn').disabled = false;
+  document.getElementById('clw-auto-btn').disabled = false;
+  document.getElementById('clw-stop-btn').disabled = true;
+}
+
+function clwScanAndPick(listSelector, pool) {
+  // Visual scanning highlight then pick one
+  return new Promise((resolve) => {
+    const list = document.querySelector(listSelector);
+    const balls = Array.from(list.querySelectorAll('.ball'));
+    if (balls.length === 0) { resolve({ name:null, index:-1 }); return; }
+
+    let i = 0;
+    const duration = 1200; // ms
+    const step = 90;
+    const tEnd = Date.now() + duration;
+    let lastIdx = -1;
+
+    const timer = setInterval(() => {
+      // remove previous highlight
+      if (lastIdx >= 0 && balls[lastIdx]) balls[lastIdx].classList.remove('highlight');
+
+      i = (i + 1) % balls.length;
+      balls[i].classList.add('highlight');
+      lastIdx = i;
+
+      if (Date.now() >= tEnd) {
+        clearInterval(timer);
+        // pick random
+        const pickIdx = Math.floor(Math.random() * balls.length);
+        balls[lastIdx]?.classList.remove('highlight');
+        const ball = balls[pickIdx];
+        if (ball) {
+          ball.classList.add('selected', 'pulse');
+          const name = ball.textContent;
+          // remove from pool & DOM after short delay for effect
+          setTimeout(() => {
+            const idxInPool = Array.from(list.children).indexOf(ball);
+            if (idxInPool >= 0) {
+              pool.splice(idxInPool, 1);
+            }
+            ball.remove();
+            resolve({ name, index: idxInPool });
+          }, 500);
+        } else {
+          resolve({ name:null, index:-1 });
+        }
+      }
+    }, step);
+  });
+}
+
+async function clwDrawNext() {
+  if (CLW_POOL_J.length === 0 || CLW_POOL_E.length === 0) {
+    document.getElementById('clw-stage-text').innerText = 'Sorteo finalizado.';
+    document.getElementById('clw-next-btn').disabled = true;
+    document.getElementById('clw-auto-btn').disabled = true;
+    document.getElementById('clw-stop-btn').disabled = true;
+    return;
+  }
+  document.getElementById('clw-next-btn').disabled = true;
+  document.getElementById('clw-auto-btn').disabled = true;
+  document.getElementById('clw-stop-btn').disabled = true;
+  document.getElementById('clw-stage-text').innerText = 'Extrayendo bola de jugadores…';
+
+  const { name: jug } = await clwScanAndPick('#bombo-jug-list', CLW_POOL_J);
+  document.getElementById('clw-stage-text').innerText = 'Extrayendo bola de equipos…';
+  const { name: eq } = await clwScanAndPick('#bombo-eq-list', CLW_POOL_E);
+
+  if (jug && eq) {
+    CLW_RESULTS.push([jug, eq]);
+    clwRenderResults();
+  }
+
+  if (CLW_POOL_J.length === 0 || CLW_POOL_E.length === 0) {
+    document.getElementById('clw-stage-text').innerText = 'Sorteo finalizado.';
+    document.getElementById('clw-next-btn').disabled = true;
+    document.getElementById('clw-auto-btn').disabled = true;
+    document.getElementById('clw-stop-btn').disabled = true;
+    if (CLW_AUTO) { clearInterval(CLW_AUTO); CLW_AUTO = null; }
+  } else {
+    document.getElementById('clw-stage-text').innerText = 'Listo. Pulsa “Sacar siguiente” para continuar.';
+    document.getElementById('clw-next-btn').disabled = false;
+    document.getElementById('clw-auto-btn').disabled = false;
+  }
+}
+
+function clwRenderResults() {
+  const cont = document.getElementById('clw-draw-results');
+  if (CLW_RESULTS.length === 0) { cont.innerHTML = ''; return; }
+  let html = '<h3>📜 Emparejamientos del sorteo</h3>';
+  html += '<table class="tabla"><tr><th>#</th><th>Jugador</th><th>Equipo</th></tr>';
+  CLW_RESULTS.forEach((pair, i) => {
+    html += `<tr><td>${i+1}</td><td>${pair[0]}</td><td>${pair[1]}</td></tr>`;
+  });
+  html += '</table>';
+  cont.innerHTML = html;
+}
+
+function clwDrawAuto() {
+  if (CLW_AUTO) return;
+  document.getElementById('clw-auto-btn').disabled = true;
+  document.getElementById('clw-stop-btn').disabled = false;
+  document.getElementById('clw-next-btn').disabled = true;
+  CLW_AUTO = setInterval(async () => {
+    await clwDrawNext();
+    if (CLW_POOL_J.length === 0 || CLW_POOL_E.length === 0) {
+      clearInterval(CLW_AUTO); CLW_AUTO = null;
+    }
+  }, 2000);
+}
+
+function clwDrawStop() {
+  if (CLW_AUTO) {
+    clearInterval(CLW_AUTO);
+    CLW_AUTO = null;
+    document.getElementById('clw-auto-btn').disabled = false;
+    document.getElementById('clw-stop-btn').disabled = true;
+    document.getElementById('clw-next-btn').disabled = false;
+  }
+}
+
+function clwDrawReset() {
+  if (CLW_AUTO) { clearInterval(CLW_AUTO); CLW_AUTO = null; }
+  document.getElementById('clw-stage-text').innerText = 'Carga 36 jugadores y 36 equipos y pulsa “Iniciar sorteo”.';
+  document.getElementById('bombo-jug-list').innerHTML = '';
+  document.getElementById('bombo-eq-list').innerHTML = '';
+  document.getElementById('clw-draw-results').innerHTML = '';
+  document.getElementById('clw-next-btn').disabled = true;
+  document.getElementById('clw-auto-btn').disabled = true;
+  document.getElementById('clw-stop-btn').disabled = true;
+}
+</script>
+
 
 <script>
 // === CHAMPIONS LEAGUE WIOG ===
