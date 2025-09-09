@@ -1285,5 +1285,98 @@ function avanzarAFinal() {
 <h3>🏆 Campeón Absoluto</h3>
 <div id="campeonFinal" style="font-size: 40px; color: #ffd700; text-shadow: 2px 2px 8px #ff0, 0 0 30px #ffeb3b; font-weight: bold; margin-bottom: 40px;"></div>
 
+
+<hr/>
+<h2>🏆 CHAMPIONS LEAGUE WIOG</h2>
+<p>Ingresa exactamente 36 jugadores y 36 equipos (uno por línea) y genera los emparejamientos al azar.</p>
+
+<div id="clw-container" style="display:flex; flex-wrap:wrap; gap:24px; justify-content:center; align-items:flex-start;">
+  <div style="max-width:520px; min-width:320px; flex:1 1 360px; background:#1f1f1f; border:2px solid #ffd700; border-radius:14px; padding:16px;">
+    <h3>👤 Jugadores (36)</h3>
+    <textarea id="clw-jugadores" rows="14" cols="40" placeholder="Escribe un jugador por línea..."></textarea>
+    <div id="clw-jugadores-count" style="margin-top:6px; font-weight:bold; color:#ffeb3b;">0/36</div>
+  </div>
+
+  <div style="max-width:520px; min-width:320px; flex:1 1 360px; background:#1f1f1f; border:2px solid #ffd700; border-radius:14px; padding:16px;">
+    <h3>🏟️ Equipos (36)</h3>
+    <textarea id="clw-equipos" rows="14" cols="40" placeholder="Escribe un equipo por línea..."></textarea>
+    <div id="clw-equipos-count" style="margin-top:6px; font-weight:bold; color:#ffeb3b;">0/36</div>
+  </div>
+</div>
+
+<div style="margin-top:16px;">
+  <button id="clw-sorteo-btn" onclick="clwSortear()" title="Emparejar jugadores con equipos al azar">🎲 Sortear emparejamientos</button>
+</div>
+
+<div id="clw-resultado" style="margin-top:20px;"></div>
+
+<script>
+// === CHAMPIONS LEAGUE WIOG ===
+function clwGetList(id) {
+  return document.getElementById(id).value
+    .split('\n')
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+function clwUpdateCounts() {
+  const jc = clwGetList('clw-jugadores').length;
+  const ec = clwGetList('clw-equipos').length;
+  document.getElementById('clw-jugadores-count').innerText = jc + '/36';
+  document.getElementById('clw-equipos-count').innerText = ec + '/36';
+}
+
+function clwShuffle(arr) {
+  // Fisher-Yates
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function clwSortear() {
+  const jugadores = clwGetList('clw-jugadores');
+  const equipos = clwGetList('clw-equipos');
+  clwUpdateCounts();
+
+  if (jugadores.length !== 36 || equipos.length !== 36) {
+    alert('Debes ingresar exactamente 36 jugadores y 36 equipos.');
+    return;
+  }
+
+  // Evitar duplicados exactos (opcional)
+  const setJ = new Set(jugadores);
+  const setE = new Set(equipos);
+  if (setJ.size !== jugadores.length) {
+    alert('Hay jugadores duplicados. Revisa la lista.');
+    return;
+  }
+  if (setE.size !== equipos.length) {
+    alert('Hay equipos duplicados. Revisa la lista.');
+    return;
+  }
+
+  const emparejados = clwShuffle([...equipos]).map((eq, i) => [jugadores[i], eq]);
+
+  // Render resultado en tabla bonita
+  let html = '<h3>🔗 Emparejamientos</h3>';
+  html += '<table class="tabla" style="max-width:980px; margin:0 auto;">';
+  html += '<tr><th>#</th><th>Jugador</th><th>Equipo</th></tr>';
+  emparejados.forEach((par, idx) => {
+    html += '<tr><td>' + (idx + 1) + '</td><td>' + par[0] + '</td><td>' + par[1] + '</td></tr>';
+  });
+  html += '</table>';
+  document.getElementById('clw-resultado').innerHTML = html;
+}
+
+// Contadores en vivo
+document.addEventListener('input', (e) => {
+  if (e.target && (e.target.id === 'clw-jugadores' || e.target.id === 'clw-equipos')) {
+    clwUpdateCounts();
+  }
+});
+</script>
+
 </body>
 </html>
