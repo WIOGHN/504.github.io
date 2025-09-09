@@ -732,8 +732,177 @@ function cl_initOpponents() {
     CL_MATCHUPS.set(p.equipo, new Set());
   }
 }
+
 function cl_generarFaseLiga() {
-  if (CL_PAREJAS.length !== 36) { alert('Primero genera las parejas.'); return; }
+  if (CL_PAREJAS.length !== 36) {
+    alert('Primero genera las parejas.');
+    return;
+  }
+  cl_initOpponents();
+
+  const teams = CL_PAREJAS.map(p => p.equipo);
+  const jornadas = [];
+  const MAX_INTENTOS_RONDA = 2000;
+
+  for (let r = 1; r <= 8; r++) {
+    let rondasOk = false;
+    let intentos = 0;
+    let pairings = [];
+
+    while (!rondasOk && intentos < MAX_INTENTOS_RONDA) {
+      intentos++;
+      pairings = [];
+      const disponibles = [...teams].sort(() => Math.random() - 0.5);
+
+      let valido = true;
+      while (disponibles.length > 0) {
+        const a = disponibles.shift();
+        let emparejado = false;
+        for (let i = 0; i < disponibles.length; i++) {
+          const b = disponibles[i];
+          if (!CL_MATCHUPS.get(a).has(b)) {
+            pairings.push([a, b]);
+            CL_MATCHUPS.get(a).add(b);
+            CL_MATCHUPS.get(b).add(a);
+            disponibles.splice(i, 1);
+            emparejado = true;
+            break;
+          }
+        }
+        if (!emparejado) {
+          for (const [x, y] of pairings) {
+            CL_MATCHUPS.get(x).delete(y);
+            CL_MATCHUPS.get(y).delete(x);
+          }
+          valido = false;
+          break;
+        }
+      }
+      if (valido) rondasOk = true;
+    }
+
+    if (!rondasOk) {
+      cl_initOpponents();
+      r = 0;
+      jornadas.length = 0;
+      continue;
+    }
+    jornadas.push(pairings);
+  }
+
+  // Render de jornadas con inputs de goles
+  const cont = document.getElementById('cl-fixtures');
+  cont.innerHTML = '';
+  const jugadorPorEquipo = new Map(CL_PAREJAS.map(p => [p.equipo, p.jugador]));
+
+  jornadas.forEach((pairs, idx) => {
+    const roundDiv = document.createElement('div');
+    roundDiv.className = 'cl-round';
+    roundDiv.innerHTML = `<h4>Jornada ${idx + 1}</h4>`;
+    const table = document.createElement('table');
+    table.className = 'cl-table';
+    const thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th>Local</th><th></th><th></th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th></tr>';
+    const tbody = document.createElement('tbody');
+
+    pairs.forEach(([home, away], i) => {
+      const tr = document.createElement('tr');
+      tr.setAttribute('data-home', home);
+      tr.setAttribute('data-away', away);
+      const jl = jugadorPorEquipo.get(home) || '';
+      const jv = jugadorPorEquipo.get(away) || '';
+      const idh = `cl-r${idx+1}-m${i+1}-h`;
+      const ida = `cl-r${idx+1}-m${i+1}-a`;
+      tr.innerHTML = `<td>${home}</td>
+                      <td><input id="${idh}" type="number" min="0" style="width:60px; text-align:center"/></td>
+                      <td><input id="${ida}" type="number" min="0" style="width:60px; text-align:center"/></td>
+                      <td>${away}</td>
+                      <td>${jl}</td>
+                      <td>${jv}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    roundDiv.appendChild(table);
+    cont.appendChild(roundDiv);
+  });
+
+  // Botón para calcular tabla y contenedor
+  const btnWrap = document.createElement('div');
+  btnWrap.style.marginTop = '14px';
+  btnWrap.innerHTML = '<button id="cl-calcular-tabla">📊 Calcular Tabla de Liga</button>';
+  cont.appendChild(btnWrap);
+
+  const tablaDiv = document.createElement('div');
+  tablaDiv.id = 'cl-tabla-liga';
+  tablaDiv.style.marginTop = '12px';
+  cont.appendChild(tablaDiv);
+
+  const btnCalc = document.getElementById('cl-calcular-tabla');
+  if (btnCalc) btnCalc.addEventListener('click', cl_calcularTablaLiga);
+
+  document.getElementById('cl-generar-fase').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cl_calcularTablaLiga() {
+  if (CL_PAREJAS.length !== 36) {
+    alert('Primero genera las parejas.');
+    return;
+  }
+  const jugadorPorEquipo = new Map(CL_PAREJAS.map(p => [p.equipo, p.jugador]));
+  // init stats
+  const equipos = CL_PAREJAS.map(p => p.equipo);
+  const stats = {};
+  equipos.forEach(eq => {
+    stats[eq] = {Equipo:eq, Jugador:(jugadorPorEquipo.get(eq)||''), PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, DG:0, Pts:0};
+  });
+
+  // Read every row with data-home / data-away and two inputs
+  document.querySelectorAll('tr[data-home][data-away]').forEach(tr => {
+    const home = tr.getAttribute('data-home');
+    const away = tr.getAttribute('data-away');
+    const inputs = tr.querySelectorAll('input[type="number"]');
+    if (inputs.length < 2) return;
+    const gh = parseInt(inputs[0].value);
+    const ga = parseInt(inputs[1].value);
+    if (Number.isNaN(gh) || Number.isNaN(ga)) return; // skip if incomplete
+
+    // update stats
+    stats[home].PJ++; stats[away].PJ++;
+    stats[home].GF += gh; stats[home].GC += ga;
+    stats[away].GF += ga; stats[away].GC += gh;
+
+    if (gh > ga) { // home win
+      stats[home].PG++; stats[away].PP++; stats[home].Pts += 3;
+    } else if (gh < ga) { // away win
+      stats[away].PG++; stats[home].PP++; stats[away].Pts += 3;
+    } else { // draw
+      stats[home].PE++; stats[away].PE++; stats[home].Pts += 1; stats[away].Pts += 1;
+    }
+  });
+
+  // compute DG
+  equipos.forEach(eq => { stats[eq].DG = stats[eq].GF - stats[eq].GC; });
+
+  // sort: Pts DESC, DG DESC, GF DESC, Equipo ASC
+  const tabla = Object.values(stats).sort((a,b) => (
+    b.Pts - a.Pts || b.DG - a.DG || b.GF - a.GF || a.Equipo.localeCompare(b.Equipo)
+  ));
+
+  // render
+  const cont = document.getElementById('cl-tabla-liga');
+  if (!cont) return;
+  let html = '<div class="cl-round"><h4>Tabla de Liga (parcial)</h4>';
+  html += '<table class="cl-table"><thead><tr><th>#</th><th>Equipo</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead><tbody>';
+  tabla.forEach((t, i) => {
+    const top = i < 8 ? ' style="background:#b9fbc0;"' : '';
+    html += `<tr${top}><td>${i+1}</td><td>${t.Equipo}</td><td>${t.Jugador}</td><td>${t.PJ}</td><td>${t.PG}</td><td>${t.PE}</td><td>${t.PP}</td><td>${t.GF}</td><td>${t.GC}</td><td>${t.DG}</td><td>${t.Pts}</td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  cont.innerHTML = html;
+}
+
   cl_initOpponents();
   const teams = CL_PAREJAS.map(p => p.equipo);
   const jornadas = [];
