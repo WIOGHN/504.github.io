@@ -1346,18 +1346,188 @@ window.cl_fallbackSortearParejas = function(){
   window.CL_PAREJAS = jugadores.map(function(j,i){ return {jugador:j, equipo:equipos[i]}; });
 };
 </script>
-
 </div>
 <div id="cl-parejas" style="margin-top:12px;"></div>
 <div style="margin-top:18px;">
-<button id="cl-generar-fase">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
+<button id="cl-generar-fase" onclick="(window.cl_generarFaseLiga||window.cl_fallbackGenerarFaseLiga)()">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
 </div>
 <div id="cl-fixtures" style="margin-top:16px;"></div>
-<button id="cl-actualizar-tabla">📊 Generar/Actualizar Tabla (estilo Champions)</button>
+<button id="cl-actualizar-tabla" onclick="(window.cl_actualizarTabla||window.cl_fallbackActualizarTabla)()">📊 Generar/Actualizar Tabla (estilo Champions)</button>
+<script id="cl-fallbacks-2">
+// === Fallbacks de Champions por si el script principal no está disponible ===
+(function(){
+  // helpers
+  function normList(txt){ return (txt||'').split('\n').map(s=>s.trim()).filter(Boolean); }
+  function uniq(arr){ const s=new Set(); const out=[]; for (const x of arr){ const k=x.toLowerCase(); if(!s.has(k)){ s.add(k); out.push(x); } } return out; }
+  function renderEstado(){
+    var j=document.getElementById('cl-jugadores-estado');
+    var e=document.getElementById('cl-equipos-estado');
+    if (j) j.innerHTML = "Jugadores cargados (<strong>"+(window.CL_JUGADORES?window.CL_JUGADORES.length:0)+"</strong>/36): " + (window.CL_JUGADORES||[]).join(", ");
+    if (e) e.innerHTML = "Equipos cargados (<strong>"+(window.CL_EQUIPOS?window.CL_EQUIPOS.length:0)+"</strong>/36): " + (window.CL_EQUIPOS||[]).join(", ");
+  }
+
+  // fallbacks de lista (por si faltaban)
+  window.cl_fallbackAddJugadores = window.cl_fallbackAddJugadores || function(){
+    var ta = document.getElementById('cl-jugadores-input'); if(!ta){ alert('No se encontró el área de jugadores.'); return; }
+    window.CL_JUGADORES = uniq(normList(ta.value)); renderEstado();
+  };
+  window.cl_fallbackAddEquipos = window.cl_fallbackAddEquipos || function(){
+    var ta = document.getElementById('cl-equipos-input'); if(!ta){ alert('No se encontró el área de equipos.'); return; }
+    window.CL_EQUIPOS = uniq(normList(ta.value)); renderEstado();
+  };
+
+  // fallback sortear parejas (si no existe aún)
+  window.cl_fallbackSortearParejas = window.cl_fallbackSortearParejas || function(){
+    var J = window.CL_JUGADORES||[]; var E = window.CL_EQUIPOS||[];
+    if (J.length !== 36 || E.length !== 36){ alert('Debes tener 36 jugadores y 36 equipos cargados para sortear.'); return; }
+    var jugadores=[...J].sort(()=>Math.random()-0.5), equipos=[...E].sort(()=>Math.random()-0.5);
+    window.CL_PAREJAS = jugadores.map((j,i)=>({jugador:j, equipo:equipos[i]}));
+    var cont=document.getElementById('cl-parejas');
+    if (cont){
+      cont.innerHTML='<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
+      var grid=document.getElementById('cl-grid-parejas');
+      window.CL_PAREJAS.forEach(p=>{ var d=document.createElement('div'); d.className='cl-card'; d.innerHTML='<strong>'+p.jugador+'</strong> ⇄ <span style="color:#ffd700; font-weight:700;">'+p.equipo+'</span>'; grid.appendChild(d); });
+    }
+  };
+
+  // fallback generar fase liga (8 jornadas, evita rivales repetidos)
+  window.cl_fallbackGenerarFaseLiga = function(){
+    var P = window.CL_PAREJAS||[];
+    if (P.length !== 36){ alert('Primero sortea las parejas (36).'); return; }
+    var teams = P.map(p=>p.equipo);
+    var jugadorPorEquipo = new Map(P.map(p=>[p.equipo,p.jugador]));
+    var matchups = new Map(teams.map(t=>[t, new Set()]));
+    var homeCount = new Map(teams.map(t=>[t,0]));
+    var jornadas = [];
+
+    function tryRound(){
+      var disp=[...teams].sort(()=>Math.random()-0.5);
+      var pairings=[];
+      while(disp.length){
+        var a=disp.shift(), found=false;
+        for (var i=0;i<disp.length;i++){
+          var b=disp[i];
+          if (!matchups.get(a).has(b)){
+            pairings.push([a,b]);
+            matchups.get(a).add(b); matchups.get(b).add(a);
+            disp.splice(i,1); found=true; break;
+          }
+        }
+        if (!found){
+          // rollback
+          pairings.forEach(([x,y])=>{ matchups.get(x).delete(y); matchups.get(y).delete(x); });
+          return null;
+        }
+      }
+      // balance local/visitante simple
+      pairings = pairings.map(([home,away])=>{
+        var hc=homeCount.get(home), ac=homeCount.get(away);
+        if (hc - ac > 0){ homeCount.set(away,ac+1); return [away,home]; }
+        else { homeCount.set(home,hc+1); return [home,away]; }
+      });
+      return pairings;
+    }
+
+    for (var r=0;r<8;r++){
+      var ok=false, intentos=0, round=null;
+      while(!ok && intentos<2000){ intentos++; round = tryRound(); ok = !!round; }
+      if (!ok){ // reiniciar
+        matchups = new Map(teams.map(t=>[t, new Set()]));
+        homeCount = new Map(teams.map(t=>[t,0]));
+        jornadas = []; r=-1; continue;
+      }
+      jornadas.push(round);
+    }
+    window.CL_JORNADAS = jornadas;
+
+    // Render
+    var cont=document.getElementById('cl-fixtures'); if (cont) cont.innerHTML='';
+    jornadas.forEach((pairs,idx)=>{
+      var roundDiv=document.createElement('div'); roundDiv.className='cl-round';
+      roundDiv.innerHTML='<h4>Jornada '+(idx+1)+'</h4>';
+      var table=document.createElement('table'); table.className='cl-table';
+      table.innerHTML='<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th></tr></thead>';
+      var tbody=document.createElement('tbody');
+      pairs.forEach((pair,mIdx)=>{
+        var home=pair[0], away=pair[1];
+        var jl=jugadorPorEquipo.get(home)||'', jv=jugadorPorEquipo.get(away)||'';
+        var ida='cl-r'+(idx+1)+'-m'+mIdx+'-a', idb='cl-r'+(idx+1)+'-m'+mIdx+'-b';
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td>'+home+'<br/><input type=\"number\" min=\"0\" id=\"'+ida+'\" style=\"width:56px;\"></td>' +
+                     '<td>'+away+'<br/><input type=\"number\" min=\"0\" id=\"'+idb+'\" style=\"width:56px;\"></td>' +
+                     '<td>'+jl+'</td><td>'+jv+'</td>';
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody); roundDiv.appendChild(table);
+      if (cont) cont.appendChild(roundDiv);
+    });
+  };
+
+  // fallback actualizar tabla
+  window.cl_fallbackActualizarTabla = function(){
+    var P = window.CL_PAREJAS||[]; var J = window.CL_JORNADAS||[];
+    if (!P.length || !J.length){ alert('Genera las parejas y la fase de liga primero.'); return; }
+    var stats = {}; P.forEach(p=> stats[p.equipo]={Equipo:p.equipo, Jugador:p.jugador, PJ:0,G:0,E:0,P:0,GF:0,GC:0,DG:0,Pts:0});
+    J.forEach((pairs,rIdx)=>{
+      pairs.forEach((pair,mIdx)=>{
+        var home=pair[0], away=pair[1];
+        var a = parseInt((document.getElementById('cl-r'+(rIdx+1)+'-m'+mIdx+'-a')||{}).value);
+        var b = parseInt((document.getElementById('cl-r'+(rIdx+1)+'-m'+mIdx+'-b')||{}).value);
+        if (Number.isNaN(a)||Number.isNaN(b)) return;
+        stats[home].PJ++; stats[away].PJ++;
+        stats[home].GF+=a; stats[home].GC+=b;
+        stats[away].GF+=b; stats[away].GC+=a;
+        if (a>b){ stats[home].G++; stats[away].P++; stats[home].Pts+=3; }
+        else if (a<b){ stats[away].G++; stats[home].P++; stats[away].Pts+=3; }
+        else { stats[home].E++; stats[away].E++; stats[home].Pts++; stats[away].Pts++; }
+      });
+    });
+    Object.values(stats).forEach(s=>s.DG=s.GF-s.GC);
+    var tabla = Object.values(stats).sort((a,b)=> b.Pts-a.Pts || b.DG-a.DG || b.GF-a.GF || a.Equipo.localeCompare(b.Equipo));
+    window.CL_TABLA = tabla;
+    var cont=document.getElementById('cl-standings'); if (!cont) return;
+    cont.innerHTML='';
+    var mk=function(rows,start){ var t=document.createElement('table'); t.className='cl-table';
+      t.innerHTML='<thead><tr><th>#</th><th>Equipo</th><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>';
+      var tb=document.createElement('tbody');
+      rows.forEach((r,i)=>{ var tr=document.createElement('tr'); tr.innerHTML='<td>'+(start+i)+'</td><td>'+r.Equipo+'</td><td>'+r.Jugador+'</td><td>'+r.PJ+'</td><td>'+r.G+'</td><td>'+r.E+'</td><td>'+r.P+'</td><td>'+r.GF+'</td><td>'+r.GC+'</td><td>'+r.DG+'</td><td><strong>'+r.Pts+'</strong></td>'; tb.appendChild(tr); });
+      t.appendChild(tb); return t; };
+    var w1=document.createElement('div'); w1.className='cl-round cl-top8'; w1.innerHTML='<h4>1–8 Clasificación directa</h4>'; w1.appendChild(mk(tabla.slice(0,8),1));
+    var w2=document.createElement('div'); w2.className='cl-round cl-playin'; w2.innerHTML='<h4>9–24 Play-in</h4>'; w2.appendChild(mk(tabla.slice(8,24),9));
+    var w3=document.createElement('div'); w3.className='cl-round cl-elim'; w3.innerHTML='<h4>25–36 Eliminados</h4>'; w3.appendChild(mk(tabla.slice(24,36),25));
+    cont.appendChild(w1); cont.appendChild(w2); cont.appendChild(w3);
+  };
+
+  // fallbacks de play-in / octavos mínimos (si hiciera falta)
+  window.cl_fallbackGenerarPlayin = function(){
+    if (!window.CL_TABLA || window.CL_TABLA.length<24){ alert('Actualiza la tabla primero.'); return; }
+    var A = window.CL_TABLA.slice(8,16).map(r=>r.Equipo);
+    var B = window.CL_TABLA.slice(16,24).map(r=>r.Equipo);
+    var cont=document.getElementById('cl-playin'); cont.innerHTML='<div class="cl-round"><h4>Play‑in (9–24)</h4></div>';
+    var w=cont.querySelector('.cl-round'); var table=document.createElement('table'); table.className='cl-playin-table';
+    table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
+    var tb=document.createElement('tbody');
+    for (var i=0;i<8;i++){ var seeded=A[i], unseeded=B[7-i];
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td>'+seeded+' (cabeza) vs '+unseeded+'</td>'+
+                   '<td>'+unseeded+' <input type="number" min="0" id="pl'+i+'-ida-a" style="width:56px;"> – <input type="number" min="0" id="pl'+i+'-ida-b" style="width:56px;"> '+seeded+'</td>'+
+                   '<td>'+seeded+' <input type="number" min="0" id="pl'+i+'-vta-a" style="width:56px;"> – <input type="number" min="0" id="pl'+i+'-vta-b" style="width:56px;"> '+unseeded+'</td>'+
+                   '<td id="pl'+i+'-global">—</td><td id="pl'+i+'-win">—</td>';
+      tb.appendChild(tr);
+    }
+    table.appendChild(tb); w.appendChild(table);
+  };
+
+  window.cl_fallbackGenerarOctavos = function(){
+    alert('Usa el botón de play‑in para decidir ganadores y luego genera octavos.');
+  };
+})();
+</script>
+
 <div id="cl-standings" style="margin-top:12px;"></div>
 <div id="cl-playin-controls" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
-<button id="cl-gen-playin">🎟️ Generar Play‑in (9–24)</button>
-<button id="cl-gen-octavos">🏆 Generar Octavos (1–8 vs ganadores play‑in)</button>
+<button id="cl-gen-playin" onclick="(window.cl_generarPlayin||window.cl_fallbackGenerarPlayin)()">🎟️ Generar Play‑in (9–24)</button>
+<button id="cl-gen-octavos" onclick="(window.cl_generarOctavos||window.cl_fallbackGenerarOctavos)()">🏆 Generar Octavos (1–8 vs ganadores play‑in)</button>
 </div>
 <div id="cl-playin" style="margin-top:12px;"></div>
 <div id="cl-ko" style="margin-top:18px;">
