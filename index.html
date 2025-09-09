@@ -1279,5 +1279,65 @@ function avanzarAFinal() {
 <br/>
 <h3>🏆 Campeón Absoluto</h3>
 <div id="campeonFinal" style="font-size: 40px; color: #ffd700; text-shadow: 2px 2px 8px #ff0, 0 0 30px #ffeb3b; font-weight: bold; margin-bottom: 40px;"></div>
+
+<hr/>
+<h2>🏟️ Champions League WIOG</h2>
+
+<h3>👥 Agregar 36 Jugadores</h3>
+<textarea id="cl-jugadores-input" rows="8" cols="40" placeholder="Escribe un jugador por línea (36 en total)"></textarea><br/>
+<button id="cl-agregar-jugadores">Agregar lista de jugadores</button>
+<div id="cl-jugadores-estado" style="margin-top:8px; font-weight:bold;"></div>
+
+<h3>🏳️ Agregar 36 Equipos</h3>
+<textarea id="cl-equipos-input" rows="8" cols="40" placeholder="Escribe un equipo por línea (36 en total)"></textarea><br/>
+<button id="cl-agregar-equipos">Agregar lista de equipos</button>
+<div id="cl-equipos-estado" style="margin-top:8px; font-weight:bold;"></div>
+
+<div style="margin-top:14px;">
+  <button id="cl-sortear-parejas">🎲 Sortear Parejas (Jugador ⇄ Equipo)</button>
+</div>
+<div id="cl-parejas" style="margin-top:12px;"></div>
+
+<div style="margin-top:18px;">
+  <button id="cl-generar-fase">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
+</div>
+<div id="cl-fixtures" style="margin-top:16px;"></div>
+
+<button id="cl-actualizar-tabla">📊 Generar/Actualizar Tabla (estilo Champions)</button>
+<div id="cl-standings" style="margin-top:12px;"></div>
+<div id="cl-playin-controls" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+  <button id="cl-gen-playin">🎟️ Generar Play‑in (9–24)</button>
+  <button id="cl-gen-octavos">🏆 Generar Octavos (1–8 vs ganadores play‑in)</button>
+</div>
+<div id="cl-playin" style="margin-top:12px;"></div>
+
+<div id="cl-ko" style="margin-top:18px;">
+  <h3>⚔️ Eliminatoria – Champions League WIOG</h3>
+  <div id="cl-octavos"><h4>Octavos de Final</h4><div class="bracket">
+    <!-- 8 matches -->
+    <div class='match'><span>—</span><input type='number' min='0' id='cl-octavos-m0-a'><span>—</span><input type='number' min='0' id='cl-octavos-m0-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-octavos-m1-a'><span>—</span><input type='number' min='0' id='cl-octavos-m1-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-octavos-m2-a'><span>—</span><input type='number' min='0' id='cl-octavos-m2-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-octavos-m3-a'><span>—</span><input type='number' min='0' id='cl-octavos-m3-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-octavos-m4-a'><span>—</span><input type='number' min='0' id='cl-octavos-m4-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-octavos-m5-a'><span>—</span><input type='number' min='0' id='cl-octavos-m5-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-octavos-m6-a'><span>—</span><input type='number' min='0' id='cl-octavos-m6-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-octavos-m7-a'><span>—</span><input type='number' min='0' id='cl-octavos-m7-b'></div>
+  </div></div>
+  <div id="cl-cuartos"><h4>Cuartos de Final</h4><div class="bracket">
+    <div class='match'><span>—</span><input type='number' min='0' id='cl-cuartos-m0-a'><span>—</span><input type='number' min='0' id='cl-cuartos-m0-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-cuartos-m1-a'><span>—</span><input type='number' min='0' id='cl-cuartos-m1-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-cuartos-m2-a'><span>—</span><input type='number' min='0' id='cl-cuartos-m2-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-cuartos-m3-a'><span>—</span><input type='number' min='0' id='cl-cuartos-m3-b'></div>
+  </div></div>
+  <div id="cl-semis"><h4>Semifinales</h4><div class="bracket">
+    <div class='match'><span>—</span><input type='number' min='0' id='cl-semis-m0-a'><span>—</span><input type='number' min='0' id='cl-semis-m0-b'></div>
+<div class='match'><span>—</span><input type='number' min='0' id='cl-semis-m1-a'><span>—</span><input type='number' min='0' id='cl-semis-m1-b'></div>
+  </div></div>
+  <div id="cl-final"><h4>Gran Final</h4><div class="bracket">
+    <div class='match'><span>—</span><input type='number' min='0' id='cl-final-m0-a'><span>—</span><input type='number' min='0' id='cl-final-m0-b'></div>
+  </div></div>
+</div>
+
 </body>
 </html>
