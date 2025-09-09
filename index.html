@@ -1175,7 +1175,7 @@ function avanzarAFinal() {
 <hr/>
 <h2>🎯 Torneo Rápido de 16 Jugadores</h2>
 <div style="margin-bottom: 10px;">
-  <textarea id="jugadoresInput" rows="8" cols="40" placeholder="Escribe un jugador por línea o separado por comas/; |"></textarea><br/>
+  <textarea id="jugadoresInput" rows="8" cols="40" placeholder="Escribe un jugador por línea..."></textarea><br/>
   <button onclick="mezclarJugadores()">🔀 Mezclar Jugadores</button>
 </div>
 <div id="resultadoJugadores" style="font-weight: bold; margin-top: 10px;"></div>
@@ -1287,681 +1287,227 @@ function avanzarAFinal() {
 
 
 <hr/>
-<h2>🏆 CHAMPIONS LEAGUE WIOG</h2>
-<p>Ingresa exactamente 36 jugadores y 36 equipos (uno por línea) y genera los emparejamientos al azar.</p>
+<h2>🏟️ Champions League WIOG</h2>
 
-<div id="clw-container" style="display:flex; flex-wrap:wrap; gap:24px; justify-content:center; align-items:flex-start;">
-  <div style="max-width:520px; min-width:320px; flex:1 1 360px; background:#1f1f1f; border:2px solid #ffd700; border-radius:14px; padding:16px;">
-    <h3>👤 Jugadores (36)</h3>
-    <textarea id="clw-jugadores" rows="14" cols="40" placeholder="Escribe un jugador por línea o separado por comas/; |"></textarea>
-    <div id="clw-jugadores-count" style="margin-top:6px; font-weight:bold; color:#ffeb3b;">0/36</div>
-  </div>
+<h3>👥 Agregar 36 Jugadores</h3>
+<textarea id="cl-jugadores-input" rows="8" cols="40" placeholder="Escribe un jugador por línea (36 en total)"></textarea><br/>
+<button id="cl-agregar-jugadores">Agregar lista de jugadores</button>
+<div id="cl-jugadores-estado" style="margin-top:8px; font-weight:bold;"></div>
 
-  <div style="max-width:520px; min-width:320px; flex:1 1 360px; background:#1f1f1f; border:2px solid #ffd700; border-radius:14px; padding:16px;">
-    <h3>🏟️ Equipos (36)</h3>
-    <textarea id="clw-equipos" rows="14" cols="40" placeholder="Escribe un equipo por línea o separado por comas/; |"></textarea>
-    <div id="clw-equipos-count" style="margin-top:6px; font-weight:bold; color:#ffeb3b;">0/36</div>
-  </div>
+<h3>🏳️ Agregar 36 Equipos</h3>
+<textarea id="cl-equipos-input" rows="8" cols="40" placeholder="Escribe un equipo por línea (36 en total)"></textarea><br/>
+<button id="cl-agregar-equipos">Agregar lista de equipos</button>
+<div id="cl-equipos-estado" style="margin-top:8px; font-weight:bold;"></div>
 
-  <div style="max-width:520px; min-width:320px; flex:1 1 360px; background:#1f1f1f; border:2px solid #ffd700; border-radius:14px; padding:16px;">
-    <h3>🏳️‍⚧️ Ligas por equipo (opcional)</h3>
-    <p style="font-size:13px; opacity:0.9; margin-top:-6px;">Formato: <code>Equipo, Liga</code> &nbsp;•&nbsp; Una línea por equipo</p>
-    <textarea id="clw-ligas" rows="14" cols="40" placeholder="Ejemplos:
-Real Madrid, LaLiga
-Man City, Premier League
-Bayern, Bundesliga"></textarea>
-    <div style="margin-top:6px; font-weight:bold; color:#ffeb3b;">Se respetará evitar cruces de la misma liga cuando sea posible.</div>
-  </div>
-
+<div style="margin-top:14px;">
+  <button id="cl-sortear-parejas">🎲 Sortear Parejas (Jugador ⇄ Equipo)</button>
 </div>
+<div id="cl-parejas" style="margin-top:12px;"></div>
 
-<div style="margin-top:16px;">
-  <button id="clw-sorteo-btn" onclick="clwSortear()" title="Emparejar jugadores con equipos al azar">🎲 Sortear emparejamientos</button>
+<div style="margin-top:18px;">
+  <button id="cl-generar-fase">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
 </div>
+<div id="cl-fixtures" style="margin-top:16px;"></div>
 
-<div id="clw-resultado" style="margin-top:20px;"></div>
-<div style="margin-top:16px;">
-  <button id="clw-cruces-btn" onclick="clwGenerarCruces()" title="Generar cruces tipo Champions (36 equipos, 8 jornadas)">🗓️ Generar cruces (Liga de 36)</button>
-</div>
-<div id="clw-cruces" style="margin-top:20px;"></div>
+<style>
+  .cl-card { background:#121212; border:1px solid #ffd70055; border-radius:12px; padding:10px; margin:10px 0; }
+  .cl-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:10px; }
+  .cl-table { width:100%; border-collapse:collapse; }
+  .cl-table th, .cl-table td { border:1px solid #444; padding:6px; background:#fff; color:#000; }
+  .cl-table th { background:#ffd700; color:#000; }
+  .cl-round { margin:16px 0; box-shadow:0 0 8px rgba(0,0,0,0.3); border-radius:10px; overflow:hidden; }
+  .cl-round h4 { background:#303030; color:#ffd700; padding:8px 10px; margin:0; }
+</style>
 
 <script>
-// === CHAMPIONS LEAGUE WIOG ===
-function clwNormalizeList(text) {
-  return text
-    .replace(/
-?/g, '
-')
-    .split(/[
-,;|]+/)
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
-}
-function clwGetList(id) {
-  const el = document.getElementById(id);
-  if (!el) return [];
-  return clwNormalizeList(el.value);
+// ====== Champions League WIOG (36 equipos, 8 jornadas) ======
+let CL_JUGADORES = [];
+let CL_EQUIPOS = [];
+let CL_PAREJAS = [];   // [{jugador, equipo}]
+let CL_MATCHUPS = new Map(); // key: team, value: Set of opponents already played
+
+function cl_normalizarLista(texto) {
+  return texto.split('\n').map(s => s.trim()).filter(Boolean);
 }
 
-function clwUpdateCounts() {
-  const jc = clwGetList('clw-jugadores').length;
-  const ec = clwGetList('clw-equipos').length;
-  document.getElementById('clw-jugadores-count').innerText = jc + '/36';
-  document.getElementById('clw-equipos-count').innerText = ec + '/36';
-}
-
-function clwShuffle(arr) {
-  // Fisher-Yates
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+function cl_unicos(lista) {
+  const set = new Set();
+  const out = [];
+  for (const item of lista) {
+    const key = item.toLowerCase();
+    if (!set.has(key)) { set.add(key); out.push(item); }
   }
-  return arr;
+  return out;
 }
 
+function cl_renderEstado() {
+  const j = document.getElementById('cl-jugadores-estado');
+  const e = document.getElementById('cl-equipos-estado');
+  j.textContent = `Jugadores cargados (${CL_JUGADORES.length}/36): ${CL_JUGADORES.join(', ')}`;
+  e.textContent = `Equipos cargados (${CL_EQUIPOS.length}/36): ${CL_EQUIPOS.join(', ')}`;
+}
 
-function clwSortear() {
-  const jugadores = clwGetList('clw-jugadores');
-  const equipos = clwGetList('clw-equipos');
-  clwUpdateCounts();
-
-  if (jugadores.length !== 36 || equipos.length !== 36) {
-    alert('Debes ingresar exactamente 36 jugadores y 36 equipos.');
+function cl_agregarJugadores() {
+  const raw = document.getElementById('cl-jugadores-input').value;
+  const lista = cl_unicos(cl_normalizarLista(raw));
+  if (lista.length !== 36) {
+    alert('Debes ingresar exactamente 36 jugadores (actual: ' + lista.length + ').');
     return;
   }
+  CL_JUGADORES = lista;
+  cl_renderEstado();
+}
 
-  const setJ = new Set(jugadores);
-  const setE = new Set(equipos);
-  if (setJ.size !== jugadores.length) {
-    alert('Hay jugadores duplicados. Revisa la lista.');
+function cl_agregarEquipos() {
+  const raw = document.getElementById('cl-equipos-input').value;
+  const lista = cl_unicos(cl_normalizarLista(raw));
+  if (lista.length !== 36) {
+    alert('Debes ingresar exactamente 36 equipos (actual: ' + lista.length + ').');
     return;
   }
-  if (setE.size !== equipos.length) {
-    alert('Hay equipos duplicados. Revisa la lista.');
+  CL_EQUIPOS = lista;
+  cl_renderEstado();
+}
+
+function cl_sortearParejas() {
+  if (CL_JUGADORES.length !== 36 || CL_EQUIPOS.length !== 36) {
+    alert('Primero carga 36 jugadores y 36 equipos.');
     return;
   }
+  const jugadores = [...CL_JUGADORES].sort(() => Math.random() - 0.5);
+  const equipos = [...CL_EQUIPOS].sort(() => Math.random() - 0.5);
 
-  const jugShuffle = clwShuffle([...jugadores]);
-  const eqShuffle = clwShuffle([...equipos]);
-  const emparejados = jugShuffle.map((j, i) => [j, eqShuffle[i]]);
+  CL_PAREJAS = jugadores.map((jugador, i) => ({ jugador, equipo: equipos[i] }));
 
-  let html = '<h3>🔗 Emparejamientos</h3>';
-  html += '<table class="tabla" style="max-width:980px; margin:0 auto;">';
-  html += '<tr><th>#</th><th>Jugador</th><th>Equipo</th></tr>';
-  emparejados.forEach((par, idx) => {
-    html += '<tr><td>' + (idx + 1) + '</td><td>' + par[0] + '</td><td>' + par[1] + '</td></tr>';
+  // Render
+  const cont = document.getElementById('cl-parejas');
+  cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
+  const grid = document.getElementById('cl-grid-parejas');
+  CL_PAREJAS.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'cl-card';
+    div.innerHTML = `<strong>${p.jugador}</strong> ⇄ <span style="color:#ffd700; font-weight:700;">${p.equipo}</span>`;
+    grid.appendChild(div);
   });
-  html += '</table>';
-  document.getElementById('clw-resultado').innerHTML = html;
 }
 
-  // Evitar duplicados exactos (opcional)
-  const setJ = new Set(jugadores);
-  const setE = new Set(equipos);
-  if (setJ.size !== jugadores.length) {
-    alert('Hay jugadores duplicados. Revisa la lista.');
-    return;
+function cl_initOpponents() {
+  CL_MATCHUPS = new Map();
+  for (const p of CL_PAREJAS) {
+    CL_MATCHUPS.set(p.equipo, new Set());
   }
-  if (setE.size !== equipos.length) {
-    alert('Hay equipos duplicados. Revisa la lista.');
-    return;
-  }
-
-    const js = clwShuffle([...jugadores]);
-  const es = clwShuffle([...equipos]);
-  const emparejados = js.map((j, i) => [j, es[i]]);
-
-
-  // Render resultado en tabla bonita
-  let html = '<h3>🔗 Emparejamientos</h3>';
-  html += '<table class="tabla" style="max-width:980px; margin:0 auto;">';
-  html += '<tr><th>#</th><th>Jugador</th><th>Equipo</th></tr>';
-  emparejados.forEach((par, idx) => {
-    html += '<tr><td>' + (idx + 1) + '</td><td>' + par[0] + '</td><td>' + par[1] + '</td></tr>';
-  });
-  html += '</table>';
-  document.getElementById('clw-resultado').innerHTML = html;
 }
 
-// Contadores en vivo
-document.addEventListener('input', (e) => {
-  if (e.target && (e.target.id === 'clw-jugadores' || e.target.id === 'clw-equipos')) {
-    clwUpdateCounts();
-  }
-});
-
-// --- Generar cruces tipo Champions (36 equipos, 8 jornadas) ---
-function clwPairKey(a, b) {
-  return [a, b].sort().join(" ⟂ ");
-}
-
-function clwGenerarCruces() {
-  const equipos = clwGetList('clw-equipos');
-  clwUpdateCounts();
-  const jornadas = 8;
-  if (equipos.length !== 36) {
-    alert('Para generar cruces necesitas exactamente 36 equipos.');
+// Genera 8 jornadas tipo "suiza" simple: cada jornada todos juegan una vez, evitando rivales repetidos.
+function cl_generarFaseLiga() {
+  if (CL_PAREJAS.length !== 36) {
+    alert('Primero genera las parejas.');
     return;
   }
+  cl_initOpponents();
 
-  // Control de duplicados y balanceo básico
-  const playedPairs = new Set(); // claves "A ⟂ B"
-  const matchesPerTeam = Object.fromEntries(equipos.map(e => [e, 0]));
+  const teams = CL_PAREJAS.map(p => p.equipo);
+  const jornadas = [];
+  const MAX_INTENTOS_RONDA = 2000;
 
-  // Generar jornadas
-  const calendario = [];
-  const maxAttempts = 400; // por ronda
-  for (let r = 0; r < jornadas; r++) {
-    let roundPairs = [];
-    let attempts = 0;
-    while (attempts < maxAttempts) {
-      attempts++;
-      // copiar equipos disponibles para la jornada
-      const pool = [...equipos];
-      // mezclamos
-      for (let i = pool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [pool[i], pool[j]] = [pool[j], pool[i]];
-      }
-      const pairs = [];
-      let valid = true;
-      while (pool.length > 0) {
-        const a = pool.pop();
-        // buscar rival válido para a
-        let foundIndex = -1;
-        for (let i = 0; i < pool.length; i++) {
-          const b = pool[i];
-          const key = clwPairKey(a, b);
-          if (!playedPairs.has(key)) {
-            foundIndex = i;
+  for (let r = 1; r <= 8; r++) {
+    let rondasOk = false;
+    let intentos = 0;
+    let pairings = [];
+
+    while (!rondasOk && intentos < MAX_INTENTOS_RONDA) {
+      intentos++;
+      pairings = [];
+      const disponibles = [...teams].sort(() => Math.random() - 0.5);
+
+      // greedy pairing sin repetir rival
+      let valido = true;
+      while (disponibles.length > 0) {
+        const a = disponibles.shift();
+        let emparejado = false;
+        for (let i = 0; i < disponibles.length; i++) {
+          const b = disponibles[i];
+          if (!CL_MATCHUPS.get(a).has(b)) {
+            pairings.push([a, b]);
+            CL_MATCHUPS.get(a).add(b);
+            CL_MATCHUPS.get(b).add(a);
+            disponibles.splice(i, 1);
+            emparejado = true;
             break;
           }
         }
-        if (foundIndex === -1) { valid = false; break; }
-        const b = pool.splice(foundIndex, 1)[0];
-        pairs.push([a, b]);
-      }
-      if (valid) {
-        roundPairs = pairs;
-        break;
-      }
-    }
-    if (roundPairs.length === 0) {
-      alert('No se pudo construir una jornada válida después de varios intentos. Intenta de nuevo.');
-      return;
-    }
-    // aplicar
-    roundPairs.forEach(([a, b]) => {
-      playedPairs.add(clwPairKey(a, b));
-      matchesPerTeam[a] += 1;
-      matchesPerTeam[b] += 1;
-    });
-    calendario.push(roundPairs);
-  }
-
-  // Render
-  let html = '';
-  html += '<h3>📅 Cruces tipo Champions (36 equipos, 8 jornadas)</h3>';
-  calendario.forEach((pairs, idx) => {
-    html += '<h4>Jornada ' + (idx + 1) + '</h4>';
-    html += '<table class="tabla" style="max-width:980px; margin:0 auto;">';
-    html += '<tr><th>#</th><th>Local</th><th>Visitante</th></tr>';
-    pairs.forEach((p, i) => {
-      html += '<tr><td>' + (i + 1) + '</td><td>' + p[0] + '</td><td>' + p[1] + '</td></tr>';
-    });
-    html += '</table><br/>';
-  });
-
-  // Resumen por equipo (opcional, útil para verificar 8 partidos por club)
-  html += '<details><summary>Verificar conteo por equipo</summary>';
-  html += '<table class="tabla" style="max-width:600px; margin:10px auto;">';
-  html += '<tr><th>Equipo</th><th>Partidos</th></tr>';
-  Object.keys(matchesPerTeam).sort().forEach(team => {
-    html += '<tr><td>' + team + '</td><td>' + matchesPerTeam[team] + '</td></tr>';
-  });
-  html += '</table></details>';
-
-  document.getElementById('clw-cruces').innerHTML = html;
-}
-</script>
-
-
-<div style="margin-top:10px;">
-  <button id="clw-cruces-btn" onclick="clwGenerarCruces()" title="Generar calendario de 8 jornadas estilo Champions League (36 equipos)">
-    🗓️ Generar cruces (fase liga estilo UCL)
-  </button>
-</div>
-<div id="clw-cruces" style="margin-top:20px;"></div>
-
-<script>
-// === CRUCES ESTILO CHAMPIONS LEAGUE (versión simplificada) ===
-function clwParseLeagues(){
-  const map = new Map();
-  const txt = document.getElementById('clw-ligas') ? document.getElementById('clw-ligas').value : '';
-  if (!txt) return map;
-  txt.split('\n').forEach(line => {
-    const s = line.trim();
-    if (!s) return;
-    const parts = s.split(',');
-    if (parts.length >= 2){
-      const team = parts[0].trim();
-      const league = parts[1].trim();
-      if (team && league) map.set(team, league);
-    }
-  });
-  return map;
-}
-
-// Requiere haber ejecutado clwSortear() antes para tener jugadores ↔ equipos.
-let clwEmparejados = [];  // [['Jugador', 'Equipo'], ...]
-let clwEquipoDeJugador = new Map(); // jugador -> equipo
-let clwJugadorDeEquipo = new Map(); // equipo -> jugador
-
-// Hook: interceptamos la función de sorteo original para guardar emparejamientos
-(function(){
-  const oldSort = window.clwSortear;
-  window.clwSortear = function(){
-    oldSort && oldSort();
-    // Leer tabla generada para persistir pares
-    const rows = Array.from(document.querySelectorAll('#clw-resultado table tr')).slice(1);
-    clwEmparejados = rows.map(tr => {
-      const tds = tr.querySelectorAll('td');
-      const jugador = tds[1].innerText.trim();
-      const equipo  = tds[2].innerText.trim();
-      return [jugador, equipo];
-    });
-    clwEquipoDeJugador = new Map(clwEmparejados.map(([j,e]) => [j,e]));
-    clwJugadorDeEquipo = new Map(clwEmparejados.map(([j,e]) => [e,j]));
-  };
-})();
-
-function clwGenerarCruces(){
-  const leagueOf = clwParseLeagues();
-  if (!clwEmparejados || clwEmparejados.length !== 36){
-    alert('Primero realiza el sorteo de Jugadores ↔ Equipos (36 y 36).');
-    return;
-  }
-  const equipos = clwEmparejados.map(x => x[1]);
-  // Crear 4 bombos (9 c/u) aleatorios
-  const shuffled = [...equipos].sort(() => Math.random()-0.5);
-  const pots = {
-    A: shuffled.slice(0,9),
-    B: shuffled.slice(9,18),
-    C: shuffled.slice(18,27),
-    D: shuffled.slice(27,36)
-  };
-  const potOf = {};
-  Object.entries(pots).forEach(([k, arr]) => arr.forEach(eq => potOf[eq]=k));
-
-  // Cada equipo juega 8 partidos: 2 rivales de cada bombo (incluido el suyo). Sin repetir rivales.
-  const opponents = {};   // equipo -> Set de rivales
-  const potCount = {};    // equipo -> {A:0,B:0,C:0,D:0}
-  const homeCount = {};   // equipo -> 0..4
-  equipos.forEach(eq => { opponents[eq]=new Set(); potCount[eq]={A:0,B:0,C:0,D:0}; homeCount[eq]=0; });
-
-  const usedPair = new Set(); // 'eq1|eq2' sorted
-
-  // Utilidad
-  const pairKey = (x,y) => [x,y].sort().join('|');
-  function canPair(a,b){
-    const la = leagueOf.get(a);
-    const lb = leagueOf.get(b);
-    if (la && lb && la === lb) return false;
-    if (a===b) return false;
-    if (usedPair.has(pairKey(a,b))) return false;
-    if (opponents[a].size>=8 || opponents[b].size>=8) return false;
-    const pa = potOf[a], pb = potOf[b];
-    if (potCount[a][pb] >= 2) return false;
-    if (potCount[b][pa] >= 2) return false;
-    return true;
-  }
-
-  // Intento de apareamiento por rondas de mezcla
-  const all = [...equipos];
-  let safety = 0;
-  while (all.some(eq => opponents[eq].size < 8) && safety < 20000){
-    safety++;
-    const a = all[Math.floor(Math.random()*all.length)];
-    if (opponents[a].size>=8) continue;
-    // Priorizar bombos donde aún no completó 2
-    const targetPots = ['A','B','C','D'].filter(p => potCount[a][p] < 2);
-    // Armar candidatos
-    const candidates = equipos
-      .filter(b => b!==a && targetPots.includes(potOf[b]) && canPair(a,b))
-      .sort(() => Math.random()-0.5);
-    if (candidates.length === 0) continue;
-    const b = candidates[0];
-    // registrar
-    opponents[a].add(b);
-    opponents[b].add(a);
-    usedPair.add(pairKey(a,b));
-    potCount[a][potOf[b]]++;
-    potCount[b][potOf[a]]++;
-  }
-
-  // Verificación simple
-  const incomplete = equipos.filter(eq => opponents[eq].size !== 8);
-  if (incomplete.length){
-    alert('No se pudo generar un calendario perfecto en este intento. Vuelve a intentar (se remezcla).');
-    return;
-  }
-
-  // Convertir a lista de partidos únicos con localía balanceada (4/4 aprox).
-  const matches = [];
-  usedPair.forEach(key => {
-    const [x,y] = key.split('|');
-    // Asignar localía al que tenga menos partidos en casa
-    const home = (homeCount[x] <= homeCount[y]) ? x : y;
-    const away = (home === x) ? y : x;
-    homeCount[home]++;
-    matches.push({home, away});
-  });
-
-  // Balance: si alguno quedó con >4 en casa, intentar swaps
-  const overHome = equipos.filter(eq => homeCount[eq] > 4);
-  for (const eq of overHome){
-    for (let i=0;i<matches.length && homeCount[eq]>4;i++){
-      const m = matches[i];
-      if (m.home === eq){
-        // Intentar invertir si el rival tiene <4 en casa
-        if (homeCount[m.away] < 4){
-          m.home = m.away;
-          m.away = eq;
-          homeCount[m.away]++;
-          homeCount[eq]--;
+        if (!emparejado) {
+          // rollback parcial de la ronda y reintentar
+          // limpiar las adiciones de esta ronda
+          for (const [x, y] of pairings) {
+            CL_MATCHUPS.get(x).delete(y);
+            CL_MATCHUPS.get(y).delete(x);
+          }
+          valido = false;
+          break;
         }
       }
-    }
-  }
-
-  // Armar 8 jornadas sin choques (greedy)
-  const rounds = Array.from({length:8}, () => []);
-  const playedInRound = rounds.map(() => new Set());
-  for (const m of matches){
-    let placed = false;
-    for (let r=0;r<8 && !placed;r++){
-      const busy = playedInRound[r];
-      if (!busy.has(m.home) && !busy.has(m.away) && rounds[r].length < 9){
-        rounds[r].push(m);
-        busy.add(m.home); busy.add(m.away);
-        placed = true;
+      if (valido) {
+        rondasOk = true;
       }
     }
-    // Si no cupo, reintento simple: empujar a la última jornada si hay hueco sin choque
-    if (!placed){
-      for (let r=0;r<8 && !placed;r++){
-        const busy = playedInRound[r];
-        if (!busy.has(m.home) && !busy.has(m.away)){
-          rounds[r].push(m);
-          busy.add(m.home); busy.add(m.away);
-          placed = true;
-        }
-      }
+
+    if (!rondasOk) {
+      // Si no se logró una ronda válida después de muchos intentos, reiniciar por completo
+      cl_initOpponents();
+      // recomenzar desde la primera ronda
+      r = 0;
+      jornadas.length = 0;
+      continue;
     }
+
+    jornadas.push(pairings);
   }
 
-  // Render
-  let html = '<h3>🗓️ Cruces de la fase liga (8 jornadas)</h3>';
-  html += '<div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center;">';
-  for (let i=0;i<8;i++){
-    html += '<div class="grupo" style="min-width:320px; max-width:420px;">';
-    html += '<h3>Jornada ' + (i+1) + '</h3><ul style="list-style:none; padding:0; margin:0;">';
-    rounds[i].forEach((m,idx) => {
-      const jHome = clwJugadorDeEquipo.get(m.home) || '';
-      const jAway = clwJugadorDeEquipo.get(m.away) || '';
-      html += '<li class="partido"><span class="team-name">' + m.home + ' (' + jHome + ')</span> <span class="vs">vs</span> <span class="team-name">' + m.away + ' (' + jAway + ')</span></li>';
+  // Render de jornadas
+  const cont = document.getElementById('cl-fixtures');
+  cont.innerHTML = '';
+  jornadas.forEach((pairs, idx) => {
+    const roundDiv = document.createElement('div');
+    roundDiv.className = 'cl-round';
+    roundDiv.innerHTML = `<h4>Jornada ${idx + 1}</h4>`;
+    const table = document.createElement('table');
+    table.className = 'cl-table';
+    const thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th></tr>';
+    const tbody = document.createElement('tbody');
+
+    const jugadorPorEquipo = new Map(CL_PAREJAS.map(p => [p.equipo, p.jugador]));
+
+    pairs.forEach(([home, away]) => {
+      const tr = document.createElement('tr');
+      const jl = jugadorPorEquipo.get(home) || '';
+      const jv = jugadorPorEquipo.get(away) || '';
+      tr.innerHTML = `<td>${home}</td><td>${away}</td><td>${jl}</td><td>${jv}</td>`;
+      tbody.appendChild(tr);
     });
-    html += '</ul></div>';
-  }
-  html += '</div>';
-  document.getElementById('clw-cruces').innerHTML = html;
-}
-</script>
 
-
-<div style="margin-top:16px;">
-  <button id="clw-cruces-btn" onclick="clwGenerarCruces()" title="Generar cruces tipo Champions League">⚔️ Generar Cruces Champions League</button>
-</div>
-<div id="clw-cruces" style="margin-top:20px;"></div>
-
-<script>
-// === CRUCES CHAMPIONS LEAGUE WIOG ===
-function clwGenerarCruces() {
-  const jugadores = clwGetList('clw-jugadores');
-  const equipos = clwGetList('clw-equipos');
-  if (jugadores.length !== 36 || equipos.length !== 36) {
-    alert('Primero debes sortear los 36 jugadores y equipos.');
-    return;
-  }
-  const emparejados = document.querySelectorAll('#clw-resultado table tr');
-  if (emparejados.length < 37) {
-    alert('Primero realiza el sorteo de emparejamientos.');
-    return;
-  }
-
-  // Creamos una lista de equipos emparejados con jugadores
-  let pares = [];
-  for (let i=1; i<emparejados.length; i++) { // saltar header
-    const cols = emparejados[i].querySelectorAll('td');
-    if (cols.length >= 3) {
-      pares.push({jugador: cols[1].innerText, equipo: cols[2].innerText});
-    }
-  }
-
-  // Barajar y generar 18 partidos
-  pares = clwShuffle(pares);
-  let html = '<h3>⚔️ Cruces Champions League</h3>';
-  html += '<div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center;">';
-  for (let i=0; i<36; i+=2) {
-    const p1 = pares[i], p2 = pares[i+1];
-    html += `<div class="match" style="min-width:220px; text-align:center;">
-               <div><strong>${p1.jugador}</strong> (${p1.equipo})</div>
-               <div class="vs">VS</div>
-               <div><strong>${p2.jugador}</strong> (${p2.equipo})</div>
-             </div>`;
-  }
-  html += '</div>';
-  document.getElementById('clw-cruces').innerHTML = html;
-}
-</script>
-
-
-<!-- === CLW: Fase de Liga (Champions 36) === -->
-<hr/>
-<h2>🏟️ Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</h2>
-<p>Usa primero el sorteo de emparejamientos (jugador ↔ equipo). Luego genera las 8 jornadas estilo "liga suiza" (sin rivales repetidos).</p>
-
-<div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center; margin-bottom:8px;">
-  <button onclick="clwGenerarLiga()">🗓️ Generar 8 jornadas</button>
-  <button onclick="clwLimpiarLiga()">♻️ Limpiar jornadas</button>
-  <button onclick="clwCalcularTabla()">📊 Calcular tabla</button>
-</div>
-
-<div id="clw-liga"></div>
-<div id="clw-tabla" style="margin-top:16px;"></div>
-<!-- === /CLW: Fase de Liga === -->
-
-
-<script>
-// ====== CLW Liga 36 ======
-window.clwPairs = []; // [[jugador, equipo]]
-
-/* Redefinimos clwSortear para guardar globalmente los emparejamientos y reutilizarlos */
-(function() {
-  const _old = window.clwSortear;
-  window.clwSortear = function() {
-    // Si existe la versión previa, úsala para validación/render, pero capturamos datos manualmente
-    const jugadores = clwGetList('clw-jugadores');
-    const equipos = clwGetList('clw-equipos');
-    clwUpdateCounts();
-    if (jugadores.length !== 36 || equipos.length !== 36) {
-      alert('Debes ingresar exactamente 36 jugadores y 36 equipos.');
-      return;
-    }
-    const setJ = new Set(jugadores);
-    const setE = new Set(equipos);
-    if (setJ.size !== jugadores.length) { alert('Hay jugadores duplicados. Revisa la lista.'); return; }
-    if (setE.size !== equipos.length) { alert('Hay equipos duplicados. Revisa la lista.'); return; }
-
-    // Fisher-Yates sobre equipos para emparejar aleatoriamente
-    const eq = [...equipos];
-    for (let i = eq.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [eq[i], eq[j]] = [eq[j], eq[i]];
-    }
-    window.clwPairs = eq.map((e, i) => [jugadores[i], e]);
-
-    // Pintar tabla como hacía el sorteo original (pero ahora garantizamos persistencia)
-    let html = '<h3>🔗 Emparejamientos</h3>';
-    html += '<table class="tabla" style="max-width:980px; margin:0 auto;">';
-    html += '<tr><th>#</th><th>Jugador</th><th>Equipo</th></tr>';
-    window.clwPairs.forEach((par, idx) => {
-      html += '<tr><td>' + (idx + 1) + '</td><td>' + par[0] + '</td><td>' + par[1] + '</td></tr>';
-    });
-    html += '</table>';
-    document.getElementById('clw-resultado').innerHTML = html;
-
-    // Limpiar liga/tabla si ya existían
-    clwLimpiarLiga();
-    document.getElementById('clw-tabla').innerHTML = '';
-  };
-})();
-
-function clwParticipants() {
-  // Mostramos como "Equipo (Jugador)"
-  return (window.clwPairs || []).map(([j, e]) => `${e} (${j})`);
-}
-
-function clwLimpiarLiga() {
-  const cont = document.getElementById('clw-liga');
-  if (cont) cont.innerHTML = '';
-}
-
-function clwGenerarLiga() {
-  const equipos = clwParticipants();
-  if (equipos.length !== 36) {
-    alert('Primero realiza el sorteo y asegúrate de tener 36 parejas.');
-    return;
-  }
-  const rondas = 8;
-  const historial = {}; // equipo -> Set de rivales ya enfrentados
-  equipos.forEach(e => historial[e] = new Set());
-
-  const calendario = []; // Array de rondas; cada ronda es array de [A,B]
-  for (let r = 0; r < rondas; r++) {
-    const disponibles = [...equipos];
-    // Para balance, orden aleatorio cada ronda
-    for (let i = disponibles.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [disponibles[i], disponibles[j]] = [disponibles[j], disponibles[i]];
-    }
-
-    const ronda = [];
-    let intentos = 0;
-    while (disponibles.length > 1 && intentos < 5000) {
-      intentos++;
-      const a = disponibles.shift();
-      // Buscar rival que no haya jugado antes con 'a'
-      let idx = disponibles.findIndex(b => !historial[a].has(b));
-      if (idx === -1) {
-        // Si no hay rival válido, recolocamos 'a' al final y seguimos
-        disponibles.push(a);
-        continue;
-      }
-      const b = disponibles.splice(idx, 1)[0];
-      ronda.push([a, b]);
-      historial[a].add(b);
-      historial[b].add(a);
-    }
-    // Si por alguna razón no se completan 18 partidos, haremos emparejamientos forzados para cerrar la ronda
-    while (disponibles.length > 1) {
-      const a = disponibles.shift();
-      const b = disponibles.shift();
-      ronda.push([a, b]);
-      historial[a].add(b);
-      historial[b].add(a);
-    }
-    calendario.push(ronda);
-  }
-
-  // Render
-  const cont = document.getElementById('clw-liga');
-  let out = '';
-  calendario.forEach((ronda, r) => {
-    out += `<div class="grupo" style="max-width:900px; min-width:300px;">
-      <h3>Jornada ${r+1}</h3>`;
-    ronda.forEach((par, m) => {
-      const idA = `clw_r${r+1}_m${m+1}_a`;
-      const idB = `clw_r${r+1}_m${m+1}_b`;
-      out += `<div class="partido">
-        <span class="team-name">${par[0]}</span>
-        <input id="${idA}" type="number" min="0" />
-        <span class="vs">vs</span>
-        <input id="${idB}" type="number" min="0" />
-        <span class="team-name">${par[1]}</span>
-      </div>`;
-    });
-    out += `</div>`;
-  });
-  cont.innerHTML = out;
-
-  // Guardar calendario global para cálculo
-  window.clwCalendario = calendario;
-}
-
-function clwCalcularTabla() {
-  const equipos = clwParticipants();
-  if (!window.clwCalendario || !Array.isArray(window.clwCalendario)) {
-    alert('Genera primero las jornadas.');
-    return;
-  }
-
-  // Stats init
-  const stats = {};
-  equipos.forEach(e => stats[e] = {PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, DG:0, Pts:0});
-
-  // Leer inputs
-  window.clwCalendario.forEach((ronda, r) => {
-    ronda.forEach((par, m) => {
-      const idA = `clw_r${r+1}_m${m+1}_a`;
-      const idB = `clw_r${r+1}_m${m+1}_b`;
-      const a = document.getElementById(idA);
-      const b = document.getElementById(idB);
-      if (!a || !b) return;
-      const gA = parseInt(a.value);
-      const gB = parseInt(b.value);
-      if (isNaN(gA) || isNaN(gB)) return;
-
-      const A = par[0], B = par[1];
-      stats[A].PJ++; stats[B].PJ++;
-      stats[A].GF += gA; stats[A].GC += gB;
-      stats[B].GF += gB; stats[B].GC += gA;
-      if (gA > gB) { stats[A].PG++; stats[B].PP++; stats[A].Pts += 3; }
-      else if (gA < gB) { stats[B].PG++; stats[A].PP++; stats[B].Pts += 3; }
-      else { stats[A].PE++; stats[B].PE++; stats[A].Pts += 1; stats[B].Pts += 1; }
-    });
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    roundDiv.appendChild(table);
+    cont.appendChild(roundDiv);
   });
 
-  Object.values(stats).forEach(s => s.DG = s.GF - s.GC);
-
-  const tabla = equipos.map(e => ({Equipo: e, ...stats[e]}))
-    .sort((a,b) => b.Pts - a.Pts || b.DG - a.DG || b.GF - a.GF || a.Equipo.localeCompare(b.Equipo));
-
-  // Render tabla con franjas: 1–8 verde, 9–24 ámbar, 25–36 gris
-  let html = "<h3>📊 Tabla de la Fase de Liga</h3>";
-  html += "<table class='tabla'><tr><th>#</th><th>Equipo (Jugador)</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr>";
-  tabla.forEach((t, idx) => {
-    let style = "";
-    if (idx < 8) style = " style='background:#b9fbc0;font-weight:bold;'";           // Top 8
-    else if (idx < 24) style = " style='background:#ffe082;'";                      // 9–24
-    else style = " style='background:#e0e0e0;'";                                    // 25–36
-    html += `<tr${style}><td>${idx+1}</td><td>${t.Equipo}</td><td>${t.PJ}</td><td>${t.PG}</td><td>${t.PE}</td><td>${t.PP}</td><td>${t.GF}</td><td>${t.GC}</td><td>${t.DG}</td><td>${t.Pts}</td></tr>`;
-  });
-  html += "</table>";
-
-  html += "<p style='margin-top:8px;'><strong>Colores:</strong> <span style='background:#b9fbc0;padding:2px 6px;border-radius:6px;'>1–8: a octavos</span> · <span style='background:#ffe082;padding:2px 6px;border-radius:6px;'>9–24: playoff</span> · <span style='background:#e0e0e0;padding:2px 6px;border-radius:6px;'>25–36: eliminados</span></p>";
-  document.getElementById('clw-tabla').innerHTML = html;
+  // Scroll a la sección
+  document.getElementById('cl-generar-fase').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  const btnJ = document.getElementById('cl-agregar-jugadores');
+  const btnE = document.getElementById('cl-agregar-equipos');
+  const btnS = document.getElementById('cl-sortear-parejas');
+  const btnF = document.getElementById('cl-generar-fase');
+  if (btnJ) btnJ.addEventListener('click', cl_agregarJugadores);
+  if (btnE) btnE.addEventListener('click', cl_agregarEquipos);
+  if (btnS) btnS.addEventListener('click', cl_sortearParejas);
+  if (btnF) btnF.addEventListener('click', cl_generarFaseLiga);
+});
 </script>
 
 </body>
