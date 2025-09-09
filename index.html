@@ -1499,11 +1499,12 @@ window.cl_fallbackSortearParejas = function(){
   };
 
   // fallbacks de play-in / octavos mínimos (si hiciera falta)
+  
   window.cl_fallbackGenerarPlayin = function(){
     if (!window.CL_TABLA || window.CL_TABLA.length<24){ alert('Actualiza la tabla primero.'); return; }
     var A = window.CL_TABLA.slice(8,16).map(r=>r.Equipo);
     var B = window.CL_TABLA.slice(16,24).map(r=>r.Equipo);
-    var cont=document.getElementById('cl-playin'); cont.innerHTML='<div class="cl-round"><h4>Play‑in (9–24)</h4></div>';
+    var cont=document.getElementById('cl-playin'); cont.innerHTML='<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
     var w=cont.querySelector('.cl-round'); var table=document.createElement('table'); table.className='cl-playin-table';
     table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
     var tb=document.createElement('tbody');
@@ -1516,6 +1517,28 @@ window.cl_fallbackSortearParejas = function(){
       tb.appendChild(tr);
     }
     table.appendChild(tb); w.appendChild(table);
+    for (var i=0;i<8;i++){
+      (function(i){
+        var seeded=A[i], unseeded=B[7-i];
+        var idaA=document.getElementById('pl'+i+'-ida-a');
+        var idaB=document.getElementById('pl'+i+'-ida-b');
+        var vtaA=document.getElementById('pl'+i+'-vta-a');
+        var vtaB=document.getElementById('pl'+i+'-vta-b');
+        var out=document.getElementById('pl'+i+'-global');
+        var win=document.getElementById('pl'+i+'-win');
+        var recalc=function(){
+          var a1=parseInt(idaA.value), b1=parseInt(idaB.value), a2=parseInt(vtaA.value), b2=parseInt(vtaB.value);
+          if ([a1,b1,a2,b2].some(isNaN)){ out.textContent='—'; win.textContent='—'; return; }
+          var golesSeeded = b1 + a2;
+          var golesUnseed = a1 + b2;
+          out.textContent = golesSeeded+'–'+golesUnseed;
+          if (golesSeeded>golesUnseed) win.textContent=seeded;
+          else if (golesSeeded<golesUnseed) win.textContent=unseeded;
+          else { var pen=prompt('Empate '+seeded+' vs '+unseeded+'. Ganador por penales:'); win.textContent = pen || '—'; }
+        };
+        [idaA,idaB,vtaA,vtaB].forEach(function(el){ if (el) el.addEventListener('input', recalc); });
+      })(i);
+    }
   };
 
   window.cl_fallbackGenerarOctavos = function(){
@@ -1523,7 +1546,6 @@ window.cl_fallbackSortearParejas = function(){
   };
 })();
 </script>
-
 <div id="cl-standings" style="margin-top:12px;"></div>
 <div id="cl-playin-controls" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
 <button id="cl-gen-playin" onclick="(window.cl_generarPlayin||window.cl_fallbackGenerarPlayin)()">🎟️ Generar Play‑in (9–24)</button>
