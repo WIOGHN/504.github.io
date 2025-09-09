@@ -1316,10 +1316,37 @@ window.cl_fallbackAddEquipos = function(){
   __cl_render();
 };
 </script>
-
 <div id="cl-equipos-estado" style="margin-top:8px; font-weight:bold;"></div>
 <div style="margin-top:14px;">
-<button id="cl-sortear-parejas">🎲 Sortear Parejas (Jugador ⇄ Equipo)</button>
+<button id="cl-sortear-parejas" onclick="(window.cl_sortearParejas||window.cl_fallbackSortearParejas)()">🎲 Sortear Parejas (Jugador ⇄ Equipo)</button>
+<script id="cl-fallbacks-extra">
+// Fallback para sorteo de parejas (por si el script principal no cargó)
+window.cl_fallbackSortearParejas = function(){
+  // Preferir arrays globales ya usados por fallbacks
+  var J = (window.CL_JUGADORES && window.CL_JUGADORES.length ? window.CL_JUGADORES : (typeof CL_JUGADORES!=='undefined'? CL_JUGADORES : []));
+  var E = (window.CL_EQUIPOS   && window.CL_EQUIPOS.length   ? window.CL_EQUIPOS   : (typeof CL_EQUIPOS!=='undefined'? CL_EQUIPOS   : []));
+  if (J.length !== 36 || E.length !== 36){
+    alert('Debes tener 36 jugadores y 36 equipos cargados para sortear.'); 
+    return;
+  }
+  // Mezclar copias
+  var jugadores = [...J].sort(()=>Math.random()-0.5);
+  var equipos   = [...E].sort(()=>Math.random()-0.5);
+  // Render
+  var cont = document.getElementById('cl-parejas');
+  if (!cont){ alert('No se encontró el contenedor de parejas.'); return; }
+  cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
+  var grid = document.getElementById('cl-grid-parejas');
+  for (var i=0;i<36;i++){
+    var d = document.createElement('div'); d.className='cl-card';
+    d.innerHTML = '<strong>'+jugadores[i]+'</strong> ⇄ <span style="color:#ffd700; font-weight:700;">'+equipos[i]+'</span>';
+    grid.appendChild(d);
+  }
+  // Persistir en window por si hace falta después
+  window.CL_PAREJAS = jugadores.map(function(j,i){ return {jugador:j, equipo:equipos[i]}; });
+};
+</script>
+
 </div>
 <div id="cl-parejas" style="margin-top:12px;"></div>
 <div style="margin-top:18px;">
