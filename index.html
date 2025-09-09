@@ -1541,8 +1541,119 @@ window.cl_fallbackSortearParejas = function(){
     }
   };
 
-  window.cl_fallbackGenerarOctavos = function(){
-    alert('Usa el botón de play‑in para decidir ganadores y luego genera octavos.');
+  window.cl_fallbackGenerarOctavos = function(){ // OCT-FB
+    if (!window.CL_TABLA || window.CL_TABLA.length < 8){ alert('Actualiza la tabla primero.'); return; }
+    // Leer ganadores del play-in
+    var winners = [];
+    for (var i=0;i<8;i++){
+      var el = document.getElementById('pl'+i+'-win');
+      if (!el || !el.textContent || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; }
+      winners.push(el.textContent);
+    }
+    // Top 8 (cabezas), winners sorteados
+    var top8 = window.CL_TABLA.slice(0,8).map(function(r){ return r.Equipo; });
+    var shuffled = winners.slice().sort(function(){ return Math.random()-0.5; });
+
+    // Poblar ties de octavos a doble partido
+    for (var i=0;i<8;i++){
+      var tie = document.getElementById('cl-octavos-t'+i);
+      if (!tie) continue;
+      var homes = tie.querySelectorAll('.cl-home');
+      var aways = tie.querySelectorAll('.cl-away');
+      // ida: ganador play-in en casa; vuelta: cabeza de serie en casa
+      if (homes[0]) homes[0].textContent = shuffled[i];
+      if (aways[0]) aways[0].textContent = top8[i];
+      if (homes[1]) homes[1].textContent = top8[i];
+      if (aways[1]) aways[1].textContent = shuffled[i];
+      // limpiar inputs y global
+      var ids = ['ida-a','ida-b','vta-a','vta-b'];
+      ids.forEach(function(suf){
+        var inp = tie.querySelector('#cl-octavos-t'+i+'-'+suf);
+        if (inp) inp.value='';
+      });
+      var g = tie.querySelector('#cl-octavos-t'+i+'-global'); if (g) g.textContent='—';
+      var w = tie.querySelector('#cl-octavos-t'+i+'-win'); if (w) w.textContent='—';
+    }
+
+    // Helper para dos partidos (si no existe)
+    if (typeof window.cl_connectTwoLeg !== 'function'){
+      window.cl_connectTwoLeg = function(prefix, count, onWinnersReady){
+        var winners = new Array(count).fill('—');
+        for (var i=0;i<count;i++){
+          (function(i){
+            var tieId = prefix+'-t'+i;
+            var idaA = document.getElementById(tieId+'-ida-a');
+            var idaB = document.getElementById(tieId+'-ida-b');
+            var vtaA = document.getElementById(tieId+'-vta-a');
+            var vtaB = document.getElementById(tieId+'-vta-b');
+            var g    = document.getElementById(tieId+'-global');
+            var w    = document.getElementById(tieId+'-win');
+            var home = document.querySelectorAll('#'+tieId+' .cl-home');
+            var away = document.querySelectorAll('#'+tieId+' .cl-away');
+            var recalc=function(){
+              var a1=parseInt(idaA.value), b1=parseInt(idaB.value), a2=parseInt(vtaA.value), b2=parseInt(vtaB.value);
+              if ([a1,b1,a2,b2].some(isNaN)){ if(g) g.textContent='—'; if(w) w.textContent='—'; winners[i]='—'; return; }
+              var teamHomeIda = home[0]?home[0].textContent:'—';
+              var teamAwayIda = away[0]?away[0].textContent:'—';
+              var goalsTeamA = a1 + b2; // homeIda total
+              var goalsTeamB = b1 + a2; // awayIda total
+              if (g) g.textContent = goalsTeamA+'–'+goalsTeamB;
+              var ww = goalsTeamA>goalsTeamB ? teamHomeIda : goalsTeamB>goalsTeamA ? teamAwayIda : (prompt('Empate '+teamHomeIda+' vs '+teamAwayIda+'. Ganador por penales:')||'—');
+              if (w) w.textContent = ww;
+              winners[i] = ww;
+              if (winners.every(function(x){ return x && x!=='—'; })) onWinnersReady(winners.slice());
+            };
+            [idaA,idaB,vtaA,vtaB].forEach(function(el){ if(el) el.addEventListener('input', recalc); });
+          })(i);
+        }
+      };
+    }
+
+    // Conectar octavos -> cuartos -> semis -> final
+    window.cl_connectTwoLeg('cl-octavos', 8, function(winners8){
+      // Parear: 1 con 2, 3 con 4, etc.
+      for (var i=0;i<4;i++){
+        var A = winners8[2*i], B = winners8[2*i+1];
+        var tie = document.getElementById('cl-cuartos-t'+i);
+        if (!tie) continue;
+        var homes = tie.querySelectorAll('.cl-home');
+        var aways = tie.querySelectorAll('.cl-away');
+        if (homes[0]) homes[0].textContent = A;
+        if (aways[0]) aways[0].textContent = B;
+        if (homes[1]) homes[1].textContent = B;
+        if (aways[1]) aways[1].textContent = A;
+        ['ida-a','ida-b','vta-a','vta-b'].forEach(function(suf){ var el=tie.querySelector('#cl-cuartos-t'+i+'-'+suf); if (el) el.value=''; });
+        var g=tie.querySelector('#cl-cuartos-t'+i+'-global'); if (g) g.textContent='—';
+        var w=tie.querySelector('#cl-cuartos-t'+i+'-win'); if (w) w.textContent='—';
+      }
+      window.cl_connectTwoLeg('cl-cuartos', 4, function(w4){
+        for (var i=0;i<2;i++){
+          var A=w4[2*i], B=w4[2*i+1];
+          var tie = document.getElementById('cl-semis-t'+i);
+          if (!tie) continue;
+          var homes=tie.querySelectorAll('.cl-home'); var aways=tie.querySelectorAll('.cl-away');
+          if (homes[0]) homes[0].textContent = A;
+          if (aways[0]) aways[0].textContent = B;
+          if (homes[1]) homes[1].textContent = B;
+          if (aways[1]) aways[1].textContent = A;
+          ['ida-a','ida-b','vta-a','vta-b'].forEach(function(suf){ var el=tie.querySelector('#cl-semis-t'+i+'-'+suf); if (el) el.value=''; });
+          var g=tie.querySelector('#cl-semis-t'+i+'-global'); if (g) g.textContent='—';
+          var w=tie.querySelector('#cl-semis-t'+i+'-win'); if (w) w.textContent='—';
+        }
+        window.cl_connectTwoLeg('cl-semis', 2, function(w2){
+          // Final a partido único
+          var f = document.getElementById('cl-final-t0');
+          if (f){
+            var sp = f.querySelectorAll('span');
+            if (sp[0]) sp[0].textContent = w2[0];
+            if (sp[1]) sp[1].textContent = w2[1];
+            var ia = document.getElementById('cl-final-t0-a');
+            var ib = document.getElementById('cl-final-t0-b');
+            if (ia) ia.value=''; if (ib) ib.value='';
+          }
+        });
+      });
+    });
   };
 })();
 </script>
