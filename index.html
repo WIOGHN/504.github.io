@@ -1765,5 +1765,204 @@ function clwGenerarCruces() {
 }
 </script>
 
+
+<!-- === CLW: Fase de Liga (Champions 36) === -->
+<hr/>
+<h2>🏟️ Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</h2>
+<p>Usa primero el sorteo de emparejamientos (jugador ↔ equipo). Luego genera las 8 jornadas estilo "liga suiza" (sin rivales repetidos).</p>
+
+<div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center; margin-bottom:8px;">
+  <button onclick="clwGenerarLiga()">🗓️ Generar 8 jornadas</button>
+  <button onclick="clwLimpiarLiga()">♻️ Limpiar jornadas</button>
+  <button onclick="clwCalcularTabla()">📊 Calcular tabla</button>
+</div>
+
+<div id="clw-liga"></div>
+<div id="clw-tabla" style="margin-top:16px;"></div>
+<!-- === /CLW: Fase de Liga === -->
+
+
+<script>
+// ====== CLW Liga 36 ======
+window.clwPairs = []; // [[jugador, equipo]]
+
+/* Redefinimos clwSortear para guardar globalmente los emparejamientos y reutilizarlos */
+(function() {
+  const _old = window.clwSortear;
+  window.clwSortear = function() {
+    // Si existe la versión previa, úsala para validación/render, pero capturamos datos manualmente
+    const jugadores = clwGetList('clw-jugadores');
+    const equipos = clwGetList('clw-equipos');
+    clwUpdateCounts();
+    if (jugadores.length !== 36 || equipos.length !== 36) {
+      alert('Debes ingresar exactamente 36 jugadores y 36 equipos.');
+      return;
+    }
+    const setJ = new Set(jugadores);
+    const setE = new Set(equipos);
+    if (setJ.size !== jugadores.length) { alert('Hay jugadores duplicados. Revisa la lista.'); return; }
+    if (setE.size !== equipos.length) { alert('Hay equipos duplicados. Revisa la lista.'); return; }
+
+    // Fisher-Yates sobre equipos para emparejar aleatoriamente
+    const eq = [...equipos];
+    for (let i = eq.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [eq[i], eq[j]] = [eq[j], eq[i]];
+    }
+    window.clwPairs = eq.map((e, i) => [jugadores[i], e]);
+
+    // Pintar tabla como hacía el sorteo original (pero ahora garantizamos persistencia)
+    let html = '<h3>🔗 Emparejamientos</h3>';
+    html += '<table class="tabla" style="max-width:980px; margin:0 auto;">';
+    html += '<tr><th>#</th><th>Jugador</th><th>Equipo</th></tr>';
+    window.clwPairs.forEach((par, idx) => {
+      html += '<tr><td>' + (idx + 1) + '</td><td>' + par[0] + '</td><td>' + par[1] + '</td></tr>';
+    });
+    html += '</table>';
+    document.getElementById('clw-resultado').innerHTML = html;
+
+    // Limpiar liga/tabla si ya existían
+    clwLimpiarLiga();
+    document.getElementById('clw-tabla').innerHTML = '';
+  };
+})();
+
+function clwParticipants() {
+  // Mostramos como "Equipo (Jugador)"
+  return (window.clwPairs || []).map(([j, e]) => `${e} (${j})`);
+}
+
+function clwLimpiarLiga() {
+  const cont = document.getElementById('clw-liga');
+  if (cont) cont.innerHTML = '';
+}
+
+function clwGenerarLiga() {
+  const equipos = clwParticipants();
+  if (equipos.length !== 36) {
+    alert('Primero realiza el sorteo y asegúrate de tener 36 parejas.');
+    return;
+  }
+  const rondas = 8;
+  const historial = {}; // equipo -> Set de rivales ya enfrentados
+  equipos.forEach(e => historial[e] = new Set());
+
+  const calendario = []; // Array de rondas; cada ronda es array de [A,B]
+  for (let r = 0; r < rondas; r++) {
+    const disponibles = [...equipos];
+    // Para balance, orden aleatorio cada ronda
+    for (let i = disponibles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [disponibles[i], disponibles[j]] = [disponibles[j], disponibles[i]];
+    }
+
+    const ronda = [];
+    let intentos = 0;
+    while (disponibles.length > 1 && intentos < 5000) {
+      intentos++;
+      const a = disponibles.shift();
+      // Buscar rival que no haya jugado antes con 'a'
+      let idx = disponibles.findIndex(b => !historial[a].has(b));
+      if (idx === -1) {
+        // Si no hay rival válido, recolocamos 'a' al final y seguimos
+        disponibles.push(a);
+        continue;
+      }
+      const b = disponibles.splice(idx, 1)[0];
+      ronda.push([a, b]);
+      historial[a].add(b);
+      historial[b].add(a);
+    }
+    // Si por alguna razón no se completan 18 partidos, haremos emparejamientos forzados para cerrar la ronda
+    while (disponibles.length > 1) {
+      const a = disponibles.shift();
+      const b = disponibles.shift();
+      ronda.push([a, b]);
+      historial[a].add(b);
+      historial[b].add(a);
+    }
+    calendario.push(ronda);
+  }
+
+  // Render
+  const cont = document.getElementById('clw-liga');
+  let out = '';
+  calendario.forEach((ronda, r) => {
+    out += `<div class="grupo" style="max-width:900px; min-width:300px;">
+      <h3>Jornada ${r+1}</h3>`;
+    ronda.forEach((par, m) => {
+      const idA = `clw_r${r+1}_m${m+1}_a`;
+      const idB = `clw_r${r+1}_m${m+1}_b`;
+      out += `<div class="partido">
+        <span class="team-name">${par[0]}</span>
+        <input id="${idA}" type="number" min="0" />
+        <span class="vs">vs</span>
+        <input id="${idB}" type="number" min="0" />
+        <span class="team-name">${par[1]}</span>
+      </div>`;
+    });
+    out += `</div>`;
+  });
+  cont.innerHTML = out;
+
+  // Guardar calendario global para cálculo
+  window.clwCalendario = calendario;
+}
+
+function clwCalcularTabla() {
+  const equipos = clwParticipants();
+  if (!window.clwCalendario || !Array.isArray(window.clwCalendario)) {
+    alert('Genera primero las jornadas.');
+    return;
+  }
+
+  // Stats init
+  const stats = {};
+  equipos.forEach(e => stats[e] = {PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, DG:0, Pts:0});
+
+  // Leer inputs
+  window.clwCalendario.forEach((ronda, r) => {
+    ronda.forEach((par, m) => {
+      const idA = `clw_r${r+1}_m${m+1}_a`;
+      const idB = `clw_r${r+1}_m${m+1}_b`;
+      const a = document.getElementById(idA);
+      const b = document.getElementById(idB);
+      if (!a || !b) return;
+      const gA = parseInt(a.value);
+      const gB = parseInt(b.value);
+      if (isNaN(gA) || isNaN(gB)) return;
+
+      const A = par[0], B = par[1];
+      stats[A].PJ++; stats[B].PJ++;
+      stats[A].GF += gA; stats[A].GC += gB;
+      stats[B].GF += gB; stats[B].GC += gA;
+      if (gA > gB) { stats[A].PG++; stats[B].PP++; stats[A].Pts += 3; }
+      else if (gA < gB) { stats[B].PG++; stats[A].PP++; stats[B].Pts += 3; }
+      else { stats[A].PE++; stats[B].PE++; stats[A].Pts += 1; stats[B].Pts += 1; }
+    });
+  });
+
+  Object.values(stats).forEach(s => s.DG = s.GF - s.GC);
+
+  const tabla = equipos.map(e => ({Equipo: e, ...stats[e]}))
+    .sort((a,b) => b.Pts - a.Pts || b.DG - a.DG || b.GF - a.GF || a.Equipo.localeCompare(b.Equipo));
+
+  // Render tabla con franjas: 1–8 verde, 9–24 ámbar, 25–36 gris
+  let html = "<h3>📊 Tabla de la Fase de Liga</h3>";
+  html += "<table class='tabla'><tr><th>#</th><th>Equipo (Jugador)</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr>";
+  tabla.forEach((t, idx) => {
+    let style = "";
+    if (idx < 8) style = " style='background:#b9fbc0;font-weight:bold;'";           // Top 8
+    else if (idx < 24) style = " style='background:#ffe082;'";                      // 9–24
+    else style = " style='background:#e0e0e0;'";                                    // 25–36
+    html += `<tr${style}><td>${idx+1}</td><td>${t.Equipo}</td><td>${t.PJ}</td><td>${t.PG}</td><td>${t.PE}</td><td>${t.PP}</td><td>${t.GF}</td><td>${t.GC}</td><td>${t.DG}</td><td>${t.Pts}</td></tr>`;
+  });
+  html += "</table>";
+
+  html += "<p style='margin-top:8px;'><strong>Colores:</strong> <span style='background:#b9fbc0;padding:2px 6px;border-radius:6px;'>1–8: a octavos</span> · <span style='background:#ffe082;padding:2px 6px;border-radius:6px;'>9–24: playoff</span> · <span style='background:#e0e0e0;padding:2px 6px;border-radius:6px;'>25–36: eliminados</span></p>";
+  document.getElementById('clw-tabla').innerHTML = html;
+}
+</script>
+
 </body>
 </html>
