@@ -1335,6 +1335,7 @@ function clwShuffle(arr) {
   return arr;
 }
 
+
 function clwSortear() {
   const jugadores = clwGetList('clw-jugadores');
   const equipos = clwGetList('clw-equipos');
@@ -1344,6 +1345,31 @@ function clwSortear() {
     alert('Debes ingresar exactamente 36 jugadores y 36 equipos.');
     return;
   }
+
+  const setJ = new Set(jugadores);
+  const setE = new Set(equipos);
+  if (setJ.size !== jugadores.length) {
+    alert('Hay jugadores duplicados. Revisa la lista.');
+    return;
+  }
+  if (setE.size !== equipos.length) {
+    alert('Hay equipos duplicados. Revisa la lista.');
+    return;
+  }
+
+  const jugShuffle = clwShuffle([...jugadores]);
+  const eqShuffle = clwShuffle([...equipos]);
+  const emparejados = jugShuffle.map((j, i) => [j, eqShuffle[i]]);
+
+  let html = '<h3>🔗 Emparejamientos</h3>';
+  html += '<table class="tabla" style="max-width:980px; margin:0 auto;">';
+  html += '<tr><th>#</th><th>Jugador</th><th>Equipo</th></tr>';
+  emparejados.forEach((par, idx) => {
+    html += '<tr><td>' + (idx + 1) + '</td><td>' + par[0] + '</td><td>' + par[1] + '</td></tr>';
+  });
+  html += '</table>';
+  document.getElementById('clw-resultado').innerHTML = html;
+}
 
   // Evitar duplicados exactos (opcional)
   const setJ = new Set(jugadores);
@@ -1357,7 +1383,10 @@ function clwSortear() {
     return;
   }
 
-  const emparejados = clwShuffle([...equipos]).map((eq, i) => [jugadores[i], eq]);
+    const js = clwShuffle([...jugadores]);
+  const es = clwShuffle([...equipos]);
+  const emparejados = js.map((j, i) => [j, es[i]]);
+
 
   // Render resultado en tabla bonita
   let html = '<h3>🔗 Emparejamientos</h3>';
