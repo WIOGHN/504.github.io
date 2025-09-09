@@ -1287,11 +1287,36 @@ function avanzarAFinal() {
 <h2>🏟️ Champions League WIOG</h2>
 <h3>👥 Agregar 36 Jugadores</h3>
 <textarea cols="40" id="cl-jugadores-input" placeholder="Escribe un jugador por línea (36 en total)" rows="8"></textarea><br/>
-<button id="cl-agregar-jugadores" onclick="cl_agregarJugadores()">Agregar lista de jugadores</button>
+<button id="cl-agregar-jugadores" onclick="(window.cl_agregarJugadores||window.cl_fallbackAddJugadores)()">Agregar lista de jugadores</button>
 <div id="cl-jugadores-estado" style="margin-top:8px; font-weight:bold;"></div>
 <h3>🏳️ Agregar 36 Equipos</h3>
 <textarea cols="40" id="cl-equipos-input" placeholder="Escribe un equipo por línea (36 en total)" rows="8"></textarea><br/>
-<button id="cl-agregar-equipos" onclick="cl_agregarEquipos()">Agregar lista de equipos</button>
+<button id="cl-agregar-equipos" onclick="(window.cl_agregarEquipos||window.cl_fallbackAddEquipos)()">Agregar lista de equipos</button>
+<script id="cl-fallbacks">
+// Fallbacks para carga por lista (por si el script principal no se carga)
+window.CL_JUGADORES = window.CL_JUGADORES || [];
+window.CL_EQUIPOS = window.CL_EQUIPOS || [];
+function __cl_norm(txt){ return (txt||'').split('\n').map(s=>s.trim()).filter(Boolean); }
+function __cl_render(){
+  var j=document.getElementById('cl-jugadores-estado');
+  var e=document.getElementById('cl-equipos-estado');
+  if (j) j.innerHTML = "Jugadores cargados (<strong>"+window.CL_JUGADORES.length+"</strong>/36): " + window.CL_JUGADORES.join(", ") + (window.CL_JUGADORES.length===36?"":" <span style='color:#ffeb3b;'>(faltan "+(36-window.CL_JUGADORES.length)+")</span>");
+  if (e) e.innerHTML = "Equipos cargados (<strong>"+window.CL_EQUIPOS.length+"</strong>/36): " + window.CL_EQUIPOS.join(", ") + (window.CL_EQUIPOS.length===36?"":" <span style='color:#ffeb3b;'>(faltan "+(36-window.CL_EQUIPOS.length)+")</span>");
+}
+window.cl_fallbackAddJugadores = function(){
+  var ta=document.getElementById('cl-jugadores-input');
+  if (!ta){ alert('No se encontró el área de jugadores.'); return; }
+  window.CL_JUGADORES = Array.from(new Set(__cl_norm(ta.value)));
+  __cl_render();
+};
+window.cl_fallbackAddEquipos = function(){
+  var ta=document.getElementById('cl-equipos-input');
+  if (!ta){ alert('No se encontró el área de equipos.'); return; }
+  window.CL_EQUIPOS = Array.from(new Set(__cl_norm(ta.value)));
+  __cl_render();
+};
+</script>
+
 <div id="cl-equipos-estado" style="margin-top:8px; font-weight:bold;"></div>
 <div style="margin-top:14px;">
 <button id="cl-sortear-parejas">🎲 Sortear Parejas (Jugador ⇄ Equipo)</button>
