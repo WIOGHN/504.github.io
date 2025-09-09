@@ -1338,14 +1338,14 @@ function cl_renderEstado(){
 }
 
 function cl_agregarJugadores(){
-  const raw = (document.getElementById('cl-jugadores-input')||{}).value || '';
+  const ta = document.getElementById('cl-jugadores-input'); if(!ta){ alert('No se encontró el área de jugadores.'); return; } const raw = ta.value || '';
   const lista = cl_unicos(cl_normalizarLista(raw));
   if (lista.length === 0){ alert('Ingresa al menos 1 jugador.'); return; }
   if (lista.length !== 36){ console.warn('Se registraron', lista.length, 'jugadores. Faltan', 36-lista.length); }
   CL_JUGADORES = lista; cl_renderEstado();
 }
 function cl_agregarEquipos(){
-  const raw = (document.getElementById('cl-equipos-input')||{}).value || '';
+  const ta2 = document.getElementById('cl-equipos-input'); if(!ta2){ alert('No se encontró el área de equipos.'); return; } const raw = ta2.value || '';
   const lista = cl_unicos(cl_normalizarLista(raw));
   if (lista.length === 0){ alert('Ingresa al menos 1 equipo.'); return; }
   if (lista.length !== 36){ console.warn('Se registraron', lista.length, 'equipos. Faltan', 36-lista.length); }
@@ -1688,6 +1688,15 @@ function cl_connectTwoLeg(prefix, count, onWinnersReady){
     [idaA,idaB,vtaA,vtaB].forEach(el=> el && el.addEventListener('change', recalc));
   }
 }
+
+// Exponer funciones al ámbito global por si falla el listener
+window.cl_agregarJugadores = cl_agregarJugadores;
+window.cl_agregarEquipos = cl_agregarEquipos;
+window.cl_sortearParejas = cl_sortearParejas;
+window.cl_generarFaseLiga = cl_generarFaseLiga;
+window.cl_actualizarTabla = cl_actualizarTabla;
+window.cl_generarPlayin = cl_generarPlayin;
+window.cl_generarOctavos = cl_generarOctavos;
 </script>
 </body>
 </html>
