@@ -1,1279 +1,441 @@
-
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
-<title>COPA WIOG – Mundial Completo con Llave Visual</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Champions League WIOG — Rebuild</title>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: radial-gradient(circle at top, #0f0f0f 0%, #1a1a1a 100%);
-      color: #f1f1f1;
-      text-align: center;
-      padding: 30px;
-      margin: 0;
-    }
-    h1, h2, h3 {
-      color: #ffd700;
-      text-shadow: 2px 2px 4px #000;
-      margin-bottom: 15px;
-    }
-    textarea, input, button {
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      font-size: 14px;
-      margin: 5px 0;
-      font-family: inherit;
-    }
-    textarea {
-      resize: vertical;
-      background-color: #1e1e1e;
-      color: #fff;
-      border: 1px solid #444;
-    }
-    input[type="text"], input[type="number"] {
-      background-color: #2a2a2a;
-      color: #fff;
-      border: 1px solid #444;
-    }
-    button {
-      background: linear-gradient(to right, #ffd700, #ffc400);
-      color: #000;
-      font-weight: 600;
-      padding: 10px 16px;
-      border-radius: 30px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
-      border: none;
-    }
-    button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 12px rgba(255, 215, 0, 0.5);
-    }
-    .grupo {
-  max-width: 220px;
-  font-size: 12px;
-
-      background: #1f1f1f;
-      border: 2px solid #ffd700;
-      border-radius: 14px;
-      padding: 16px;
-      margin: 15px;
-      width: 270px;
-      display: inline-block;
-      vertical-align: top;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
-      transition: transform 0.3s;
-    }
-    .grupo:hover {
-      transform: translateY(-5px);
-    }
-    .grupo ul {
-      list-style: none;
-      padding: 0;
-      margin-bottom: 10px;
-    }
-    .grupo li {
-  font-size: 12px;
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .partido {
-  font-size: 11px;
-      margin: 6px 0;
-      font-size: 13px;
-    }
-    .tabla {
-      margin-top: 10px;
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-    .tabla th, .tabla td {
-  font-size: 11px;
-      border: 1px solid #444;
-      padding: 6px;
-      background: #fff;
-      color: #000;
-    }
-    .bracket {
-      display: flex;
-      justify-content: center;
-      flex-wrap: nowrap;
-      gap: 24px;
-      overflow-x: auto;
-      margin-top: 40px;
-      padding: 10px;
-    }
-    .round {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .match {
-      background-color: #fefefe;
-      color: #111;
-      border-radius: 8px;
-      padding: 6px 8px;
-      font-weight: 600;
-      font-size: 12px;
-      min-width: 110px;
-      max-width: 130px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      line-height: 1.2;
-      transition: transform 0.2s ease;
-    }
-
-    .match:hover {
-      transform: scale(1.03);
-      background-color: #fffbe6;
-    }
-    .final {
-      background: linear-gradient(to right, #ff6f00, #ff9100);
-      color: #fff;
-    }
-    .campeon {
-      margin-top: 40px;
-      font-size: 28px;
-      font-weight: bold;
-      color: #00e676;
-      text-shadow: 0 0 10px #00e676;
-    }
-    #equiposAgregados {
-      color: #ffeb3b;
-      font-size: 14px;
-      margin-bottom: 20px;
-    }
-    ::selection {
-      background: #ffd700;
-      color: #000;
-    }
-    @media (max-width: 768px) {
-      .grupo {
-  max-width: 220px;
-  font-size: 12px;
- width: 90%; }
-      .bracket { flex-wrap: wrap; gap: 10px; }
-      .round { gap: 14px; }
-    }
-  
-
-    .match.winner {
-      background-color: #d4edda !important;
-      border: 2px solid #28a745 !important;
-      box-shadow: 0 0 8px #28a745;
-    }
-
-    .match input {
-  width: 14px !important;
-  padding: 1px;
-  font-size: 11px;
-  height: 16px;
-  text-align: center;
-  line-height: 1;
-
-      background-color: #f0f0f0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      text-align: center;
-      width: 28px;
-      font-size: 12px;
-    }
-
-    .match button {
-      background-color: #ffd700;
-      color: #000;
-      font-weight: bold;
-      padding: 4px 10px;
-      border-radius: 16px;
-      font-size: 10px;
-      margin-top: 4px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .match button:hover {
-      background-color: #ffc400;
-      transform: scale(1.05);
-    }
-    
-
-    .match input:focus {
-      outline: none;
-      border-color: #ffd700;
-      box-shadow: 0 0 4px #ffd700;
-    }
-
-    .match span {
-      display: inline-block;
-      min-width: 50px;
-    }
-
-    .match .score-winner {
-      background-color: #d4edda;
-      border-color: #28a745;
-    }
-
-    .match .score-loser {
-      background-color: #f8d7da;
-      border-color: #dc3545;
-    }
-    
-
-    .grupo .partido input {
-      width: 52px !important;
-      height: 48px;
-      font-size: 20px;
-      padding: 4px;
-      text-align: center;
-      margin: 0 4px;
-    }
-    
-
-    #grupos {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    .grupo {
-      flex: 1 1 calc(33.33% - 40px);
-      max-width: 340px;
-      min-width: 300px;
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 900px) {
-      .grupo {
-        flex: 1 1 calc(50% - 30px);
-      }
-    }
-
-    @media (max-width: 600px) {
-      .grupo {
-        flex: 1 1 100%;
-      }
-    }
-    
-
-    #grupos {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 30px;
-    }
-
-    .grupo {
-      flex: 1 1 calc(50% - 40px);
-      max-width: 500px;
-      min-width: 400px;
-      font-size: 15px;
-    }
-
-    .grupo h3 {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-
-    .grupo li {
-      font-size: 15px;
-    }
-
-    .partido {
-      font-size: 14px;
-    }
-    
-
-    .grupo {
-      text-align: center;
-    }
-
-    .grupo ul {
-      padding-left: 0;
-    }
-
-    .grupo li {
-      text-align: center;
-    }
-
-    .partido {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    
-
-    .partido input {
-      vertical-align: middle;
-      display: inline-block;
-      text-align: center;
-    }
-
-    .partido span {
-      display: inline-block;
-      min-width: 100px;
-      text-align: right;
-    }
-    
-
-    .partido {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      margin: 4px 0;
-    }
-
-    .partido .team-name {
-      min-width: 120px;
-      text-align: right;
-      font-weight: 500;
-    }
-
-    .partido .team-name:last-child {
-      text-align: left;
-    }
-
-    .partido input {
-      width: 36px !important;
-      height: 28px;
-      font-size: 15px;
-    }
-    
-
-    .partido {
-      display: grid;
-      grid-template-columns: 1fr auto auto 1fr;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin: 6px 0;
-    }
-
-    .partido .team-name {
-      text-align: right;
-      font-weight: 500;
-    }
-
-    .partido .team-name:last-child {
-      text-align: left;
-    }
-
-    .partido input {
-      width: 36px !important;
-      height: 30px;
-      font-size: 15px;
-      text-align: center;
-    }
-    
-
-    .partido .team-name {
-      text-align: right;
-      font-weight: 500;
-      padding-right: 4px;
-    }
-
-    .partido .team-name:last-of-type {
-      text-align: left;
-      padding-left: 4px;
-    }
-    
-
-    .grupo {
-      max-width: 580px;
-      min-width: 500px;
-    }
-
-    .partido .team-name {
-      min-width: 150px;
-      font-size: 15px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-
-    .partido {
-      display: grid;
-      grid-template-columns: 1fr auto auto 1fr;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .partido .team-name {
-      min-width: 120px;
-      white-space: nowrap;
-      text-align: center;
-      font-size: 15px;
-    }
-
-    .partido input {
-      width: 38px !important;
-      height: 32px;
-      font-size: 16px;
-      text-align: center;
-    }
-    
-
-    #grupos {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 30px;
-    }
-
-    .grupo {
-      flex: 1 1 calc(50% - 40px);
-      max-width: 520px;
-      min-width: 460px;
-    }
-
-    .partido {
-      display: grid;
-      grid-template-columns: 1fr auto auto auto 1fr;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin: 5px 0;
-    }
-
-    .partido .team-name {
-      text-align: center;
-      white-space: nowrap;
-      font-size: 15px;
-    }
-
-    .partido .vs {
-      font-weight: bold;
-      font-size: 16px;
-      color: #ffd700;
-      text-shadow: 1px 1px #000;
-    }
-
-    .partido input {
-      width: 38px !important;
-      height: 32px;
-      font-size: 16px;
-      text-align: center;
-    }
-    
-
-    .tabla {
-      margin-top: 10px;
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
-    }
-
-    .tabla th {
-      background-color: #ffd700;
-      color: #000;
-      padding: 6px;
-    }
-
-    .tabla td {
-      background-color: #f9f9f9;
-      color: #000;
-      padding: 6px;
-    }
-
-    .tabla tr:nth-child(even) td {
-      background-color: #eee;
-    }
-
-    .tabla tr:first-child {
-      border-top: 2px solid #000;
-    }
-
-    .tabla tr.top-team {
-      background-color: #b9fbc0 !important;
-      font-weight: bold;
-    }
-
-    .tabla tr.top-team td {
-      background-color: #b9fbc0 !important;
-    }
-    
-
-    .bracket {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 20px;
-      margin-top: 40px;
-      flex-wrap: nowrap;
-    }
-
-    .round {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
-      min-width: 160px;
-    }
-
-    .match {
-      background-color: #ffffff;
-      color: #000;
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-weight: bold;
-      min-width: 140px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.3);
-    }
-
-    .match input {
-      width: 28px;
-      height: 26px;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .campeon {
-      margin-top: 30px;
-      font-size: 22px;
-      color: #00e676;
-    }
-    
-.match input {
-  width: 38px !important;
-  height: 32px !important;
-  font-size: 16px !important;
-}
-
-@keyframes glow {
-  0% { box-shadow: 0 0 5px 2px #00e676; }
-  50% { box-shadow: 0 0 15px 4px #00e676; }
-  100% { box-shadow: 0 0 5px 2px #00e676; }
-}
-.winner-highlight {
-  border: 2px solid #00e676 !important;
-  animation: glow 1s ease-in-out infinite;
-  background-color: #e0ffe8 !important;
-}
-
-.match input {
-  width: 44px !important;
-  height: 36px !important;
-  font-size: 18px !important;
-  text-align: center;
-  font-weight: bold;
-}
-
-.match input {
-  width: 48px !important;
-  height: 38px !important;
-  font-size: 18px !important;
-  font-weight: bold;
-  text-align: center;
-  color: #000 !important;
-}
-
-#final .match {
-  background-color: #fff176 !important;
-  color: #000;
-  border: 2px solid #fff;
-  box-shadow: 0 0 10px #fdd835;
-}
-#campeon {
-  margin-top: 10px;
-  font-size: 24px;
-  color: #00e676;
-  font-weight: bold;
-}
-#trophy {
-  margin-top: 10px;
-  max-width: 100px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-#octavosIzq .match, #octavosDer .match {
-  background-color: #81d4fa !important;
-  color: #000;
-  border: 2px solid #fff;
-  box-shadow: 0 0 6px #29b6f6;
-}
-
-#cuartosIzq .match, #cuartosDer .match {
-  background-color: #aed581 !important;
-  color: #000;
-  border: 2px solid #fff;
-  box-shadow: 0 0 6px #7cb342;
-}
-
-#semisIzq .match, #semisDer .match {
-  background-color: #ffcc80 !important;
-  color: #000;
-  border: 2px solid #fff;
-  box-shadow: 0 0 6px #ffa726;
-}
-
-    /* Fase eliminatoria en dorado */
-    #octavosIzq .match,
-    #octavosDer .match,
-    #cuartosIzq .match,
-    #cuartosDer .match,
-    #semisIzq .match,
-    #semisDer .match,
-    #final .match {
-      background: linear-gradient(to bottom, #fff8dc, #ffd700) !important;
-      color: #000 !important;
-      border: 2px solid #fff;
-      box-shadow: 0 0 8px #ffd700;
-      animation: goldGlow 2s ease-in-out infinite;
-    }
-
-    @keyframes goldGlow {
-      0% { box-shadow: 0 0 6px #ffd700; }
-      50% { box-shadow: 0 0 20px #ffc400; }
-      100% { box-shadow: 0 0 6px #ffd700; }
-    }
-
+  :root { --bg:#0b1020; --card:#111835; --text:#e9ecf1; --accent:#ffd24d; --muted:#93a1b1; }
+  body{background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,sans-serif; margin:0; padding:24px;}
+  h1,h2,h3,h4{margin:6px 0 10px}
+  .wrap{max-width:1180px; margin:0 auto;}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .card{background:var(--card); border:1px solid #1f2b55; padding:12px; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,.25);}
+  textarea{width:100%; min-height:140px; border-radius:8px; border:1px solid #334; background:#fff; color:#000; padding:8px; font-family:inherit}
+  button{background:#1e2a56; color:#fff; border:1px solid #2b3d7a; border-radius:10px; padding:8px 12px; cursor:pointer; font-weight:700}
+  button:hover{filter:brightness(1.1)}
+  .notice{color:var(--muted); font-size:13px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px}
+  .pill{display:inline-block; background:#0f1a3b; border:1px solid #2b3d7a; padding:6px 8px; border-radius:999px; margin:2px 4px}
+  table{width:100%; border-collapse:collapse; background:#fff; color:#000; border-radius:10px; overflow:hidden}
+  th,td{border:1px solid #444; padding:6px}
+  th{background:var(--accent)}
+  input[type=number]{width:56px}
+  .section-title{display:flex; align-items:center; gap:8px}
+  .round{margin:12px 0}
+  .bracket{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px}
+  .tie{display:flex; flex-direction:column; gap:6px; background:#0f1733; border:1px solid #2b3d7a; padding:10px; border-radius:10px}
+  .leg{background:#fff; color:#000; padding:6px; border-radius:6px}
+  .agg{font-weight:700; background:#fffbe6; color:#111; border:1px solid var(--accent); border-radius:6px; padding:6px}
+  .ok{color:#6ee7b7; font-weight:700}
+  .warn{color:#ffeb3b; font-weight:700}
 </style>
 </head>
 <body>
-<h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1>
-<br/>
-<h3>Agregar Equipos</h3>
-<input id="equipoInput" placeholder="Nombre del equipo" type="text"/>
-<button onclick="agregarEquipo()">Agregar</button><br/>
-<textarea cols="40" id="listaEquipos" placeholder="" rows="6"></textarea><br/>
-<button onclick="agregarLista()">Agregar Lista</button>
-<div id="equiposAgregados" style="margin-top:10px; font-weight:bold;"></div>
-<h3>💾 Guardar Torneo</h3>
-<button onclick="guardarTorneo()">Guardar Estado</button>
-<button onclick="cargarTorneo()">Cargar Estado</button>
-<button onclick="sortearGrupos()">🎲 Sortear Grupos</button>
-<div id="grupos"></div>
-<hr/>
-<h2>Fase Eliminatoria</h2>
-<!-- Botón eliminado: clasificación automática habilitada -->
-<div class="bracket">
-<div class="round" id="octavosIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
-<div class="round" id="cuartosIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
-<div class="round" id="semisIzq"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
-<div class="round" id="final"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
-<div class="round" id="semisDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
-<div class="round" id="cuartosDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
-<div class="round" id="octavosDer"><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div><div class="match"><span>Equipo 1</span><input min="0" type="number"/><span>Equipo 2</span><input min="0" type="number"/></div></div>
+<div class="wrap">
+  <h1>🏟️ Champions League WIOG — Proyecto reconstruido</h1>
+
+  <div class="row">
+    <div class="card">
+      <div class="section-title"><h2>👥 Agregar 36 Jugadores</h2></div>
+      <textarea id="jug-in" placeholder="Un jugador por línea (36 en total)"></textarea>
+      <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+        <button id="btn-add-jug">Agregar lista de jugadores</button>
+        <span id="jug-estado" class="notice">0/36</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h2>🏳️ Agregar 36 Equipos</h2></div>
+      <textarea id="eq-in" placeholder="Un equipo por línea (36 en total)"></textarea>
+      <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+        <button id="btn-add-eq">Agregar lista de equipos</button>
+        <span id="eq-estado" class="notice">0/36</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button id="btn-sort">🎲 Sortear Parejas (Jugador ⇄ Equipo)</button>
+      <button id="btn-fase">📅 Generar Fase de Liga (36 equipos, 8 jornadas)</button>
+      <button id="btn-stand">📊 Generar/Actualizar Tabla</button>
+      <button id="btn-playin">🎟️ Generar Play‑in (9–24)</button>
+      <button id="btn-octavos">🏆 Generar Octavos</button>
+      <button id="btn-reset">♻️ Reset</button>
+    </div>
+    <div class="notice" style="margin-top:6px">Flujo recomendado: agregar listas → sortear parejas → generar fase → cargar resultados → actualizar tabla → play‑in → octavos.</div>
+  </div>
+
+  <div id="parejas" class="card" style="margin-top:12px;">
+    <h3>🔗 Parejas sorteadas</h3>
+    <div id="parejas-grid" class="grid"></div>
+  </div>
+
+  <div id="fixtures" class="card" style="margin-top:12px;">
+    <h3>📅 Fase de Liga — 8 jornadas</h3>
+    <div id="jornadas"></div>
+  </div>
+
+  <div id="standings" class="card" style="margin-top:12px;">
+    <h3>📊 Tabla estilo Champions</h3>
+    <div id="tabla-wrap"></div>
+  </div>
+
+  <div id="playin" class="card" style="margin-top:12px;">
+    <h3>🎟️ Play‑in (puestos 9–24) — Ida y Vuelta</h3>
+    <div id="playin-wrap"></div>
+  </div>
+
+  <div id="ko" class="card" style="margin-top:12px;">
+    <h3>⚔️ Eliminatoria</h3>
+    <div class="round">
+      <h4>Octavos de Final (ida y vuelta)</h4>
+      <div id="octavos" class="bracket"></div>
+    </div>
+    <div class="round">
+      <h4>Cuartos de Final (ida y vuelta)</h4>
+      <div id="cuartos" class="bracket"></div>
+    </div>
+    <div class="round">
+      <h4>Semifinales (ida y vuelta)</h4>
+      <div id="semis" class="bracket"></div>
+    </div>
+    <div class="round">
+      <h4>Gran Final (partido único)</h4>
+      <div id="final" class="bracket"></div>
+    </div>
+  </div>
 </div>
-<div class="campeon" id="campeon"></div>
-<script>var equipos = [];
 
-document.addEventListener("DOMContentLoaded", () => {
-  const roundOrder = ['octavosIzq', 'cuartosIzq', 'semisIzq', 'semisDer', 'cuartosDer', 'octavosDer', 'final'];
+<script>
+// ====== Estado global ======
+let JUG = [], EQ = [], PAREJAS = [], JORNADAS = [], TABLA = [];
+const rnd = a => a.sort(()=>Math.random()-0.5);
+const norm = t => (t||'').split('\n').map(s=>s.trim()).filter(Boolean);
+const uniq = arr => {const s=new Set(); const out=[]; for (const x of arr){const k=x.toLowerCase(); if(!s.has(k)){s.add(k); out.push(x);} } return out;};
 
-  roundOrder.forEach(ronda => {
-    const contenedor = document.getElementById(ronda);
-    if (!contenedor) return;
-    const matches = contenedor.querySelectorAll('.match');
+function renderEstados(){
+  const ej = document.getElementById('jug-estado');
+  const ee = document.getElementById('eq-estado');
+  if (ej) ej.innerHTML = `Jugadores: <strong>${JUG.length}</strong>/36 ` + (JUG.length===36?'<span class="ok">OK</span>':`<span class="warn">(faltan ${36-JUG.length})</span>`);
+  if (ee) ee.innerHTML = `Equipos: <strong>${EQ.length}</strong>/36 ` + (EQ.length===36?'<span class="ok">OK</span>':`<span class="warn">(faltan ${36-EQ.length})</span>`);
+}
 
-    matches.forEach((match, i) => {
-      const inputs = match.querySelectorAll("input");
-      if (inputs.length < 2) return;
+// ====== Carga de listas ======
+function addJug(){
+  const txt = document.getElementById('jug-in'); if(!txt){alert('Área de jugadores no encontrada'); return;}
+  const lista = uniq(norm(txt.value));
+  if (!lista.length){ alert('Ingresa al menos 1 jugador.'); return; }
+  JUG = lista;
+  renderEstados();
+}
+function addEq(){
+  const txt = document.getElementById('eq-in'); if(!txt){alert('Área de equipos no encontrada'); return;}
+  const lista = uniq(norm(txt.value));
+  if (!lista.length){ alert('Ingresa al menos 1 equipo.'); return; }
+  EQ = lista;
+  renderEstados();
+}
 
-      const [inputA, inputB] = inputs;
+// ====== Sortear parejas ======
+function sortearParejas(){
+  if (JUG.length!==36 || EQ.length!==36){ alert('Debes tener 36 jugadores y 36 equipos.'); return; }
+  const a = rnd([...JUG]); const b = rnd([...EQ]);
+  PAREJAS = a.map((jug,i)=>({jugador:jug, equipo:b[i]}));
+  const grid = document.getElementById('parejas-grid'); grid.innerHTML='';
+  PAREJAS.forEach(p=>{
+    const d = document.createElement('div'); d.className='pill';
+    d.innerHTML = `<strong>${p.jugador}</strong> ⇄ <span style="color:${getComputedStyle(document.documentElement).getPropertyValue('--accent')}; font-weight:700">${p.equipo}</span>`;
+    grid.appendChild(d);
+  });
+}
 
-      const checkAndAdvance = () => {
-        const scoreA = parseInt(inputA.value);
-        const scoreB = parseInt(inputB.value);
-        const spans = match.querySelectorAll("span");
-        if (isNaN(scoreA) || isNaN(scoreB)) return;
+// ====== Generar fase liga (8 jornadas, sin rivales repetidos) ======
+function generarFase(){
+  if (PAREJAS.length!==36){ alert('Primero sortea las parejas.'); return; }
+  const teams = PAREJAS.map(p=>p.equipo);
+  const matchups = new Map(teams.map(t=>[t,new Set()]));
+  const homeCnt = new Map(teams.map(t=>[t,0]));
+  const jornadas=[];
 
-        let winner = scoreA > scoreB ? spans[0].innerText :
-                     scoreB > scoreA ? spans[1].innerText :
-                     prompt("Empate. Escribe el nombre del ganador:");
-
-        const nextMap = {
-          'octavosIzq': 'cuartosIzq',
-          'cuartosIzq': 'semisIzq',
-          'semisIzq': 'final',
-          'octavosDer': 'cuartosDer',
-          'cuartosDer': 'semisDer',
-          'semisDer': 'final'
-        };
-        const nextRound = nextMap[ronda];
-        if (!nextRound) return;
-
-        const nextContainer = document.getElementById(nextRound);
-        if (!nextContainer) return;
-
-        const nextMatch = nextContainer.querySelectorAll('.match')[Math.floor(i / 2)];
-        if (!nextMatch) return;
-        if (nextRound === 'final') {
-          const finalContainer = document.getElementById('final');
-          const finalMatch = finalContainer.querySelector('.match');
-          const finalSpans = finalMatch.querySelectorAll('span');
-          if (ronda === 'semisIzq' && finalSpans.length >= 1) {
-            finalSpans[0].innerText = winner;
-          } else if (ronda === 'semisDer' && finalSpans.length >= 2) {
-            finalSpans[1].innerText = winner;
-          }
+  function intentarRonda(){
+    const disp = rnd([...teams]); const res=[];
+    while(disp.length){
+      const a=disp.shift(); let ok=false;
+      for (let i=0;i<disp.length;i++){
+        const b=disp[i];
+        if (!matchups.get(a).has(b)){
+          res.push([a,b]);
+          matchups.get(a).add(b); matchups.get(b).add(a);
+          disp.splice(i,1); ok=true; break;
         }
+      }
+      if (!ok){
+        res.forEach(([x,y])=>{ matchups.get(x).delete(y); matchups.get(y).delete(x); });
+        return null;
+      }
+    }
+    // balance local/visitante
+    return res.map(([h,aw])=>{
+      const hc=homeCnt.get(h), ac=homeCnt.get(aw);
+      if (hc-ac>0){ homeCnt.set(aw, ac+1); return [aw,h]; }
+      homeCnt.set(h, hc+1); return [h,aw];
+    });
+  }
 
+  for (let r=0;r<8;r++){
+    let ronda=null, intentos=0;
+    while(!ronda && intentos<2000){ intentos++; ronda=intentarRonda(); }
+    if (!ronda){
+      // reiniciar desde cero si no se consigue
+      teams.forEach(t=>{ matchups.get(t).clear(); homeCnt.set(t,0); });
+      jornadas.length=0; r=-1; continue;
+    }
+    jornadas.push(ronda);
+  }
 
-        const nextSpans = nextMatch.querySelectorAll("span");
-        const nextInputs = nextMatch.querySelectorAll("input");
+  JORNADAS = jornadas;
+  renderJornadas();
+}
 
-        const idx = i % 2;
-        if (nextSpans.length > idx && nextInputs.length > idx) {
-          // Highlight winner
-          spans[scoreA > scoreB ? 0 : 1].classList.add("winner-highlight");
-          spans[scoreA < scoreB ? 0 : 1].classList.remove("winner-highlight");
-          nextSpans[idx].innerText = winner;
-          nextInputs[idx].value = '';
-        }
+function renderJornadas(){
+  const cont = document.getElementById('jornadas'); cont.innerHTML='';
+  const mapJ = new Map(PAREJAS.map(p=>[p.equipo,p.jugador]));
+  JORNADAS.forEach((pairs,idx)=>{
+    const rd = document.createElement('div'); rd.className='round';
+    rd.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
+    const table = document.createElement('table');
+    table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th></tr></thead>';
+    const tb = document.createElement('tbody');
+    pairs.forEach((pair,m)=>{
+      const [home,away] = pair; const jl=mapJ.get(home)||'', jv=mapJ.get(away)||'';
+      const ida=`r${idx+1}-m${m}-a`, idb=`r${idx+1}-m${m}-b`;
+      const tr=document.createElement('tr');
+      tr.innerHTML = `<td>${home}<br/><input type="number" min="0" id="${ida}"></td>`+
+                     `<td>${away}<br/><input type="number" min="0" id="${idb}"></td>`+
+                     `<td>${jl}</td><td>${jv}</td>`;
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb); rd.appendChild(table); cont.appendChild(rd);
+  });
+}
 
-        // Final winner
-        if (nextRound === 'final') {
-          const final = document.getElementById('final');
-          const finalMatch = final.querySelector('.match');
-          const fs = finalMatch.querySelectorAll("span");
-          const fi = finalMatch.querySelectorAll("input");
+// ====== Tabla estilo Champions ======
+function actualizarTabla(){
+  if (!PAREJAS.length || !JORNADAS.length){ alert('Genera parejas y fase de liga primero.'); return; }
+  const stats = {}; PAREJAS.forEach(p=> stats[p.equipo]={Equipo:p.equipo, Jugador:p.jugador, PJ:0,G:0,E:0,P:0,GF:0,GC:0,DG:0,Pts:0});
 
-          if (fs.length === 2 && fi.length === 2) {
-            const [fa, fb] = fi;
-            const autoFinal = () => {
-              const sa = parseInt(fa.value);
-              const sb = parseInt(fb.value);
-              if (isNaN(sa) || isNaN(sb)) return;
-
-              const champ = sa > sb ? fs[0].innerText :
-                            sb > sa ? fs[1].innerText :
-                            prompt("Final empatada. Escribe el campeón:");
-              document.getElementById("campeon").innerHTML = "🏆 <span class='winner-highlight'>" + champ + "</span>";
-            };
-            fa.addEventListener("change", autoFinal);
-            fb.addEventListener("change", autoFinal);
-          }
-        }
-      };
-
-      inputA.addEventListener("change", checkAndAdvance);
-      inputB.addEventListener("change", checkAndAdvance);
+  JORNADAS.forEach((pairs, rIdx)=>{
+    pairs.forEach((pair, mIdx)=>{
+      const [home,away] = pair;
+      const a = parseInt((document.getElementById(`r${rIdx+1}-m${mIdx}-a`)||{}).value);
+      const b = parseInt((document.getElementById(`r${rIdx+1}-m${mIdx}-b`)||{}).value);
+      if (Number.isNaN(a) || Number.isNaN(b)) return;
+      stats[home].PJ++; stats[away].PJ++;
+      stats[home].GF+=a; stats[home].GC+=b;
+      stats[away].GF+=b; stats[away].GC+=a;
+      if (a>b){ stats[home].G++; stats[away].P++; stats[home].Pts+=3; }
+      else if (a<b){ stats[away].G++; stats[home].P++; stats[away].Pts+=3; }
+      else { stats[home].E++; stats[away].E++; stats[home].Pts++; stats[away].Pts++; }
     });
   });
-});
-
-function agregarEquipo() {
-  const input = document.getElementById("equipoInput");
-  const nombre = input.value.trim();
-  if (nombre && !equipos.includes(nombre)) {
-    equipos.push(nombre);
-    input.value = '';
-    mostrarEquipos();
-  }
+  Object.values(stats).forEach(s=>s.DG=s.GF-s.GC);
+  TABLA = Object.values(stats).sort((a,b)=> b.Pts-a.Pts || b.DG-a.DG || b.GF-a.GF || a.Equipo.localeCompare(b.Equipo));
+  renderTabla();
 }
 
-function agregarLista() {
-  const textarea = document.getElementById("listaEquipos");
-  const lista = textarea.value.trim().split("\n").map(e => e.trim()).filter(Boolean);
-  lista.forEach(e => {
-    if (e && !equipos.includes(e)) equipos.push(e);
-  });
-  textarea.value = '';
-  mostrarEquipos();
-}
-
-function mostrarEquipos() {
-  document.getElementById("equiposAgregados").innerText = `Equipos agregados (${equipos.length}): ${equipos.join(', ')}`;
-}
-
-function sortearGrupos() {
-  if (equipos.length !== 32) {
-    alert("Debes ingresar exactamente 32 equipos.");
-    return;
-  }
-  const mezclados = [...equipos].sort(() => Math.random() - 0.5);
-  const letras = 'ABCDEFGH'.split('');
-  gruposGlobal = {};
-  letras.forEach((letra, i) => {
-    gruposGlobal[letra] = mezclados.slice(i * 4, (i + 1) * 4);
-  });
-  clasificados = [];  // reset
-  mostrarGrupos();
-}
-
-function mostrarGrupos() {
-  const cont = document.getElementById("grupos");
-  cont.innerHTML = '';
-  for (let grupo in gruposGlobal) {
-    const eq = gruposGlobal[grupo];
-    const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
-    let html = `<div class='grupo'><h3>Grupo ${grupo}</h3><ul>${eq.map(e => `<li>${e}</li>`).join('')}</ul>`;
-    partidos.forEach((p, i) => {
-      html += `<div class="partido">${eq[p[0]]} <input type="number" id="g${grupo}${i}a"> - <input type="number" id="g${grupo}${i}b"> ${eq[p[1]]}</div>`;
+function renderTabla(){
+  const cont = document.getElementById('tabla-wrap'); cont.innerHTML='';
+  const mk = (rows,start,label)=>{
+    const t=document.createElement('table');
+    t.innerHTML='<thead><tr><th>#</th><th>Equipo</th><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>';
+    const tb=document.createElement('tbody');
+    rows.forEach((r,i)=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML = `<td>${start+i}</td><td>${r.Equipo}</td><td>${r.Jugador}</td><td>${r.PJ}</td><td>${r.G}</td><td>${r.E}</td><td>${r.P}</td><td>${r.GF}</td><td>${r.GC}</td><td>${r.DG}</td><td><strong>${r.Pts}</strong></td>`;
+      tb.appendChild(tr);
     });
-    html += `<button onclick="generarTabla('${grupo}', ${JSON.stringify(eq).replace(/"/g, '&quot;')})">📊 Tabla</button>
-             <div id="tabla_${grupo}"></div></div>`;
-    cont.innerHTML += html;
-  }
-}
-
-function generarTabla(grupo, eq) {
-  const orden = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
-  const stats = {};
-  eq.forEach(e => stats[e] = {PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, DG:0, Pts:0});
-  orden.forEach((p,i) => {
-    const g1 = parseInt(document.getElementById(`g${grupo}${i}a`).value);
-    const g2 = parseInt(document.getElementById(`g${grupo}${i}b`).value);
-    if (isNaN(g1) || isNaN(g2)) return;
-    const A = eq[p[0]], B = eq[p[1]];
-    stats[A].PJ++; stats[B].PJ++;
-    stats[A].GF += g1; stats[A].GC += g2;
-    stats[B].GF += g2; stats[B].GC += g1;
-    if (g1 > g2) { stats[A].PG++; stats[B].PP++; stats[A].Pts += 3; }
-    else if (g1 < g2) { stats[B].PG++; stats[A].PP++; stats[B].Pts += 3; }
-    else { stats[A].PE++; stats[B].PE++; stats[A].Pts +=1; stats[B].Pts +=1; }
-  });
-  eq.forEach(e => stats[e].DG = stats[e].GF - stats[e].GC);
-  const tabla = eq.map(e => ({Equipo: e, ...stats[e]})).sort((a,b) => b.Pts - a.Pts || b.DG - a.DG || b.GF - a.GF);
-  let html = `<table class='tabla'><tr><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr>`;
-  tabla.forEach((t, index) => {
-    const highlight = index < 2 ? " style='background-color: #ffe082; font-weight: bold;'" : "";
-    html += `<tr${highlight}><td>${t.Equipo}</td><td>${t.PJ}</td><td>${t.PG}</td><td>${t.PE}</td><td>${t.PP}</td><td>${t.GF}</td><td>${t.GC}</td><td>${t.DG}</td><td>${t.Pts}</td></tr>`;
-  });
-  html += "</table>";
-  document.getElementById(`tabla_${grupo}`).innerHTML = html;
-  clasificados = clasificados.filter(e => !eq.includes(e));
-  clasificados = clasificados.concat(tabla.slice(0,2).map(t => t.Equipo));
-  if (clasificados.length === 16) {
-    llenarOctavos();
-  }
-}
-
-function llenarOctavos() {
-  const emparejamientos = [
-    [clasificados[0], clasificados[3]],
-    [clasificados[4], clasificados[7]],
-    [clasificados[8], clasificados[11]],
-    [clasificados[12], clasificados[15]],
-    [clasificados[2], clasificados[1]],
-    [clasificados[6], clasificados[5]],
-    [clasificados[10], clasificados[9]],
-    [clasificados[14], clasificados[13]]
-  ];
-
-  const contenedores = [
-    ...document.querySelectorAll("#octavosIzq .match"),
-    ...document.querySelectorAll("#octavosDer .match")
-  ];
-
-  emparejamientos.forEach((pair, idx) => {
-    const span = contenedores[idx].querySelectorAll("span");
-    const inputs = contenedores[idx].querySelectorAll("input");
-    if (span.length >= 2) {
-      span[0].innerText = pair[0];
-      span[1].innerText = pair[1];
-    }
-    if (inputs.length >= 2) {
-      inputs[0].value = '';
-      inputs[1].value = '';
-    }
-  });
-}
-
-
-document.addEventListener("keydown", function(e) {
-  const isInput = document.activeElement.tagName === "INPUT" &&
-                  document.activeElement.type === "number" &&
-                  document.activeElement.id.startsWith("g");
-
-  if (!isInput) return;
-
-  const inputs = Array.from(document.querySelectorAll('.grupo input[type="number"]'));
-  const index = inputs.indexOf(document.activeElement);
-  if (index === -1) return;
-
-  let nextIndex = index;
-
-  switch (e.key) {
-    case "ArrowRight":
-      nextIndex = (index + 1) % inputs.length;
-      break;
-    case "ArrowLeft":
-      nextIndex = (index - 1 + inputs.length) % inputs.length;
-      break;
-    case "ArrowDown":
-      nextIndex = (index + 2) % inputs.length;
-      break;
-    case "ArrowUp":
-      nextIndex = (index - 2 + inputs.length) % inputs.length;
-      break;
-    default:
-      return; // no scroll if not arrow
-  }
-
-  e.preventDefault();
-  inputs[nextIndex].focus();
-  inputs[nextIndex].select();
-});
-
-
-
-function guardarTorneo() {
-  const estado = {
-    equipos,
-    gruposGlobal,
-    clasificados,
-    resultados: {}
+    t.appendChild(tb);
+    const box=document.createElement('div'); box.className='round'; box.innerHTML=`<h4>${label}</h4>`; box.appendChild(t); return box;
   };
-
-  document.querySelectorAll('input[type="number"]').forEach(input => {
-    if (input.id) {
-      estado.resultados[input.id] = input.value;
-    }
-  });
-
-  localStorage.setItem("torneoWiog", JSON.stringify(estado));
-  alert("Torneo guardado con éxito.");
+  cont.appendChild(mk(TABLA.slice(0,8),1,'1–8 Clasificación directa'));
+  cont.appendChild(mk(TABLA.slice(8,24),9,'9–24 Play‑in'));
+  cont.appendChild(mk(TABLA.slice(24,36),25,'25–36 Eliminados'));
 }
 
-function cargarTorneo() {
-  const data = localStorage.getItem("torneoWiog");
-  if (!data) {
-    alert("No hay un torneo guardado.");
-    return;
+// ====== Play-in (Ida/Vuelta) ======
+function generarPlayin(){
+  if (!TABLA.length){ alert('Actualiza la tabla primero.'); return; }
+  const A = TABLA.slice(8,16).map(r=>r.Equipo);   // 9–16 cabezas
+  const B = TABLA.slice(16,24).map(r=>r.Equipo);  // 17–24 no cabezas
+  const cont = document.getElementById('playin-wrap'); cont.innerHTML='';
+  const table = document.createElement('table');
+  table.className='cl-playin-table';
+  table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
+  const tb=document.createElement('tbody');
+  for (let i=0;i<8;i++){
+    const seeded=A[i], unseed=B[7-i];
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td>${seeded} (cabeza) vs ${unseed}</td>`+
+      `<td>${unseed} <input type="number" min="0" id="pl${i}-ida-a"> – <input type="number" min="0" id="pl${i}-ida-b"> ${seeded}</td>`+
+      `<td>${seeded} <input type="number" min="0" id="pl${i}-vta-a"> – <input type="number" min="0" id="pl${i}-vta-b"> ${unseed}</td>`+
+      `<td id="pl${i}-global">—</td><td id="pl${i}-win">—</td>`;
+    tb.appendChild(tr);
   }
+  table.appendChild(tb); cont.appendChild(table);
 
-  const estado = JSON.parse(data);
-  equipos = estado.equipos || [];
-  gruposGlobal = estado.gruposGlobal || {};
-  clasificados = estado.clasificados || [];
-
-  mostrarEquipos();
-  mostrarGrupos();
-
-  setTimeout(() => {
-    Object.entries(estado.resultados).forEach(([id, val]) => {
-      const input = document.getElementById(id);
-      if (input) input.value = val;
-    });
-  }, 300); // esperar a que los inputs existan
-}
-
-
-
-function verificarYGenerarEliminatoria() {
-  const letras = 'ABCDEFGH'.split('');
-  let completos = true;
-  for (let grupo of letras) {
-    for (let i = 0; i < 6; i++) {
-      const a = document.getElementById(`g${grupo}${i}a`);
-      const b = document.getElementById(`g${grupo}${i}b`);
-      if (!a || !b || a.value === '' || b.value === '') {
-        completos = false;
-        break;
-      }
-    }
-    if (!completos) break;
-  }
-  if (completos) {
-    letras.forEach(g => {
-      const eq = gruposGlobal[g];
-      generarTabla(g, eq);
-    });
-  }
-}
-
-// Activar la función al cambiar cualquier input de grupos
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll('.grupo input[type="number"]').forEach(input => {
-    input.addEventListener("change", verificarYGenerarEliminatoria);
-  });
-});
-
-function mezclarJugadores() {
-  const textarea = document.getElementById("jugadoresInput");
-  const lista = textarea.value.trim().split("\n").map(e => e.trim()).filter(Boolean);
-
-  if (lista.length !== 16) {
-    alert("Debes ingresar exactamente 16 jugadores.");
-    return;
-  }
-
-  const mezclados = [...lista].sort(() => Math.random() - 0.5);
-  const html = `<h4>🎲 Orden Mezclado</h4><div>${mezclados.map(j => `<div>${j}</div>`).join('')}</div>`;
-  document.getElementById("resultadoJugadores").innerHTML = html;
-}
-
-function distribuirAOctavos() {
-  const lista = document.getElementById("jugadoresInput").value.trim().split("\n").map(e => e.trim()).filter(Boolean);
-  if (lista.length !== 16) {
-    alert("Debes ingresar exactamente 16 jugadores.");
-    return;
-  }
-
-  const mezclados = [...lista].sort(() => Math.random() - 0.5);
-  const matches = document.querySelectorAll("#octavosPersonalizados .match");
-
-  mezclados.forEach((jugador, index) => {
-    const spanIndex = index % 2;
-    const matchIndex = Math.floor(index / 2);
-    const spans = matches[matchIndex].querySelectorAll("span");
-    if (spans[spanIndex]) {
-      spans[spanIndex].innerText = jugador;
-    }
-    const inputs = matches[matchIndex].querySelectorAll("input");
-    if (inputs[spanIndex]) {
-      inputs[spanIndex].value = '';
-    }
-  });
-}
-
-function avanzarACuartos() {
-  const octavosMatches = document.querySelectorAll("#octavosPersonalizados .match");
-  const ganadores = [];
-
-  for (const match of octavosMatches) {
-    const spans = match.querySelectorAll("span");
-    const inputs = match.querySelectorAll("input");
-
-    const score1 = parseInt(inputs[0].value);
-    const score2 = parseInt(inputs[1].value);
-
-    if (isNaN(score1) || isNaN(score2)) {
-      alert("Completa todos los resultados de octavos antes de continuar.");
-      return;
-    }
-
-    if (score1 === score2) {
-      const ganador = prompt(`Empate entre "${spans[0].innerText}" y "${spans[1].innerText}". Escribe el nombre del ganador:`);
-      if (!ganador) return;
-      ganadores.push(ganador);
-    } else {
-      ganadores.push(score1 > score2 ? spans[0].innerText : spans[1].innerText);
-    }
-  }
-
-  const cuartosMatches = document.querySelectorAll("#cuartosPersonalizados .match");
-  ganadores.forEach((jugador, i) => {
-    const spanIndex = i % 2;
-    const matchIndex = Math.floor(i / 2);
-    const spans = cuartosMatches[matchIndex].querySelectorAll("span");
-    if (spans[spanIndex]) {
-      spans[spanIndex].innerText = jugador;
-    }
-    const inputs = cuartosMatches[matchIndex].querySelectorAll("input");
-    if (inputs[spanIndex]) {
-      inputs[spanIndex].value = '';
-    }
-  });
-}
-
-function avanzarASemis() {
-  const cuartosMatches = document.querySelectorAll("#cuartosPersonalizados .match");
-  const ganadores = [];
-
-  for (const match of cuartosMatches) {
-    const spans = match.querySelectorAll("span");
-    const inputs = match.querySelectorAll("input");
-
-    const score1 = parseInt(inputs[0].value);
-    const score2 = parseInt(inputs[1].value);
-
-    if (isNaN(score1) || isNaN(score2)) {
-      alert("Completa todos los resultados de cuartos antes de continuar.");
-      return;
-    }
-
-    if (score1 === score2) {
-      const ganador = prompt(`Empate entre "${spans[0].innerText}" y "${spans[1].innerText}". Escribe el nombre del ganador:`);
-      if (!ganador) return;
-      ganadores.push(ganador);
-    } else {
-      ganadores.push(score1 > score2 ? spans[0].innerText : spans[1].innerText);
-    }
-  }
-
-  const semisMatches = document.querySelectorAll("#semisPersonalizados .match");
-  ganadores.forEach((jugador, i) => {
-    const spanIndex = i % 2;
-    const matchIndex = Math.floor(i / 2);
-    const spans = semisMatches[matchIndex].querySelectorAll("span");
-    if (spans[spanIndex]) {
-      spans[spanIndex].innerText = jugador;
-    }
-    const inputs = semisMatches[matchIndex].querySelectorAll("input");
-    if (inputs[spanIndex]) {
-      inputs[spanIndex].value = '';
-    }
-  });
-}
-
-function avanzarAFinal() {
-  const semisMatches = document.querySelectorAll("#semisPersonalizados .match");
-  const ganadores = [];
-
-  for (const match of semisMatches) {
-    const spans = match.querySelectorAll("span");
-    const inputs = match.querySelectorAll("input");
-
-    const score1 = parseInt(inputs[0].value);
-    const score2 = parseInt(inputs[1].value);
-
-    if (isNaN(score1) || isNaN(score2)) {
-      alert("Completa todos los resultados de semifinales antes de continuar.");
-      return;
-    }
-
-    if (score1 === score2) {
-      const ganador = prompt(`Empate entre "${spans[0].innerText}" y "${spans[1].innerText}". Escribe el nombre del ganador:`);
-      if (!ganador) return;
-      ganadores.push(ganador);
-    } else {
-      ganadores.push(score1 > score2 ? spans[0].innerText : spans[1].innerText);
-    }
-  }
-
-  const finalMatch = document.querySelector("#finalPersonalizada .match");
-  const spans = finalMatch.querySelectorAll("span");
-  const inputs = finalMatch.querySelectorAll("input");
-
-  if (ganadores.length === 2 && spans.length === 2) {
-    spans[0].innerText = ganadores[0];
-    spans[1].innerText = ganadores[1];
-    inputs[0].value = '';
-    inputs[1].value = '';
-
-    const checkChampion = () => {
-      const s1 = parseInt(inputs[0].value);
-      const s2 = parseInt(inputs[1].value);
-      if (isNaN(s1) || isNaN(s2)) return;
-      let champion;
-      if (s1 === s2) {
-        champion = prompt(`Empate en la final. Escribe el nombre del campeón:`);
-      } else {
-        champion = s1 > s2 ? spans[0].innerText : spans[1].innerText;
-      }
-      if (champion) {
-        document.getElementById("campeonFinal").innerHTML = `<span style='color:#ffd700; font-size: 48px; font-weight:bold; text-shadow: 2px 2px 12px #ffd700;'>🏆 ${champion}</span>`;
-      }
+  // listeners por cruce
+  for (let i=0;i<8;i++){
+    const seeded=A[i], unseed=B[7-i];
+    const idaA = document.getElementById(`pl${i}-ida-a`);
+    const idaB = document.getElementById(`pl${i}-ida-b`);
+    const vtaA = document.getElementById(`pl${i}-vta-a`);
+    const vtaB = document.getElementById(`pl${i}-vta-b`);
+    const out  = document.getElementById(`pl${i}-global`);
+    const win  = document.getElementById(`pl${i}-win`);
+    const recalc = () => {
+      const a1=parseInt(idaA.value), b1=parseInt(idaB.value), a2=parseInt(vtaA.value), b2=parseInt(vtaB.value);
+      if ([a1,b1,a2,b2].some(Number.isNaN)){ out.textContent='—'; win.textContent='—'; return; }
+      const golesSeeded = b1 + a2;
+      const golesUnseed = a1 + b2;
+      out.textContent = `${golesSeeded}–${golesUnseed}`;
+      if (golesSeeded>golesUnseed) win.textContent=seeded;
+      else if (golesSeeded<golesUnseed) win.textContent=unseed;
+      else { const pen = prompt(`Empate ${seeded} vs ${unseed}. Ganador por penales:`); win.textContent = pen || '—'; }
     };
-
-    inputs[0].addEventListener("change", checkChampion);
-    inputs[1].addEventListener("change", checkChampion);
+    [idaA,idaB,vtaA,vtaB].forEach(el=> el.addEventListener('input', recalc));
   }
 }
+
+// ====== KO (Octavos→Final) con auto‑avance incremental ======
+function makeTie(container, prefix, n){
+  container.innerHTML='';
+  for (let i=0;i<n;i++){
+    const tie = document.createElement('div'); tie.className='tie'; tie.id = `${prefix}-t${i}`;
+    const l1 = document.createElement('div'); l1.className='leg'; l1.innerHTML = `Ida: <span class="cl-home">—</span> <input type="number" min="0" id="${prefix}-t${i}-ida-a"> – <input type="number" min="0" id="${prefix}-t${i}-ida-b"> <span class="cl-away">—</span>`;
+    const l2 = document.createElement('div'); l2.className='leg'; l2.innerHTML = `Vuelta: <span class="cl-away">—</span> <input type="number" min="0" id="${prefix}-t${i}-vta-a"> – <input type="number" min="0" id="${prefix}-t${i}-vta-b"> <span class="cl-home">—</span>`;
+    const ag = document.createElement('div'); ag.className='agg'; ag.innerHTML = `Global: <span id="${prefix}-t${i}-global">—</span> &nbsp; Ganador: <span id="${prefix}-t${i}-win">—</span>`;
+    tie.appendChild(l1); tie.appendChild(l2); tie.appendChild(ag); container.appendChild(tie);
+  }
+}
+
+function connectTwoLeg(prefix, count, onAll, onPartial){
+  const winners = new Array(count).fill('—');
+  for (let i=0;i<count;i++){
+    const tieId = `${prefix}-t${i}`;
+    const idaA = document.getElementById(`${tieId}-ida-a`);
+    const idaB = document.getElementById(`${tieId}-ida-b`);
+    const vtaA = document.getElementById(`${tieId}-vta-a`);
+    const vtaB = document.getElementById(`${tieId}-vta-b`);
+    const g    = document.getElementById(`${tieId}-global`);
+    const w    = document.getElementById(`${tieId}-win`);
+    const home = document.querySelectorAll(`#${tieId} .cl-home`);
+    const away = document.querySelectorAll(`#${tieId} .cl-away`);
+
+    const recalc = () => {
+      const a1 = parseInt(idaA.value), b1 = parseInt(idaB.value), a2 = parseInt(vtaA.value), b2 = parseInt(vtaB.value);
+      if ([a1,b1,a2,b2].some(Number.isNaN)){ g.textContent='—'; w.textContent='—'; winners[i]='—'; return; }
+      const teamHomeIda = home[0].textContent, teamAwayIda = away[0].textContent;
+      const totalA = a1 + b2, totalB = b1 + a2;
+      g.textContent = `${totalA}–${totalB}`;
+      let winTeam = totalA>totalB ? teamHomeIda : totalB>totalA ? teamAwayIda : (prompt(`Empate ${teamHomeIda} vs ${teamAwayIda}. Ganador por penales:`)||'—');
+      w.textContent = winTeam; winners[i]=winTeam;
+      if (typeof onPartial==='function') onPartial(i, winTeam);
+      if (winners.every(x=>x && x!=='—')) onAll([...winners]);
+    };
+    [idaA,idaB,vtaA,vtaB].forEach(el=> el.addEventListener('input', recalc));
+  }
+}
+
+function generarOctavos(){
+  if (!TABLA.length){ alert('Actualiza la tabla primero.'); return; }
+  // leer ganadores play-in
+  const wins=[]; for (let i=0;i<8;i++){ const el=document.getElementById(`pl${i}-win`); if (!el || el.textContent==='—'){ alert('Completa ganadores del play‑in.'); return; } wins.push(el.textContent); }
+  const top8 = TABLA.slice(0,8).map(r=>r.Equipo);
+  const shuffled = rnd([...wins]);
+  // construir ties si no existen
+  const oct = document.getElementById('octavos'); makeTie(oct, 'octavos', 8);
+  const cu = document.getElementById('cuartos'); makeTie(cu, 'cuartos', 4);
+  const se = document.getElementById('semis');   makeTie(se, 'semis', 2);
+  const fi = document.getElementById('final');   fi.innerHTML=''; const fcard=document.createElement('div'); fcard.className='tie'; fcard.id='final-t0';
+  fcard.innerHTML = `Final: <span>—</span> <input type="number" min="0" id="final-t0-a"> – <input type="number" min="0" id="final-t0-b"> <span>—</span>`; fi.appendChild(fcard);
+
+  // poblar octavos (ida: ganador play-in en casa; vuelta: cabeza en casa)
+  for (let i=0;i<8;i++){
+    const tie = document.getElementById(`octavos-t${i}`);
+    const homes = tie.querySelectorAll('.cl-home');
+    const aways = tie.querySelectorAll('.cl-away');
+    homes[0].textContent = shuffled[i]; aways[0].textContent = top8[i];
+    homes[1].textContent = top8[i];     aways[1].textContent = shuffled[i];
+  }
+
+  // encadenar con avance incremental
+  connectTwoLeg('octavos', 8, (w8)=>{
+    // cuando estén todos, rellenar cuartos completamente (por si faltaba alguno)
+    for (let i=0;i<4;i++){
+      const A=w8[2*i], B=w8[2*i+1]; const tie=document.getElementById(`cuartos-t${i}`);
+      const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+      homes[0].textContent=A; aways[0].textContent=B; homes[1].textContent=B; aways[1].textContent=A;
+      ['ida-a','ida-b','vta-a','vta-b'].forEach(s=>{ const el=tie.querySelector(`#cuartos-t${i}-${s}`); if (el) el.value=''; });
+      tie.querySelector(`#cuartos-t${i}-global`).textContent='—'; tie.querySelector(`#cuartos-t${i}-win`).textContent='—';
+    }
+    connectTwoLeg('cuartos', 4, (w4)=>{
+      for (let i=0;i<2;i++){
+        const A=w4[2*i], B=w4[2*i+1]; const tie=document.getElementById(`semis-t${i}`);
+        const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+        homes[0].textContent=A; aways[0].textContent=B; homes[1].textContent=B; aways[1].textContent=A;
+        ['ida-a','ida-b','vta-a','vta-b'].forEach(s=>{ const el=tie.querySelector(`#semis-t${i}-${s}`); if (el) el.value=''; });
+        tie.querySelector(`#semis-t${i}-global`).textContent='—'; tie.querySelector(`#semis-t${i}-win`).textContent='—';
+      }
+      connectTwoLeg('semis', 2, (w2)=>{
+        const sp = document.querySelectorAll('#final-t0 span');
+        sp[0].textContent=w2[0]; sp[1].textContent=w2[1];
+        document.getElementById('final-t0-a').value=''; document.getElementById('final-t0-b').value='';
+      }, (idx, winName)=>{
+        const sp = document.querySelectorAll('#final-t0 span');
+        if (sp[idx]) sp[idx].textContent = winName;
+      });
+    }, (idx, winName)=>{
+      const s=Math.floor(idx/2), pos=idx%2; const tie=document.getElementById(`semis-t${s}`);
+      const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+      if (pos===0){ homes[0].textContent=winName; homes[1].textContent='—'; } else { aways[0].textContent=winName; aways[1].textContent='—'; }
+      const A=homes[0].textContent, B=aways[0].textContent; if (A!=='—' && B!=='—'){ homes[1].textContent=B; aways[1].textContent=A; }
+    });
+  }, (idx, winName)=>{
+    const q=Math.floor(idx/2), pos=idx%2; const tie=document.getElementById(`cuartos-t${q}`);
+    const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+    if (pos===0){ homes[0].textContent=winName; homes[1].textContent='—'; } else { aways[0].textContent=winName; aways[1].textContent='—'; }
+    const A=homes[0].textContent, B=aways[0].textContent; if (A!=='—' && B!=='—'){ homes[1].textContent=B; aways[1].textContent=A; }
+  });
+}
+
+// ====== Reset ======
+function resetAll(){
+  JUG=[]; EQ=[]; PAREJAS=[]; JORNADAS=[]; TABLA=[];
+  document.getElementById('jug-in').value='';
+  document.getElementById('eq-in').value='';
+  document.getElementById('parejas-grid').innerHTML='';
+  document.getElementById('jornadas').innerHTML='';
+  document.getElementById('tabla-wrap').innerHTML='';
+  document.getElementById('playin-wrap').innerHTML='';
+  document.getElementById('octavos').innerHTML='';
+  document.getElementById('cuartos').innerHTML='';
+  document.getElementById('semis').innerHTML='';
+  document.getElementById('final').innerHTML='';
+  renderEstados();
+}
+
+// ====== Listeners ======
+document.getElementById('btn-add-jug').onclick = addJug;
+document.getElementById('btn-add-eq').onclick  = addEq;
+document.getElementById('btn-sort').onclick    = sortearParejas;
+document.getElementById('btn-fase').onclick    = generarFase;
+document.getElementById('btn-stand').onclick   = actualizarTabla;
+document.getElementById('btn-playin').onclick  = generarPlayin;
+document.getElementById('btn-octavos').onclick = generarOctavos;
+document.getElementById('btn-reset').onclick   = resetAll;
 
 </script>
-<hr/>
-<h2>🎯 Torneo Rápido de 16 Jugadores</h2>
-<div style="margin-bottom: 10px;">
-<textarea cols="40" id="jugadoresInput" placeholder="Escribe un jugador por línea..." rows="8"></textarea><br/>
-<button onclick="mezclarJugadores()">🔀 Mezclar Jugadores</button>
-</div>
-<div id="resultadoJugadores" style="font-weight: bold; margin-top: 10px;"></div>
-<br/>
-<button onclick="distribuirAOctavos()">📦 Distribuir a Octavos</button>
-<div id="faseOctavos" style="margin-top: 20px;">
-<h3>🧩 Fase de Octavos de Final</h3>
-<div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-<div id="octavosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-</div>
-</div>
-</div>
-<br/>
-<button onclick="avanzarACuartos()">➡️ Pasar Ganadores a Cuartos</button>
-<br/>
-<h3>🏅 Fase de Cuartos de Final</h3>
-<div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-<div id="cuartosPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-</div>
-</div>
-<br/>
-<button onclick="avanzarASemis()">⬆️ Pasar Ganadores a Semifinal</button>
-<br/>
-<h3>⚔️ Fase de Semifinales</h3>
-<div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-<div id="semisPersonalizados" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-</div>
-</div>
-<br/>
-<button onclick="avanzarAFinal()">🥇 Pasar Ganadores a la Final</button>
-<br/>
-<h3>🏆 Gran Final</h3>
-<div class="bracket" style="flex-wrap: wrap; justify-content: center;">
-<div id="finalPersonalizada" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-<div class="match" style="flex-direction: column; align-items: center; text-align: center;">
-<span></span><input min="0" type="number"/>
-<span></span><input min="0" type="number"/>
-</div>
-</div>
-</div>
-<div class="campeon" id="campeonFinal" style="margin-top: 20px;"></div>
-<br/>
-<h3>🏆 Campeón Absoluto</h3>
-<div id="campeonFinal" style="font-size: 40px; color: #ffd700; text-shadow: 2px 2px 8px #ff0, 0 0 30px #ffeb3b; font-weight: bold; margin-bottom: 40px;"></div>
 </body>
 </html>
