@@ -1175,7 +1175,7 @@ function avanzarAFinal() {
 <hr/>
 <h2>🎯 Torneo Rápido de 16 Jugadores</h2>
 <div style="margin-bottom: 10px;">
-  <textarea id="jugadoresInput" rows="8" cols="40" placeholder="Escribe un jugador por línea..."></textarea><br/>
+  <textarea id="jugadoresInput" rows="8" cols="40" placeholder="Escribe un jugador por línea o separado por comas/; |"></textarea><br/>
   <button onclick="mezclarJugadores()">🔀 Mezclar Jugadores</button>
 </div>
 <div id="resultadoJugadores" style="font-weight: bold; margin-top: 10px;"></div>
@@ -1293,13 +1293,13 @@ function avanzarAFinal() {
 <div id="clw-container" style="display:flex; flex-wrap:wrap; gap:24px; justify-content:center; align-items:flex-start;">
   <div style="max-width:520px; min-width:320px; flex:1 1 360px; background:#1f1f1f; border:2px solid #ffd700; border-radius:14px; padding:16px;">
     <h3>👤 Jugadores (36)</h3>
-    <textarea id="clw-jugadores" rows="14" cols="40" placeholder="Escribe un jugador por línea..."></textarea>
+    <textarea id="clw-jugadores" rows="14" cols="40" placeholder="Escribe un jugador por línea o separado por comas/; |"></textarea>
     <div id="clw-jugadores-count" style="margin-top:6px; font-weight:bold; color:#ffeb3b;">0/36</div>
   </div>
 
   <div style="max-width:520px; min-width:320px; flex:1 1 360px; background:#1f1f1f; border:2px solid #ffd700; border-radius:14px; padding:16px;">
     <h3>🏟️ Equipos (36)</h3>
-    <textarea id="clw-equipos" rows="14" cols="40" placeholder="Escribe un equipo por línea..."></textarea>
+    <textarea id="clw-equipos" rows="14" cols="40" placeholder="Escribe un equipo por línea o separado por comas/; |"></textarea>
     <div id="clw-equipos-count" style="margin-top:6px; font-weight:bold; color:#ffeb3b;">0/36</div>
   </div>
 </div>
@@ -1312,11 +1312,20 @@ function avanzarAFinal() {
 
 <script>
 // === CHAMPIONS LEAGUE WIOG ===
-function clwGetList(id) {
-  return document.getElementById(id).value
-    .split('\n')
+function clwNormalizeList(text) {
+  return text
+    .replace(/
+/g, '
+')
+    .split(/[
+,;|]+/)
     .map(s => s.trim())
-    .filter(Boolean);
+    .filter(s => s.length > 0);
+}
+function clwGetList(id) {
+  const el = document.getElementById(id);
+  if (!el) return [];
+  return clwNormalizeList(el.value);
 }
 
 function clwUpdateCounts() {
