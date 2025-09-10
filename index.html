@@ -1290,5 +1290,222 @@ function avanzarAFinal() {
 <br/>
 <h3>🏆 Campeón Absoluto</h3>
 <div id="campeonFinal" style="font-size: 40px; color: #ffd700; text-shadow: 2px 2px 8px #ff0, 0 0 30px #ffeb3b; font-weight: bold; margin-bottom: 40px;"></div>
+<hr/>
+<h2>🏟️ Champions League WIOG</h2>
+<h3>👥 Agregar 36 Jugadores</h3>
+<textarea cols="40" id="cl-jugadores-input" placeholder="Escribe un jugador por línea (36 en total)" rows="8"></textarea><br/>
+<button id="cl-agregar-jugadores">Agregar lista de jugadores</button>
+<div id="cl-jugadores-estado" style="margin-top:8px; font-weight:bold;"></div>
+<h3>🏳️ Agregar 36 Equipos</h3>
+<textarea cols="40" id="cl-equipos-input" placeholder="Escribe un equipo por línea (36 en total)" rows="8"></textarea><br/>
+<button id="cl-agregar-equipos">Agregar lista de equipos</button>
+<div id="cl-equipos-estado" style="margin-top:8px; font-weight:bold;"></div>
+<div style="margin-top:14px;">
+<button id="cl-sortear-parejas">🎲 Sortear Parejas (Jugador ⇄ Equipo)</button>
+</div>
+<div id="cl-parejas" style="margin-top:12px;"></div>
+<div style="margin-top:18px;">
+<button id="cl-generar-fase">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
+</div>
+<div id="cl-fixtures" style="margin-top:16px;"></div>
+<style>
+  .cl-card { background:#121212; border:1px solid #ffd70055; border-radius:12px; padding:10px; margin:10px 0; }
+  .cl-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:10px; }
+  .cl-table { width:100%; border-collapse:collapse; }
+  .cl-table th, .cl-table td { border:1px solid #444; padding:6px; background:#fff; color:#000; }
+  .cl-table th { background:#ffd700; color:#000; }
+  .cl-round { margin:16px 0; box-shadow:0 0 8px rgba(0,0,0,0.3); border-radius:10px; overflow:hidden; }
+  .cl-round h4 { background:#303030; color:#ffd700; padding:8px 10px; margin:0; }
+</style>
+<script>
+// ====== Champions League WIOG (36 equipos, 8 jornadas) ======
+let CL_JUGADORES = [];
+let CL_EQUIPOS = [];
+let CL_PAREJAS = [];   // [{jugador, equipo}]
+let CL_MATCHUPS = new Map(); // key: team, value: Set of opponents already played
+
+function cl_normalizarLista(texto) {
+  return texto.split('\n').map(s => s.trim()).filter(Boolean);
+}
+
+function cl_unicos(lista) {
+  const set = new Set();
+  const out = [];
+  for (const item of lista) {
+    const key = item.toLowerCase();
+    if (!set.has(key)) { set.add(key); out.push(item); }
+  }
+  return out;
+}
+
+function cl_renderEstado() {
+  const j = document.getElementById('cl-jugadores-estado');
+  const e = document.getElementById('cl-equipos-estado');
+  j.textContent = `Jugadores cargados (${CL_JUGADORES.length}/36): ${CL_JUGADORES.join(', ')}`;
+  e.textContent = `Equipos cargados (${CL_EQUIPOS.length}/36): ${CL_EQUIPOS.join(', ')}`;
+}
+
+function cl_agregarJugadores() {
+  const raw = document.getElementById('cl-jugadores-input').value;
+  const lista = cl_unicos(cl_normalizarLista(raw));
+  if (lista.length !== 36) {
+    alert('Debes ingresar exactamente 36 jugadores (actual: ' + lista.length + ').');
+    return;
+  }
+  CL_JUGADORES = lista;
+  cl_renderEstado();
+}
+
+function cl_agregarEquipos() {
+  const raw = document.getElementById('cl-equipos-input').value;
+  const lista = cl_unicos(cl_normalizarLista(raw));
+  if (lista.length !== 36) {
+    alert('Debes ingresar exactamente 36 equipos (actual: ' + lista.length + ').');
+    return;
+  }
+  CL_EQUIPOS = lista;
+  cl_renderEstado();
+}
+
+function cl_sortearParejas() {
+  if (CL_JUGADORES.length !== 36 || CL_EQUIPOS.length !== 36) {
+    alert('Primero carga 36 jugadores y 36 equipos.');
+    return;
+  }
+  const jugadores = [...CL_JUGADORES].sort(() => Math.random() - 0.5);
+  const equipos = [...CL_EQUIPOS].sort(() => Math.random() - 0.5);
+
+  CL_PAREJAS = jugadores.map((jugador, i) => ({ jugador, equipo: equipos[i] }));
+
+  // Render
+  const cont = document.getElementById('cl-parejas');
+  cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
+  const grid = document.getElementById('cl-grid-parejas');
+  CL_PAREJAS.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'cl-card';
+    div.innerHTML = `<strong>${p.jugador}</strong> ⇄ <span style="color:#ffd700; font-weight:700;">${p.equipo}</span>`;
+    grid.appendChild(div);
+  });
+}
+
+function cl_initOpponents() {
+  CL_MATCHUPS = new Map();
+  for (const p of CL_PAREJAS) {
+    CL_MATCHUPS.set(p.equipo, new Set());
+  }
+}
+
+// Genera 8 jornadas tipo "suiza" simple: cada jornada todos juegan una vez, evitando rivales repetidos.
+function cl_generarFaseLiga() {
+  if (CL_PAREJAS.length !== 36) {
+    alert('Primero genera las parejas.');
+    return;
+  }
+  cl_initOpponents();
+
+  const teams = CL_PAREJAS.map(p => p.equipo);
+  const jornadas = [];
+  const MAX_INTENTOS_RONDA = 2000;
+
+  for (let r = 1; r <= 8; r++) {
+    let rondasOk = false;
+    let intentos = 0;
+    let pairings = [];
+
+    while (!rondasOk && intentos < MAX_INTENTOS_RONDA) {
+      intentos++;
+      pairings = [];
+      const disponibles = [...teams].sort(() => Math.random() - 0.5);
+
+      // greedy pairing sin repetir rival
+      let valido = true;
+      while (disponibles.length > 0) {
+        const a = disponibles.shift();
+        let emparejado = false;
+        for (let i = 0; i < disponibles.length; i++) {
+          const b = disponibles[i];
+          if (!CL_MATCHUPS.get(a).has(b)) {
+            pairings.push([a, b]);
+            CL_MATCHUPS.get(a).add(b);
+            CL_MATCHUPS.get(b).add(a);
+            disponibles.splice(i, 1);
+            emparejado = true;
+            break;
+          }
+        }
+        if (!emparejado) {
+          // rollback parcial de la ronda y reintentar
+          // limpiar las adiciones de esta ronda
+          for (const [x, y] of pairings) {
+            CL_MATCHUPS.get(x).delete(y);
+            CL_MATCHUPS.get(y).delete(x);
+          }
+          valido = false;
+          break;
+        }
+      }
+      if (valido) {
+        rondasOk = true;
+      }
+    }
+
+    if (!rondasOk) {
+      // Si no se logró una ronda válida después de muchos intentos, reiniciar por completo
+      cl_initOpponents();
+      // recomenzar desde la primera ronda
+      r = 0;
+      jornadas.length = 0;
+      continue;
+    }
+
+    jornadas.push(pairings);
+  }
+
+  // Render de jornadas
+  const cont = document.getElementById('cl-fixtures');
+  cont.innerHTML = '';
+  jornadas.forEach((pairs, idx) => {
+    const roundDiv = document.createElement('div');
+    roundDiv.className = 'cl-round';
+    roundDiv.innerHTML = `<h4>Jornada ${idx + 1}</h4>`;
+    const table = document.createElement('table');
+    table.className = 'cl-table';
+    const thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th></tr>';
+    const tbody = document.createElement('tbody');
+
+    const jugadorPorEquipo = new Map(CL_PAREJAS.map(p => [p.equipo, p.jugador]));
+
+    pairs.forEach(([home, away]) => {
+      const tr = document.createElement('tr');
+      const jl = jugadorPorEquipo.get(home) || '';
+      const jv = jugadorPorEquipo.get(away) || '';
+      tr.innerHTML = `<td>${home}</td><td>${away}</td><td>${jl}</td><td>${jv}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    roundDiv.appendChild(table);
+    cont.appendChild(roundDiv);
+  });
+
+  // Scroll a la sección
+  document.getElementById('cl-generar-fase').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  const btnJ = document.getElementById('cl-agregar-jugadores');
+  const btnE = document.getElementById('cl-agregar-equipos');
+  const btnS = document.getElementById('cl-sortear-parejas');
+  const btnF = document.getElementById('cl-generar-fase');
+  if (btnJ) btnJ.addEventListener('click', cl_agregarJugadores);
+  if (btnE) btnE.addEventListener('click', cl_agregarEquipos);
+  if (btnS) btnS.addEventListener('click', cl_sortearParejas);
+  if (btnF) btnF.addEventListener('click', cl_generarFaseLiga);
+});
+</script>
 </body>
 </html>
