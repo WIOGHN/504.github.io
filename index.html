@@ -1380,22 +1380,18 @@ window.cl_fallbackSortearParejas = function(){
 </div>
 <div id="cl-parejas" style="margin-top:12px;"></div>
 <div style="margin-top:18px;">
-<button id="cl-generar-fase">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
+<button id="cl-generar-fase" onclick="(window.cl_generarFaseLiga||window.cl_fallbackGenerarFaseLiga)()">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
 </div>
 <div id="cl-fixtures" style="margin-top:16px;"></div>
-<button id="cl-actualizar-tabla">📊 Generar/Actualizar Tabla (estilo Champions)</button>
+<button id="cl-actualizar-tabla" onclick="(window.cl_actualizarTabla||window.cl_fallbackActualizarTabla)()">📊 Generar/Actualizar Tabla (estilo Champions)</button>
 <div id="cl-standings" style="margin-top:12px;"></div>
 <div id="cl-playin-controls" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
-<button id="cl-gen-playin">🎟️ Generar Play‑in (9–24)</button>
-<button id="cl-gen-octavos">🏆 Generar Octavos (1–8 vs ganadores play‑in)</button>
+<button id="cl-gen-playin" onclick="(window.cl_generarPlayin||window.cl_fallbackGenerarPlayin)()">🎟️ Generar Play‑in (9–24)</button>
+<button id="cl-gen-octavos" onclick="(window.cl_generarOctavos||window.cl_fallbackGenerarOctavos)()">🏆 Generar Octavos (1–8 vs ganadores play‑in)</button>
 </div>
 <div id="cl-playin" style="margin-top:12px;"></div>
 <div id="cl-ko" style="margin-top:18px;">
 <h3>⚔️ Eliminatoria – Champions League WIOG</h3>
-
-
-
-
 <div class="ko-grid"><div class="ko-col" id="ko-col-1"><div id="cl-octavos"><h4>Octavos de Final</h4><div class="bracket"><div class="match cl-tie compact" id="cl-octavos-t0"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t0-ida-a" min="0" type="number"/> – <input id="cl-octavos-t0-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-octavos-t0-vta-a" min="0" type="number"/> – <input id="cl-octavos-t0-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t0-global">—</span>  Ganador: <span id="cl-octavos-t0-win">—</span></div></div><div class="match cl-tie compact" id="cl-octavos-t1"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t1-ida-a" min="0" type="number"/> – <input id="cl-octavos-t1-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-octavos-t1-vta-a" min="0" type="number"/> – <input id="cl-octavos-t1-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t1-global">—</span>  Ganador: <span id="cl-octavos-t1-win">—</span></div></div><div class="match cl-tie compact" id="cl-octavos-t2"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t2-ida-a" min="0" type="number"/> – <input id="cl-octavos-t2-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-octavos-t2-vta-a" min="0" type="number"/> – <input id="cl-octavos-t2-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t2-global">—</span>  Ganador: <span id="cl-octavos-t2-win">—</span></div></div><div class="match cl-tie compact" id="cl-octavos-t3"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t3-ida-a" min="0" type="number"/> – <input id="cl-octavos-t3-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-octavos-t3-vta-a" min="0" type="number"/> – <input id="cl-octavos-t3-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t3-global">—</span>  Ganador: <span id="cl-octavos-t3-win">—</span></div></div><div class="match cl-tie compact" id="cl-octavos-t4"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t4-ida-a" min="0" type="number"/> – <input id="cl-octavos-t4-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-octavos-t4-vta-a" min="0" type="number"/> – <input id="cl-octavos-t4-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t4-global">—</span>  Ganador: <span id="cl-octavos-t4-win">—</span></div></div><div class="match cl-tie compact" id="cl-octavos-t5"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t5-ida-a" min="0" type="number"/> – <input id="cl-octavos-t5-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-octavos-t5-vta-a" min="0" type="number"/> – <input id="cl-octavos-t5-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t5-global">—</span>  Ganador: <span id="cl-octavos-t5-win">—</span></div></div><div class="match cl-tie compact" id="cl-octavos-t6"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t6-ida-a" min="0" type="number"/> – <input id="cl-octavos-t6-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-octavos-t6-vta-a" min="0" type="number"/> – <input id="cl-octavos-t6-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t6-global">—</span>  Ganador: <span id="cl-octavos-t6-win">—</span></div></div><div class="match cl-tie compact" id="cl-octavos-t7"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t7-ida-a" min="0" type="number"/> – <input id="cl-octavos-t7-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-octavos-t7-vta-a" min="0" type="number"/> – <input id="cl-octavos-t7-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t7-global">—</span>  Ganador: <span id="cl-octavos-t7-win">—</span></div></div></div></div></div><div class="ko-col" id="ko-col-2"><div id="cl-cuartos"><h4>Cuartos de Final</h4><div class="bracket"><div class="match cl-tie compact" id="cl-cuartos-t0"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-cuartos-t0-ida-a" min="0" type="number"/> – <input id="cl-cuartos-t0-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-cuartos-t0-vta-a" min="0" type="number"/> – <input id="cl-cuartos-t0-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-cuartos-t0-global">—</span>  Ganador: <span id="cl-cuartos-t0-win">—</span></div></div><div class="match cl-tie compact" id="cl-cuartos-t1"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-cuartos-t1-ida-a" min="0" type="number"/> – <input id="cl-cuartos-t1-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-cuartos-t1-vta-a" min="0" type="number"/> – <input id="cl-cuartos-t1-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-cuartos-t1-global">—</span>  Ganador: <span id="cl-cuartos-t1-win">—</span></div></div><div class="match cl-tie compact" id="cl-cuartos-t2"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-cuartos-t2-ida-a" min="0" type="number"/> – <input id="cl-cuartos-t2-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-cuartos-t2-vta-a" min="0" type="number"/> – <input id="cl-cuartos-t2-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-cuartos-t2-global">—</span>  Ganador: <span id="cl-cuartos-t2-win">—</span></div></div><div class="match cl-tie compact" id="cl-cuartos-t3"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-cuartos-t3-ida-a" min="0" type="number"/> – <input id="cl-cuartos-t3-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-cuartos-t3-vta-a" min="0" type="number"/> – <input id="cl-cuartos-t3-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-cuartos-t3-global">—</span>  Ganador: <span id="cl-cuartos-t3-win">—</span></div></div></div></div></div><div class="ko-col" id="ko-col-3"><div id="cl-semis"><h4>Semifinales</h4><div class="bracket"><div class="match cl-tie compact" id="cl-semis-t0"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-semis-t0-ida-a" min="0" type="number"/> – <input id="cl-semis-t0-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-semis-t0-vta-a" min="0" type="number"/> – <input id="cl-semis-t0-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-semis-t0-global">—</span>  Ganador: <span id="cl-semis-t0-win">—</span></div></div><div class="match cl-tie compact" id="cl-semis-t1"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-semis-t1-ida-a" min="0" type="number"/> – <input id="cl-semis-t1-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-away">—</span> <input id="cl-semis-t1-vta-a" min="0" type="number"/> – <input id="cl-semis-t1-vta-b" min="0" type="number"/> <span class="cl-home">—</span></div><div class="cl-agg">Global: <span id="cl-semis-t1-global">—</span>  Ganador: <span id="cl-semis-t1-win">—</span></div></div></div></div><div id="cl-final"><h4>Gran Final</h4><div class="bracket"><div class="match cl-tie" id="cl-final-t0"><span class="cl-home">—</span><input id="cl-final-t0-a" min="0" type="number"/><span class="cl-away">—</span><input id="cl-final-t0-b" min="0" type="number"/></div></div></div></div></div></div>
 <script>
 // === Champions League WIOG Core ===
@@ -1632,105 +1628,92 @@ function cl_hookAdvance(fromSel,toSel){
 }
 
 
+
 function cl_generarOctavos(){
   if (!CL_TABLA.length){ alert('Actualiza la tabla primero.'); return; }
-  const top8 = cl_getTop8();
-  const winners=[];
-  for (let i=0;i<8;i++){ const el=document.getElementById(`pl${i}-win`); if (!el || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; } winners.push(el.textContent); }
-  const shuffled=[...winners].sort(()=>Math.random()-0.5);
+  const top8 = CL_TABLA.slice(0,8).map(r=>r.Equipo);
 
-  // Rellenar 8 llaves a doble partido (cabezas juegan vuelta en casa)
+  // leer ganadores del play-in
+  const winners=[];
+  for (let i=0;i<8;i++){
+    const el = document.getElementById(`pl${i}-win`);
+    if (!el || !el.textContent || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; }
+    winners.push(el.textContent);
+  }
+  const shuffled = [...winners].sort(()=>Math.random()-0.5);
+
+  // poblar llaves de octavos (doble partido) - vuelta en casa del cabeza de serie
   for (let i=0;i<8;i++){
     const tie = document.getElementById(`cl-octavos-t${i}`);
+    if (!tie) continue;
     const homes = tie.querySelectorAll('.cl-home');
     const aways = tie.querySelectorAll('.cl-away');
-    // ida: no cabeza en casa (ganador play-in)
-    homes[0].textContent = shuffled[i];
-    aways[0].textContent = top8[i];
-    // vuelta: cabeza en casa
-    homes[1].textContent = top8[i];
-    aways[1].textContent = shuffled[i];
-    // limpiar marcadores y global
+    if (homes[0]) homes[0].textContent = shuffled[i]; // ida: play-in en casa
+    if (aways[0]) aways[0].textContent = top8[i];
+    if (homes[1]) homes[1].textContent = top8[i];     // vuelta: cabeza en casa
+    if (aways[1]) aways[1].textContent = shuffled[i];
     ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{
       const inp = tie.querySelector(`#cl-octavos-t${i}-${suf}`);
       if (inp) inp.value='';
     });
     const g = tie.querySelector(`#cl-octavos-t${i}-global`); if (g) g.textContent='—';
-    const w = tie.querySelector(`#cl-octavos-t${i}-win`); if (w) w.textContent='—';
+    const w = tie.querySelector(`#cl-octavos-t${i}-win`);    if (w) w.textContent='—';
   }
 
-  // Hook recalculo y avance
-  cl_connectTwoLeg('cl-octavos', 8, (winners)=>{
-    // Pasar a cuartos por orden del bracket (1vs2 -> Q1, 3vs4 -> Q2, ...)
+  // conectar avances sucesivos
+  cl_connectTwoLeg('cl-octavos', 8, (winners8)=>{
+    // armar cuartos
     for (let i=0;i<4;i++){
-      const tA = winners[2*i], tB = winners[2*i+1];
+      const A = winners8[2*i], B = winners8[2*i+1];
       const tie = document.getElementById(`cl-cuartos-t${i}`);
+      if (!tie) continue;
       const homes = tie.querySelectorAll('.cl-home');
       const aways = tie.querySelectorAll('.cl-away');
-      // ida: A en casa, vuelta: B en casa
-      homes[0].textContent = tA; aways[0].textContent = tB;
-      homes[1].textContent = tB; aways[1].textContent = tA;
-      ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{ const el=tie.querySelector(`#cl-cuartos-t${i}-${suf}`); if (el) el.value=''; });
-      tie.querySelector(`#cl-cuartos-t${i}-global`).textContent='—';
-      tie.querySelector(`#cl-cuartos-t${i}-win`).textContent='—';
+      if (homes[0]) homes[0].textContent = A;
+      if (aways[0]) aways[0].textContent = B;
+      if (homes[1]) homes[1].textContent = B;
+      if (aways[1]) aways[1].textContent = A;
+      ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{
+        const el = tie.querySelector(`#cl-cuartos-t${i}-${suf}`);
+        if (el) el.value='';
+      });
+      const g = tie.querySelector(`#cl-cuartos-t${i}-global`); if (g) g.textContent='—';
+      const w = tie.querySelector(`#cl-cuartos-t${i}-win`);    if (w) w.textContent='—';
     }
-    cl_connectTwoLeg('cl-cuartos', 4, (wQ)=>{
+    cl_connectTwoLeg('cl-cuartos', 4, (w4)=>{
       for (let i=0;i<2;i++){
-        const tA=wQ[2*i], tB=wQ[2*i+1];
+        const A = w4[2*i], B = w4[2*i+1];
         const tie = document.getElementById(`cl-semis-t${i}`);
-        const homes=tie.querySelectorAll('.cl-home');
-        const aways=tie.querySelectorAll('.cl-away');
-        homes[0].textContent=tA; aways[0].textContent=tB;
-        homes[1].textContent=tB; aways[1].textContent=tA;
-        ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{ const el=tie.querySelector(`#cl-semis-t${i}-${suf}`); if (el) el.value=''; });
-        tie.querySelector(`#cl-semis-t${i}-global`).textContent='—';
-        tie.querySelector(`#cl-semis-t${i}-win`).textContent='—';
+        if (!tie) continue;
+        const homes = tie.querySelectorAll('.cl-home');
+        const aways = tie.querySelectorAll('.cl-away');
+        if (homes[0]) homes[0].textContent = A;
+        if (aways[0]) aways[0].textContent = B;
+        if (homes[1]) homes[1].textContent = B;
+        if (aways[1]) aways[1].textContent = A;
+        ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{
+          const el = tie.querySelector(`#cl-semis-t${i}-${suf}`);
+          if (el) el.value='';
+        });
+        const g = tie.querySelector(`#cl-semis-t${i}-global`); if (g) g.textContent='—';
+        const w = tie.querySelector(`#cl-semis-t${i}-win`);    if (w) w.textContent='—';
       }
-      cl_connectTwoLeg('cl-semis', 2, (wS)=>{
-        // Final a partido único: wS[0] vs wS[1]
+      cl_connectTwoLeg('cl-semis', 2, (w2)=>{
         const f = document.getElementById('cl-final-t0');
-        const sp = f.querySelectorAll('span');
-        sp[0].textContent = wS[0];
-        sp[1].textContent = wS[1];
-        const ia = document.getElementById('cl-final-t0-a');
-        const ib = document.getElementById('cl-final-t0-b');
-        ia.value=''; ib.value='';
-        const checkFinal=()=>{
-          const a=parseInt(ia.value), b=parseInt(ib.value);
-          if (Number.isNaN(a)||Number.isNaN(b)) return;
-          if (a===b){
-            const pen = prompt(`Final empatada ${wS[0]} vs ${wS[1]}. Ganador:`);
-            // no propagamos más, solo mostramos marcador
-          }
-        };
-        ia.addEventListener('change', checkFinal);
-        ib.addEventListener('change', checkFinal);
+        if (f){
+          const sp = f.querySelectorAll('span');
+          if (sp[0]) sp[0].textContent = w2[0];
+          if (sp[1]) sp[1].textContent = w2[1];
+          const ia = document.getElementById('cl-final-t0-a');
+          const ib = document.getElementById('cl-final-t0-b');
+          if (ia) ia.value = '';
+          if (ib) ib.value = '';
+        }
       });
     });
   });
 }
 
-  const top8 = cl_getTop8();
-  const winners=[];
-  for (let i=0;i<8;i++){ const el=document.getElementById(`pl${i}-win`); if (!el || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; } winners.push(el.textContent); }
-  const shuffled=[...winners].sort(()=>Math.random()-0.5);
-  const cards=document.querySelectorAll('#cl-octavos .match');
-  cards.forEach((card,i)=>{ const sp=card.querySelectorAll('span'); const inp=card.querySelectorAll('input'); sp[0].textContent=top8[i]; sp[1].textContent=shuffled[i]; inp[0].value=''; inp[1].value=''; });
-  cl_hookAdvance('#cl-octavos','#cl-cuartos'); cl_hookAdvance('#cl-cuartos','#cl-semis'); cl_hookAdvance('#cl-semis','#cl-final');
-}
-
-// Listeners
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('cl-agregar-jugadores')?.addEventListener('click', cl_agregarJugadores);
-  document.getElementById('cl-agregar-equipos')?.addEventListener('click', cl_agregarEquipos);
-  document.getElementById('cl-sortear-parejas')?.addEventListener('click', cl_sortearParejas);
-  document.getElementById('cl-generar-fase')?.addEventListener('click', cl_generarFaseLiga);
-  document.getElementById('cl-actualizar-tabla')?.addEventListener('click', cl_actualizarTabla);
-  document.getElementById('cl-gen-playin')?.addEventListener('click', cl_generarPlayin);
-  document.getElementById('cl-gen-octavos')?.addEventListener('click', cl_generarOctavos);
-});
-
-// Conecta inputs de una ronda a doble partido para calcular global y notificar winners
 function cl_connectTwoLeg(prefix, count, onWinnersReady){
   const winners = new Array(count).fill('—');
   for (let i=0;i<count;i++){
