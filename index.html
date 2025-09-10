@@ -862,6 +862,42 @@
 /* Alinear marcador con texto del partido */
 #cl-wiog .cl-leg{ display:flex; align-items:center; gap:4px; flex-wrap:nowrap; }
 #cl-wiog .cl-leg input[type=number]{ flex:0 0 auto; }
+
+/* === KO compact visual (like the provided mock) === */
+#cl-wiog #cl-ko .bracket{
+  display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between;
+}
+@media (min-width: 1100px){
+  #cl-wiog #cl-octavos .bracket{ justify-content:space-between; }
+  #cl-wiog #cl-cuartos .bracket{ justify-content:space-evenly; }
+  #cl-wiog #cl-semis .bracket{ justify-content:center; }
+}
+
+/* Match card sizing */
+#cl-wiog .match.compact{
+  min-width:180px; max-width:200px; min-height:96px;
+  background:#ffffff; color:#111; border-radius:12px; border:2px solid #eee; box-shadow:0 8px 18px rgba(0,0,0,.12);
+  padding:10px 12px; position:relative;
+}
+
+/* hide labels and team names inside legs */
+#cl-wiog .match.compact .cl-leg{ 
+  display:grid; grid-template-columns: repeat(2, 1fr); gap:6px 8px; 
+  justify-items:end; align-items:center; 
+  color:transparent; /* oculta "Ida:" "Vuelta:" y texto suelto */
+  margin:2px 0;
+}
+#cl-wiog .match.compact .cl-leg .cl-home,
+#cl-wiog .match.compact .cl-leg .cl-away{ display:none !important; }
+
+/* inputs smaller and square */
+#cl-wiog .match.compact input[type=number]{ 
+  width:38px; height:30px; font-size:.9rem; padding:2px 4px; 
+  background:#eef1f4; border:1px solid #d8dde6; border-radius:8px; color:#111;
+}
+
+/* Slight highlight for the first card in Octavos like mock */
+#cl-wiog #cl-octavos .match.compact:first-child{ background:#fff8e1; border-color:#ffe599; }
 </style>
 </head>
 <body>
