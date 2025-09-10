@@ -1290,296 +1290,337 @@ function avanzarAFinal() {
 <br/>
 <h3>🏆 Campeón Absoluto</h3>
 <div id="campeonFinal" style="font-size: 40px; color: #ffd700; text-shadow: 2px 2px 8px #ff0, 0 0 30px #ffeb3b; font-weight: bold; margin-bottom: 40px;"></div>
-
-<hr/>
-<h2>🏟️ Champions League WIOG</h2>
 <h3>👥 Agregar 36 Jugadores</h3>
-<textarea cols="40" id="cl-jugadores-input" placeholder="Escribe un jugador por línea (36 en total)" rows="8"></textarea><br/>
-<button id="cl-agregar-jugadores" onclick="(window.cl_agregarJugadores||cl_agregarJugadores)()">Agregar lista de jugadores</button>
-<div id="cl-jugadores-estado" style="margin-top:8px; font-weight:bold;"></div>
+<br/>
 <h3>🏳️ Agregar 36 Equipos</h3>
-<textarea cols="40" id="cl-equipos-input" placeholder="Escribe un equipo por línea (36 en total)" rows="8"></textarea><br/>
-<button id="cl-agregar-equipos" onclick="(window.cl_agregarEquipos||cl_agregarEquipos)()">Agregar lista de equipos</button>
-<div id="cl-equipos-estado" style="margin-top:8px; font-weight:bold;"></div>
+<br/>
 <div style="margin-top:14px;">
-<button id="cl-sortear-parejas" onclick="(window.cl_sortearParejas||cl_sortearParejas)()">🎲 Sortear Parejas (Jugador ⇄ Equipo)</button>
 </div>
-<div id="cl-parejas" style="margin-top:12px;"></div>
 <div style="margin-top:18px;">
-<button id="cl-generar-fase" onclick="(window.cl_generarFaseLiga||cl_generarFaseLiga)()">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
 </div>
-<div id="cl-fixtures" style="margin-top:16px;"></div>
-<button id="cl-actualizar-tabla" onclick="(window.cl_actualizarTabla||cl_actualizarTabla)()">📊 Generar/Actualizar Tabla (estilo Champions)</button>
-<div id="cl-standings" style="margin-top:12px;"></div>
-<div id="cl-playin-controls" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
-<button id="cl-gen-playin" onclick="(window.cl_generarPlayin||cl_generarPlayin)()">🎟️ Generar Play‑in (9–24)</button>
-<button id="cl-gen-octavos" onclick="(window.cl_generarOctavos||cl_generarOctavos)()">🏆 Generar Octavos (1–8 vs ganadores play‑in)</button>
+
+<section id="wiog-champions" style="margin-top:32px;">
+<h2>🏟️ Champions League WIOG</h2>
+<style id="wiog-css">
+  #wiog-champions .cl-card{background:#111;border:1px solid #333;border-radius:10px;padding:10px;color:#fff;}
+  #wiog-champions .cl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
+  #wiog-champions .cl-round{margin:14px 0;}
+  #wiog-champions .cl-table{width:100%;border-collapse:collapse;}
+  #wiog-champions .cl-table th,#wiog-champions .cl-table td{border:1px solid #444;padding:6px;background:#fff;color:#000;}
+  #wiog-champions .cl-table th{background:#e9ecef;}
+  #wiog-champions .cl-top8 tr{background:#c8f7c5!important;}
+  #wiog-champions .cl-playin tr{background:#fff3cd!important;}
+  #wiog-champions .cl-elim tr{background:#f8f9fa!important;}
+  #wiog-champions .bracket{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+  #wiog-champions .cl-tie{display:flex;flex-direction:column;gap:6px;min-width:260px;}
+  #wiog-champions .cl-leg{background:#ffffff;color:#000;padding:6px;border-radius:6px;}
+  #wiog-champions .cl-agg{font-weight:bold;color:#111;background:#fffbe6;padding:6px;border-radius:6px;border:1px solid #ffd24d;}
+  </style>
+<h3>👥 Agregar 36 Jugadores</h3>
+<textarea cols="40" id="wiog-jugadores-input" placeholder="Escribe un jugador por línea (36 en total)" rows="8"></textarea><br/>
+<button id="wiog-agregar-jugadores">Agregar lista de jugadores</button>
+<div id="wiog-jugadores-estado" style="margin-top:8px; font-weight:bold;"></div>
+<h3>🏳️ Agregar 36 Equipos</h3>
+<textarea cols="40" id="wiog-equipos-input" placeholder="Escribe un equipo por línea (36 en total)" rows="8"></textarea><br/>
+<button id="wiog-agregar-equipos">Agregar lista de equipos</button>
+<div id="wiog-equipos-estado" style="margin-top:8px; font-weight:bold;"></div>
+<div style="margin-top:14px;">
+<button id="wiog-sortear-parejas">🎲 Sortear Parejas (Jugador ⇄ Equipo)</button>
 </div>
-<div id="cl-playin" style="margin-top:12px;"></div>
-<div id="cl-ko" style="margin-top:18px;">
+<div id="wiog-parejas" style="margin-top:12px;"></div>
+<div style="margin-top:18px;">
+<button id="wiog-generar-fase">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
+</div>
+<div id="wiog-fixtures" style="margin-top:16px;"></div>
+<button id="wiog-actualizar-tabla">📊 Generar/Actualizar Tabla (estilo Champions)</button>
+<div id="wiog-standings" style="margin-top:12px;"></div>
+<div id="wiog-playin-controls" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+<button id="wiog-gen-playin">🎟️ Generar Play‑in (9–24)</button>
+<button id="wiog-gen-octavos">🏆 Generar Octavos (1–8 vs ganadores play‑in)</button>
+</div>
+<div id="wiog-playin" style="margin-top:12px;"></div>
+<div id="wiog-ko" style="margin-top:18px;">
 <h3>⚔️ Eliminatoria – Champions League WIOG</h3>
-<div id="cl-octavos"><h4>Octavos de Final</h4><div class="bracket"><div class="match cl-tie" id="cl-octavos-t0"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t0-ida-a" min="0" type="number"/> – <input id="cl-octavos-t0-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-octavos-t0-vta-a" min="0" type="number"/> – <input id="cl-octavos-t0-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t0-global">—</span>  Ganador: <span id="cl-octavos-t0-win">—</span></div></div><div class="match cl-tie" id="cl-octavos-t1"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t1-ida-a" min="0" type="number"/> – <input id="cl-octavos-t1-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-octavos-t1-vta-a" min="0" type="number"/> – <input id="cl-octavos-t1-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t1-global">—</span>  Ganador: <span id="cl-octavos-t1-win">—</span></div></div><div class="match cl-tie" id="cl-octavos-t2"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t2-ida-a" min="0" type="number"/> – <input id="cl-octavos-t2-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-octavos-t2-vta-a" min="0" type="number"/> – <input id="cl-octavos-t2-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t2-global">—</span>  Ganador: <span id="cl-octavos-t2-win">—</span></div></div><div class="match cl-tie" id="cl-octavos-t3"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t3-ida-a" min="0" type="number"/> – <input id="cl-octavos-t3-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-octavos-t3-vta-a" min="0" type="number"/> – <input id="cl-octavos-t3-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t3-global">—</span>  Ganador: <span id="cl-octavos-t3-win">—</span></div></div><div class="match cl-tie" id="cl-octavos-t4"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t4-ida-a" min="0" type="number"/> – <input id="cl-octavos-t4-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-octavos-t4-vta-a" min="0" type="number"/> – <input id="cl-octavos-t4-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t4-global">—</span>  Ganador: <span id="cl-octavos-t4-win">—</span></div></div><div class="match cl-tie" id="cl-octavos-t5"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t5-ida-a" min="0" type="number"/> – <input id="cl-octavos-t5-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-octavos-t5-vta-a" min="0" type="number"/> – <input id="cl-octavos-t5-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t5-global">—</span>  Ganador: <span id="cl-octavos-t5-win">—</span></div></div><div class="match cl-tie" id="cl-octavos-t6"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t6-ida-a" min="0" type="number"/> – <input id="cl-octavos-t6-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-octavos-t6-vta-a" min="0" type="number"/> – <input id="cl-octavos-t6-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t6-global">—</span>  Ganador: <span id="cl-octavos-t6-win">—</span></div></div><div class="match cl-tie" id="cl-octavos-t7"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-octavos-t7-ida-a" min="0" type="number"/> – <input id="cl-octavos-t7-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-octavos-t7-vta-a" min="0" type="number"/> – <input id="cl-octavos-t7-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-octavos-t7-global">—</span>  Ganador: <span id="cl-octavos-t7-win">—</span></div></div></div></div>
-<div id="cl-cuartos"><h4>Cuartos de Final</h4><div class="bracket"><div class="match cl-tie" id="cl-cuartos-t0"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-cuartos-t0-ida-a" min="0" type="number"/> – <input id="cl-cuartos-t0-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-cuartos-t0-vta-a" min="0" type="number"/> – <input id="cl-cuartos-t0-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-cuartos-t0-global">—</span>  Ganador: <span id="cl-cuartos-t0-win">—</span></div></div><div class="match cl-tie" id="cl-cuartos-t1"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-cuartos-t1-ida-a" min="0" type="number"/> – <input id="cl-cuartos-t1-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-cuartos-t1-vta-a" min="0" type="number"/> – <input id="cl-cuartos-t1-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-cuartos-t1-global">—</span>  Ganador: <span id="cl-cuartos-t1-win">—</span></div></div><div class="match cl-tie" id="cl-cuartos-t2"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-cuartos-t2-ida-a" min="0" type="number"/> – <input id="cl-cuartos-t2-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-cuartos-t2-vta-a" min="0" type="number"/> – <input id="cl-cuartos-t2-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-cuartos-t2-global">—</span>  Ganador: <span id="cl-cuartos-t2-win">—</span></div></div><div class="match cl-tie" id="cl-cuartos-t3"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-cuartos-t3-ida-a" min="0" type="number"/> – <input id="cl-cuartos-t3-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-cuartos-t3-vta-a" min="0" type="number"/> – <input id="cl-cuartos-t3-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-cuartos-t3-global">—</span>  Ganador: <span id="cl-cuartos-t3-win">—</span></div></div></div></div>
-<div id="cl-semis"><h4>Semifinales</h4><div class="bracket"><div class="match cl-tie" id="cl-semis-t0"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-semis-t0-ida-a" min="0" type="number"/> – <input id="cl-semis-t0-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-semis-t0-vta-a" min="0" type="number"/> – <input id="cl-semis-t0-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-semis-t0-global">—</span>  Ganador: <span id="cl-semis-t0-win">—</span></div></div><div class="match cl-tie" id="cl-semis-t1"><div class="cl-leg">Ida: <span class="cl-home">—</span> <input id="cl-semis-t1-ida-a" min="0" type="number"/> – <input id="cl-semis-t1-ida-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-leg">Vuelta: <span class="cl-home">—</span> <input id="cl-semis-t1-vta-a" min="0" type="number"/> – <input id="cl-semis-t1-vta-b" min="0" type="number"/> <span class="cl-away">—</span></div><div class="cl-agg">Global: <span id="cl-semis-t1-global">—</span>  Ganador: <span id="cl-semis-t1-win">—</span></div></div></div></div>
-<div id="cl-final"><h4>Gran Final</h4><div class="bracket"><div class="match cl-tie" id="cl-final-t0"><span class="cl-home">—</span><input id="cl-final-t0-a" min="0" type="number"/><span class="cl-away">—</span><input id="cl-final-t0-b" min="0" type="number"/></div></div></div>
+<div id="wiog-octavos"><h4>Octavos de Final</h4></div>
+<div id="wiog-cuartos"><h4>Cuartos de Final</h4></div>
+<div id="wiog-semis"><h4>Semifinales</h4></div>
+<div id="wiog-final"><h4>Gran Final</h4></div>
 </div>
-
 <script>
-// === Champions League WIOG Core ===
-let CL_JUGADORES = []; let CL_EQUIPOS = []; let CL_PAREJAS = [];
-let CL_JORNADAS = []; let CL_TABLA = [];
+  // === WIOG isolated logic (scoped) ===
+  (function(){
+    const root = document.getElementById('wiog-champions');
+    let JUG=[], EQ=[], PAREJAS=[], JORNADAS=[], TABLA=[];
 
-function cl_normalizarLista(t){ return (t||'').split('\n').map(s=>s.trim()).filter(Boolean); }
-function cl_unicos(a){ const s=new Set(); const out=[]; for(const x of a){ const k=x.toLowerCase(); if(!s.has(k)){ s.add(k); out.push(x);} } return out; }
-function cl_renderEstado(){
-  const j=document.getElementById('cl-jugadores-estado');
-  const e=document.getElementById('cl-equipos-estado');
-  if (j) j.innerHTML = `Jugadores cargados (<strong>${CL_JUGADORES.length}</strong>/36): ${CL_JUGADORES.join(', ')} ` + (CL_JUGADORES.length===36?'':` <span style="color:#ffeb3b;">(faltan ${36-CL_JUGADORES.length})</span>`);
-  if (e) e.innerHTML = `Equipos cargados (<strong>${CL_EQUIPOS.length}</strong>/36): ${CL_EQUIPOS.join(', ')} ` + (CL_EQUIPOS.length===36?'':` <span style="color:#ffeb3b;">(faltan ${36-CL_EQUIPOS.length})</span>`);
-}
-function cl_agregarJugadores(){ const ta=document.getElementById('cl-jugadores-input'); if(!ta){ alert('No se encontró el área de jugadores.'); return; } const l=cl_unicos(cl_normalizarLista(ta.value)); if(!l.length){ alert('Ingresa al menos 1 jugador.'); return;} CL_JUGADORES=l; cl_renderEstado(); }
-function cl_agregarEquipos(){ const ta=document.getElementById('cl-equipos-input'); if(!ta){ alert('No se encontró el área de equipos.'); return; } const l=cl_unicos(cl_normalizarLista(ta.value)); if(!l.length){ alert('Ingresa al menos 1 equipo.'); return;} CL_EQUIPOS=l; cl_renderEstado(); }
+    const $ = (id) => root.querySelector('#'+id);
+    const $$ = (sel) => root.querySelectorAll(sel);
 
-function cl_sortearParejas(){
-  if (CL_JUGADORES.length!==36 || CL_EQUIPOS.length!==36){ alert('Debes tener 36 jugadores y 36 equipos.'); return; }
-  const J=[...CL_JUGADORES].sort(()=>Math.random()-0.5);
-  const E=[...CL_EQUIPOS].sort(()=>Math.random()-0.5);
-  CL_PAREJAS = J.map((jug,i)=>({jugador:jug, equipo:E[i]}));
-  const cont=document.getElementById('cl-parejas');
-  if (cont){
-    cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
-    const grid=document.getElementById('cl-grid-parejas');
-    CL_PAREJAS.forEach(p=>{ const d=document.createElement('div'); d.className='cl-card'; d.innerHTML = `<strong>${p.jugador}</strong> ⇄ <span style="color:#ffd700; font-weight:700;">${p.equipo}</span>`; grid.appendChild(d); });
-  }
-}
+    function normalizar(t){ return (t||'').split('\n').map(s=>s.trim()).filter(Boolean); }
+    function unicos(a){ const s=new Set(); const out=[]; for(const x of a){ const k=x.toLowerCase(); if(!s.has(k)){ s.add(k); out.push(x);} } return out; }
+    function renderEstado(){
+      const j = $('wiog-jugadores-estado'), e = $('wiog-equipos-estado');
+      if (j) j.innerHTML = `Jugadores cargados (<strong>${JUG.length}</strong>/36): ${JUG.join(', ')} ` + (JUG.length===36?'':` <span style="color:#ffeb3b;">(faltan ${36-JUG.length})</span>`);
+      if (e) e.innerHTML = `Equipos cargados (<strong>${EQ.length}</strong>/36): ${EQ.join(', ')} ` + (EQ.length===36?'':` <span style="color:#ffeb3b;">(faltan ${36-EQ.length})</span>`);
+    }
 
-function cl_generarFaseLiga(){
-  if (CL_PAREJAS.length!==36){ alert('Primero sortea las parejas.'); return; }
-  const teams = CL_PAREJAS.map(p=>p.equipo);
-  const jugadorPorEquipo = new Map(CL_PAREJAS.map(p=>[p.equipo,p.jugador]));
-  let matchups = new Map(teams.map(t=>[t,new Set()]));
-  let homeCount = new Map(teams.map(t=>[t,0]));
-  const jornadas=[];
+    function agregarJugadores(){ const ta=$('wiog-jugadores-input'); if(!ta){ alert('No se encontró el área de jugadores.'); return; } const l=unicos(normalizar(ta.value)); if(!l.length){ alert('Ingresa al menos 1 jugador.'); return;} JUG=l; renderEstado(); }
+    function agregarEquipos(){ const ta=$('wiog-equipos-input'); if(!ta){ alert('No se encontró el área de equipos.'); return; } const l=unicos(normalizar(ta.value)); if(!l.length){ alert('Ingresa al menos 1 equipo.'); return;} EQ=l; renderEstado(); }
 
-  function tryRound(){
-    const disp=[...teams].sort(()=>Math.random()-0.5);
-    let pairings=[];
-    while(disp.length){
-      const a=disp.shift(); let found=false;
-      for (let i=0;i<disp.length;i++){ const b=disp[i];
-        if (!matchups.get(a).has(b)){
-          pairings.push([a,b]);
-          matchups.get(a).add(b); matchups.get(b).add(a);
-          disp.splice(i,1); found=true; break;
+    function sortearParejas(){
+      if (JUG.length!==36 || EQ.length!==36){ alert('Debes tener 36 jugadores y 36 equipos.'); return; }
+      const J=[...JUG].sort(()=>Math.random()-0.5);
+      const E=[...EQ].sort(()=>Math.random()-0.5);
+      PAREJAS = J.map((jug,i)=>({jugador:jug, equipo:E[i]}));
+      const cont=$('wiog-parejas');
+      if (cont){
+        cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="wiog-grid-parejas"></div></div>';
+        const grid=$('wiog-grid-parejas');
+        PAREJAS.forEach(p=>{ const d=document.createElement('div'); d.className='cl-card'; d.innerHTML = `<strong>${p.jugador}</strong> ⇄ <span style="color:#ffd700; font-weight:700;">${p.equipo}</span>`; grid.appendChild(d); });
+      }
+    }
+
+    function generarFaseLiga(){
+      if (PAREJAS.length!==36){ alert('Primero sortea las parejas.'); return; }
+      const teams = PAREJAS.map(p=>p.equipo);
+      const jugadorPorEquipo = new Map(PAREJAS.map(p=>[p.equipo,p.jugador]));
+      let matchups = new Map(teams.map(t=>[t,new Set()]));
+      let homeCount = new Map(teams.map(t=>[t,0]));
+      const jornadas=[];
+
+      function tryRound(){
+        const disp=[...teams].sort(()=>Math.random()-0.5);
+        let pairings=[];
+        while(disp.length){
+          const a=disp.shift(); let found=false;
+          for (let i=0;i<disp.length;i++){ const b=disp[i];
+            if (!matchups.get(a).has(b)){
+              pairings.push([a,b]);
+              matchups.get(a).add(b); matchups.get(b).add(a);
+              disp.splice(i,1); found=true; break;
+            }
+          }
+          if (!found){ pairings.forEach(([x,y])=>{ matchups.get(x).delete(y); matchups.get(y).delete(x); }); return null; }
         }
+        pairings = pairings.map(([home,away])=>{
+          const hc=homeCount.get(home), ac=homeCount.get(away);
+          if (hc - ac > 0){ homeCount.set(away, ac+1); return [away,home]; }
+          else { homeCount.set(home, hc+1); return [home,away]; }
+        });
+        return pairings;
       }
-      if (!found){ pairings.forEach(([x,y])=>{ matchups.get(x).delete(y); matchups.get(y).delete(x); }); return null; }
-    }
-    pairings = pairings.map(([home,away])=>{
-      const hc=homeCount.get(home), ac=homeCount.get(away);
-      if (hc - ac > 0){ homeCount.set(away, ac+1); return [away,home]; }
-      else { homeCount.set(home, hc+1); return [home,away]; }
-    });
-    return pairings;
-  }
 
-  for (let r=0;r<8;r++){
-    let ok=false, tries=0, pr=null;
-    while(!ok && tries<2000){ tries++; pr=tryRound(); ok=!!pr; }
-    if (!ok){ matchups = new Map(teams.map(t=>[t,new Set()])); homeCount = new Map(teams.map(t=>[t,0])); jornadas.length=0; r=-1; continue; }
-    jornadas.push(pr);
-  }
-  CL_JORNADAS = jornadas;
-
-  const cont=document.getElementById('cl-fixtures'); if (cont) cont.innerHTML='';
-  jornadas.forEach((pairs, idx)=>{
-    const roundDiv=document.createElement('div'); roundDiv.className='cl-round';
-    roundDiv.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
-    const table=document.createElement('table'); table.className='cl-table';
-    table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th></tr></thead>';
-    const tbody=document.createElement('tbody');
-    pairs.forEach(([home,away], mIdx)=>{
-      const jl=jugadorPorEquipo.get(home)||'', jv=jugadorPorEquipo.get(away)||'';
-      const ida=`cl-r${idx+1}-m${mIdx}-a`; const idb=`cl-r${idx+1}-m${mIdx}-b`;
-      const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${home}<br/><input type='number' min='0' id='${ida}' style='width:56px;'></td>`+
-                     `<td>${away}<br/><input type='number' min='0' id='${idb}' style='width:56px;'></td>`+
-                     `<td>${jl}</td><td>${jv}</td>`;
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody); roundDiv.appendChild(table);
-    if (cont) cont.appendChild(roundDiv);
-  });
-}
-
-function cl_actualizarTabla(){
-  if (!CL_PAREJAS.length || !CL_JORNADAS.length){ alert('Genera parejas y la fase de liga primero.'); return; }
-  const stats={}; CL_PAREJAS.forEach(p=> stats[p.equipo]={Equipo:p.equipo, Jugador:p.jugador, PJ:0,G:0,E:0,P:0,GF:0,GC:0,DG:0,Pts:0});
-  CL_JORNADAS.forEach((pairs,rIdx)=>{
-    pairs.forEach(([home,away], mIdx)=>{
-      const a=parseInt((document.getElementById(`cl-r${rIdx+1}-m${mIdx}-a`)||{}).value);
-      const b=parseInt((document.getElementById(`cl-r${rIdx+1}-m${mIdx}-b`)||{}).value);
-      if (Number.isNaN(a)||Number.isNaN(b)) return;
-      stats[home].PJ++; stats[away].PJ++;
-      stats[home].GF+=a; stats[home].GC+=b;
-      stats[away].GF+=b; stats[away].GC+=a;
-      if (a>b){ stats[home].G++; stats[away].P++; stats[home].Pts+=3; }
-      else if (a<b){ stats[away].G++; stats[home].P++; stats[away].Pts+=3; }
-      else { stats[home].E++; stats[away].E++; stats[home].Pts++; stats[away].Pts++; }
-    });
-  });
-  Object.values(stats).forEach(s=> s.DG=s.GF-s.GC);
-  const tabla=Object.values(stats).sort((a,b)=> b.Pts-a.Pts || b.DG-a.DG || b.GF-a.GF || a.Equipo.localeCompare(b.Equipo));
-  CL_TABLA = tabla;
-  const cont=document.getElementById('cl-standings'); if (!cont) return;
-  cont.innerHTML='';
-  const mk=(rows,start)=>{ const t=document.createElement('table'); t.className='cl-table';
-    t.innerHTML='<thead><tr><th>#</th><th>Equipo</th><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>';
-    const tb=document.createElement('tbody');
-    rows.forEach((r,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${start+i}</td><td>${r.Equipo}</td><td>${r.Jugador}</td><td>${r.PJ}</td><td>${r.G}</td><td>${r.E}</td><td>${r.P}</td><td>${r.GF}</td><td>${r.GC}</td><td>${r.DG}</td><td><strong>${r.Pts}</strong></td>`; tb.appendChild(tr); });
-    t.appendChild(tb); return t; };
-  const w1=document.createElement('div'); w1.className='cl-round cl-top8'; w1.innerHTML='<h4>1–8 Clasificación directa</h4>'; w1.appendChild(mk(tabla.slice(0,8),1));
-  const w2=document.createElement('div'); w2.className='cl-round cl-playin'; w2.innerHTML='<h4>9–24 Play-in</h4>'; w2.appendChild(mk(tabla.slice(8,24),9));
-  const w3=document.createElement('div'); w3.className='cl-round cl-elim'; w3.innerHTML='<h4>25–36 Eliminados</h4>'; w3.appendChild(mk(tabla.slice(24,36),25));
-  cont.appendChild(w1); cont.appendChild(w2); cont.appendChild(w3);
-}
-
-// ---- Play-in (ida/vuelta) ----
-function cl_generarPlayin(){
-  if (!CL_TABLA.length){ alert('Actualiza la tabla primero.'); return; }
-  const A=CL_TABLA.slice(8,16).map(r=>r.Equipo);
-  const B=CL_TABLA.slice(16,24).map(r=>r.Equipo);
-  const cont=document.getElementById('cl-playin'); cont.innerHTML='<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
-  const w=cont.querySelector('.cl-round'); const table=document.createElement('table'); table.className='cl-playin-table cl-table';
-  table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
-  const tb=document.createElement('tbody');
-  for (let i=0;i<8;i++){
-    const seeded=A[i], unseeded=B[7-i];
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${seeded} (cabeza) vs ${unseeded}</td>`+
-                 `${unseeded} <td>${unseeded} <input type="number" min="0" id="pl${i}-ida-a" style="width:56px;"> – <input type="number" min="0" id="pl${i}-ida-b" style="width:56px;"> ${seeded}</td>`+
-                 `<td>${seeded} <input type="number" min="0" id="pl${i}-vta-a" style="width:56px;"> – <input type="number" min="0" id="pl${i}-vta-b" style="width:56px;"> ${unseeded}</td>`+
-                 `<td id="pl${i}-global">—</td><td id="pl${i}-win">—</td>`;
-    tb.appendChild(tr);
-  }
-  table.appendChild(tb); w.appendChild(table);
-  for (let i=0;i<8;i++){
-    const seeded=A[i], unseeded=B[7-i];
-    const idaA=document.getElementById(`pl${i}-ida-a`);
-    const idaB=document.getElementById(`pl${i}-ida-b`);
-    const vtaA=document.getElementById(`pl${i}-vta-a`);
-    const vtaB=document.getElementById(`pl${i}-vta-b`);
-    const out=document.getElementById(`pl${i}-global`);
-    const win=document.getElementById(`pl${i}-win`);
-    const recalc=()=>{
-      const a1=parseInt(idaA.value), b1=parseInt(idaB.value), a2=parseInt(vtaA.value), b2=parseInt(vtaB.value);
-      if ([a1,b1,a2,b2].some(Number.isNaN)){ out.textContent='—'; win.textContent='—'; return; }
-      const golesSeeded = b1 + a2;
-      const golesUnseed = a1 + b2;
-      out.textContent = `${golesSeeded}–${golesUnseed}`;
-      if (golesSeeded>golesUnseed) win.textContent=seeded;
-      else if (golesSeeded<golesUnseed) win.textContent=unseeded;
-      else { const pen=prompt(`Empate ${seeded} vs ${unseeded}. Ganador por penales:`); win.textContent= pen || '—'; }
-    };
-    [idaA,idaB,vtaA,vtaB].forEach(el=> el && el.addEventListener('input', recalc));
-  }
-}
-
-// ---- KO helper and rounds ----
-function cl_connectTwoLeg(prefix, count, onWinnersReady){
-  const winners = new Array(count).fill('—');
-  for (let i=0;i<count;i++){
-    const tieId = `${prefix}-t${i}`;
-    const idaA = document.getElementById(`${tieId}-ida-a`);
-    const idaB = document.getElementById(`${tieId}-ida-b`);
-    const vtaA = document.getElementById(`${tieId}-vta-a`);
-    const vtaB = document.getElementById(`${tieId}-vta-b`);
-    const g    = document.getElementById(`${tieId}-global`);
-    const w    = document.getElementById(`${tieId}-win`);
-    const home = document.querySelectorAll(`#${tieId} .cl-home`);
-    const away = document.querySelectorAll(`#${tieId} .cl-away`);
-    const recalc = () => {
-      const a1 = parseInt(idaA?.value), b1 = parseInt(idaB?.value), a2 = parseInt(vtaA?.value), b2 = parseInt(vtaB?.value);
-      if ([a1,b1,a2,b2].some(Number.isNaN)){ if (g) g.textContent='—'; if (w) w.textContent='—'; winners[i]='—'; return; }
-      const teamHomeIda = home[0]?.textContent || '—';
-      const teamAwayIda = away[0]?.textContent || '—';
-      const totalA = a1 + b2; // local en la ida
-      const totalB = b1 + a2; // visitante en la ida
-      if (g) g.textContent = `${totalA}–${totalB}`;
-      let ganador = totalA>totalB ? teamHomeIda : totalB>totalA ? teamAwayIda : (prompt(`Empate ${teamHomeIda} vs ${teamAwayIda}. Ganador por penales:`)||'—');
-      if (w) w.textContent = ganador;
-      winners[i] = ganador;
-      if (winners.every(x => x && x!=='—')) onWinnersReady([...winners]);
-    };
-    [idaA,idaB,vtaA,vtaB].forEach(el => el && el.addEventListener('input', recalc));
-  }
-}
-
-function cl_generarOctavos(){
-  if (!CL_TABLA.length){ alert('Actualiza la tabla primero.'); return; }
-  const top8 = CL_TABLA.slice(0,8).map(r=>r.Equipo);
-  const winners=[];
-  for (let i=0;i<8;i++){ const el=document.getElementById(`pl${i}-win`); if (!el || !el.textContent || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; } winners.push(el.textContent); }
-  const shuffled = winners.sort(()=>Math.random()-0.5);
-
-  // Populate octavos ties: ida ganador play-in (casa); vuelta cabeza (casa)
-  for (let i=0;i<8;i++){
-    const tie = document.getElementById(`cl-octavos-t${i}`);
-    if (!tie) continue;
-    const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
-    if (homes[0]) homes[0].textContent = shuffled[i];
-    if (aways[0]) aways[0].textContent = top8[i];
-    if (homes[1]) homes[1].textContent = top8[i];
-    if (aways[1]) aways[1].textContent = shuffled[i];
-    ['ida-a','ida-b','vta-a','vta-b'].forEach(s=>{ const el=tie.querySelector(`#cl-octavos-t${i}-${s}`); if (el) el.value=''; });
-    const g=tie.querySelector(`#cl-octavos-t${i}-global`); if (g) g.textContent='—';
-    const w=tie.querySelector(`#cl-octavos-t${i}-win`); if (w) w.textContent='—';
-  }
-
-  // Hook encadenado: Octavos -> Cuartos -> Semis -> Final
-  cl_connectTwoLeg('cl-octavos', 8, (winners8)=>{
-    for (let i=0;i<4;i++){
-      const A=winners8[2*i], B=winners8[2*i+1];
-      const tie=document.getElementById(`cl-cuartos-t${i}`);
-      if (!tie) continue;
-      const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
-      homes[0].textContent=A; aways[0].textContent=B; homes[1].textContent=B; aways[1].textContent=A;
-      ['ida-a','ida-b','vta-a','vta-b'].forEach(s=>{ const el=tie.querySelector(`#cl-cuartos-t${i}-${s}`); if (el) el.value=''; });
-      const g=tie.querySelector(`#cl-cuartos-t${i}-global`); if (g) g.textContent='—';
-      const w=tie.querySelector(`#cl-cuartos-t${i}-win`); if (w) w.textContent='—';
-    }
-    cl_connectTwoLeg('cl-cuartos', 4, (w4)=>{
-      for (let i=0;i<2;i++){
-        const A=w4[2*i], B=w4[2*i+1];
-        const tie=document.getElementById(`cl-semis-t${i}`);
-        if (!tie) continue;
-        const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
-        homes[0].textContent=A; aways[0].textContent=B; homes[1].textContent=B; aways[1].textContent=A;
-        ['ida-a','ida-b','vta-a','vta-b'].forEach(s=>{ const el=tie.querySelector(`#cl-semis-t${i}-${s}`); if (el) el.value=''; });
-        const g=tie.querySelector(`#cl-semis-t${i}-global`); if (g) g.textContent='—';
-        const w=tie.querySelector(`#cl-semis-t${i}-win`); if (w) w.textContent='—';
+      for (let r=0;r<8;r++){
+        let ok=false, tries=0, pr=null;
+        while(!ok && tries<2000){ tries++; pr=tryRound(); ok=!!pr; }
+        if (!ok){ matchups = new Map(teams.map(t=>[t,new Set()])); homeCount = new Map(teams.map(t=>[t,0])); jornadas.length=0; r=-1; continue; }
+        jornadas.push(pr);
       }
-      cl_connectTwoLeg('cl-semis', 2, (w2)=>{
-        const f=document.getElementById('cl-final-t0'); if (f){ const sp=f.querySelectorAll('span'); if (sp[0]) sp[0].textContent=w2[0]; if (sp[1]) sp[1].textContent=w2[1]; const ia=document.getElementById('cl-final-t0-a'); const ib=document.getElementById('cl-final-t0-b'); if (ia) ia.value=''; if (ib) ib.value=''; }
+      JORNADAS = jornadas;
+
+      const cont=$('wiog-fixtures'); if (cont) cont.innerHTML='';
+      jornadas.forEach((pairs, idx)=>{
+        const roundDiv=document.createElement('div'); roundDiv.className='cl-round';
+        roundDiv.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
+        const table=document.createElement('table'); table.className='cl-table';
+        table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th></tr></thead>';
+        const tbody=document.createElement('tbody');
+        pairs.forEach(([home,away], mIdx)=>{
+          const jl=jugadorPorEquipo.get(home)||'', jv=jugadorPorEquipo.get(away)||'';
+          const ida=`wiog-r${idx+1}-m${mIdx}-a`; const idb=`wiog-r${idx+1}-m${mIdx}-b`;
+          const tr=document.createElement('tr');
+          tr.innerHTML = `<td>${home}<br/><input type='number' min='0' id='${ida}' style='width:56px;'></td>`+
+                         `<td>${away}<br/><input type='number' min='0' id='${idb}' style='width:56px;'></td>`+
+                         `<td>${jl}</td><td>${jv}</td>`;
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody); roundDiv.appendChild(table);
+        if (cont) cont.appendChild(roundDiv);
       });
-    });
-  });
-}
+    }
 
-// Listeners & onclick backups
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('cl-agregar-jugadores')?.addEventListener('click', cl_agregarJugadores);
-  document.getElementById('cl-agregar-equipos')?.addEventListener('click', cl_agregarEquipos);
-  document.getElementById('cl-sortear-parejas')?.addEventListener('click', cl_sortearParejas);
-  document.getElementById('cl-generar-fase')?.addEventListener('click', cl_generarFaseLiga);
-  document.getElementById('cl-actualizar-tabla')?.addEventListener('click', cl_actualizarTabla);
-  document.getElementById('cl-gen-playin')?.addEventListener('click', cl_generarPlayin);
-  document.getElementById('cl-gen-octavos')?.addEventListener('click', cl_generarOctavos);
-});
-// Expose globals for inline onclick fallbacks
-window.cl_agregarJugadores=cl_agregarJugadores; window.cl_agregarEquipos=cl_agregarEquipos;
-window.cl_sortearParejas=cl_sortearParejas; window.cl_generarFaseLiga=cl_generarFaseLiga;
-window.cl_actualizarTabla=cl_actualizarTabla; window.cl_generarPlayin=cl_generarPlayin; window.cl_generarOctavos=cl_generarOctavos;
-</script>
+    function actualizarTabla(){
+      if (!PAREJAS.length || !JORNADAS.length){ alert('Genera parejas y la fase de liga primero.'); return; }
+      const stats={}; PAREJAS.forEach(p=> stats[p.equipo]={Equipo:p.equipo, Jugador:p.jugador, PJ:0,G:0,E:0,P:0,GF:0,GC:0,DG:0,Pts:0});
+      JORNADAS.forEach((pairs,rIdx)=>{
+        pairs.forEach(([home,away], mIdx)=>{
+          const a=parseInt(($(`wiog-r${rIdx+1}-m${mIdx}-a`)||{}).value);
+          const b=parseInt(($(`wiog-r${rIdx+1}-m${mIdx}-b`)||{}).value);
+          if (Number.isNaN(a)||Number.isNaN(b)) return;
+          stats[home].PJ++; stats[away].PJ++;
+          stats[home].GF+=a; stats[home].GC+=b;
+          stats[away].GF+=b; stats[away].GC+=a;
+          if (a>b){ stats[home].G++; stats[away].P++; stats[home].Pts+=3; }
+          else if (a<b){ stats[away].G++; stats[home].P++; stats[away].Pts+=3; }
+          else { stats[home].E++; stats[away].E++; stats[home].Pts++; stats[away].Pts++; }
+        });
+      });
+      Object.values(stats).forEach(s=> s.DG=s.GF-s.GC);
+      const tabla=Object.values(stats).sort((a,b)=> b.Pts-a.Pts || b.DG-a.DG || b.GF-a.GF || a.Equipo.localeCompare(b.Equipo));
+      TABLA = tabla;
+      const cont=$('wiog-standings'); if (!cont) return;
+      cont.innerHTML='';
+      const mk=(rows,start)=>{ const t=document.createElement('table'); t.className='cl-table';
+        t.innerHTML='<thead><tr><th>#</th><th>Equipo</th><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>';
+        const tb=document.createElement('tbody');
+        rows.forEach((r,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${start+i}</td><td>${r.Equipo}</td><td>${r.Jugador}</td><td>${r.PJ}</td><td>${r.G}</td><td>${r.E}</td><td>${r.P}</td><td>${r.GF}</td><td>${r.GC}</td><td>${r.DG}</td><td><strong>${r.Pts}</strong></td>`; tb.appendChild(tr); });
+        t.appendChild(tb); return t; };
+      const w1=document.createElement('div'); w1.className='cl-round cl-top8'; w1.innerHTML='<h4>1–8 Clasificación directa</h4>'; w1.appendChild(mk(tabla.slice(0,8),1));
+      const w2=document.createElement('div'); w2.className='cl-round cl-playin'; w2.innerHTML='<h4>9–24 Play-in</h4>'; w2.appendChild(mk(tabla.slice(8,24),9));
+      const w3=document.createElement('div'); w3.className='cl-round cl-elim'; w3.innerHTML='<h4>25–36 Eliminados</h4>'; w3.appendChild(mk(tabla.slice(24,36),25));
+      cont.appendChild(w1); cont.appendChild(w2); cont.appendChild(w3);
+    }
+
+    function generarPlayin(){
+      if (!TABLA.length){ alert('Actualiza la tabla primero.'); return; }
+      const A=TABLA.slice(8,16).map(r=>r.Equipo);
+      const B=TABLA.slice(16,24).map(r=>r.Equipo);
+      const cont=$('wiog-playin'); cont.innerHTML='<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
+      const w=cont.querySelector('.cl-round'); const table=document.createElement('table'); table.className='cl-table';
+      table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
+      const tb=document.createElement('tbody');
+      for (let i=0;i<8;i++){
+        const seeded=A[i], unseeded=B[7-i];
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${seeded} (cabeza) vs ${unseeded}</td>`+
+                     `<td>${unseeded} <input type="number" min="0" id="wiog-pl${i}-ida-a" style="width:56px;"> – <input type="number" min="0" id="wiog-pl${i}-ida-b" style="width:56px;"> ${seeded}</td>`+
+                     `<td>${seeded} <input type="number" min="0" id="wiog-pl${i}-vta-a" style="width:56px;"> – <input type="number" min="0" id="wiog-pl${i}-vta-b" style="width:56px;"> ${unseeded}</td>`+
+                     `<td id="wiog-pl${i}-global">—</td><td id="wiog-pl${i}-win">—</td>`;
+        tb.appendChild(tr);
+      }
+      table.appendChild(tb); w.appendChild(table);
+      for (let i=0;i<8;i++){
+        const seeded=A[i], unseeded=B[7-i];
+        const idaA=$(`wiog-pl${i}-ida-a`), idaB=$(`wiog-pl${i}-ida-b`), vtaA=$(`wiog-pl${i}-vta-a`), vtaB=$(`wiog-pl${i}-vta-b`);
+        const out=$(`wiog-pl${i}-global`), win=$(`wiog-pl${i}-win`);
+        const recalc=()=>{
+          const a1=parseInt(idaA.value), b1=parseInt(idaB.value), a2=parseInt(vtaA.value), b2=parseInt(vtaB.value);
+          if ([a1,b1,a2,b2].some(Number.isNaN)){ out.textContent='—'; win.textContent='—'; return; }
+          const golesSeeded = b1 + a2, golesUnseed = a1 + b2;
+          out.textContent = `${golesSeeded}–${golesUnseed}`;
+          if (golesSeeded>golesUnseed) win.textContent=seeded;
+          else if (golesSeeded<golesUnseed) win.textContent=unseeded;
+          else { const pen=prompt(`Empate ${seeded} vs ${unseeded}. Ganador por penales:`); win.textContent= pen || '—'; }
+        };
+        [idaA,idaB,vtaA,vtaB].forEach(el=> el && el.addEventListener('input', recalc));
+      }
+    }
+
+    function buildTwoLegRound(containerId, rid, count){
+      const parent = $(containerId);
+      parent.innerHTML = parent.innerHTML; // keep header
+      const bracket=document.createElement('div'); bracket.className='bracket';
+      for (let i=0;i<count;i++){
+        const tie=document.createElement('div'); tie.className='match cl-tie'; tie.id=`${rid}-t${i}`;
+        const l1=document.createElement('div'); l1.className='cl-leg';
+        l1.append('Ida: ');
+        const h1=document.createElement('span'); h1.className='cl-home'; h1.textContent='—';
+        const a1=document.createElement('input'); a1.type='number'; a1.min='0'; a1.id=`${rid}-t${i}-ida-a`;
+        const v1=document.createElement('span'); v1.className='cl-away'; v1.textContent='—';
+        const b1=document.createElement('input'); b1.type='number'; b1.min='0'; b1.id=`${rid}-t${i}-ida-b`;
+        l1.append(h1,' ',a1,' – ',b1,' ',v1);
+        const l2=document.createElement('div'); l2.className='cl-leg';
+        l2.append('Vuelta: ');
+        const h2=document.createElement('span'); h2.className='cl-home'; h2.textContent='—';
+        const a2=document.createElement('input'); a2.type='number'; a2.min='0'; a2.id=`${rid}-t${i}-vta-a`;
+        const v2=document.createElement('span'); v2.className='cl-away'; v2.textContent='—';
+        const b2=document.createElement('input'); b2.type='number'; b2.min='0'; b2.id=`${rid}-t${i}-vta-b`;
+        l2.append(h2,' ',a2,' – ',b2,' ',v2);
+        const agg=document.createElement('div'); agg.className='cl-agg';
+        agg.append('Global: '); const g=document.createElement('span'); g.id=`${rid}-t${i}-global`; g.textContent='—'; agg.append(g); agg.append('  Ganador: ');
+        const w=document.createElement('span'); w.id=`${rid}-t${i}-win`; w.textContent='—'; agg.append(w);
+        tie.append(l1,l2,agg); bracket.append(tie);
+      }
+      parent.appendChild(bracket);
+    }
+
+    function connectTwoLeg(prefix, count, onWinnersReady){
+      const winners = new Array(count).fill('—');
+      for (let i=0;i<count;i++){
+        const tieId = `${prefix}-t${i}`;
+        const idaA = root.querySelector(`#${tieId}-ida-a`);
+        const idaB = root.querySelector(`#${tieId}-ida-b`);
+        const vtaA = root.querySelector(`#${tieId}-vta-a`);
+        const vtaB = root.querySelector(`#${tieId}-vta-b`);
+        const g    = root.querySelector(`#${tieId}-global`);
+        const w    = root.querySelector(`#${tieId}-win`);
+        const home = root.querySelectorAll(`#${tieId} .cl-home`);
+        const away = root.querySelectorAll(`#${tieId} .cl-away`);
+        const recalc = () => {
+          const a1 = parseInt(idaA?.value), b1 = parseInt(idaB?.value), a2 = parseInt(vtaA?.value), b2 = parseInt(vtaB?.value);
+          if ([a1,b1,a2,b2].some(Number.isNaN)){ if (g) g.textContent='—'; if (w) w.textContent='—'; winners[i]='—'; return; }
+          const teamHomeIda = home[0]?.textContent || '—';
+          const teamAwayIda = away[0]?.textContent || '—';
+          const totalA = a1 + b2, totalB = b1 + a2;
+          if (g) g.textContent = `${totalA}–${totalB}`;
+          let ganador = totalA>totalB ? teamHomeIda : totalB>totalA ? teamAwayIda : (prompt(`Empate ${teamHomeIda} vs ${teamAwayIda}. Ganador por penales:`)||'—');
+          if (w) w.textContent = ganador;
+          winners[i] = ganador;
+          if (winners.every(x => x && x!=='—')) onWinnersReady([...winners]);
+        };
+        [idaA,idaB,vtaA,vtaB].forEach(el => el && el.addEventListener('input', recalc));
+      }
+    }
+
+    function generarOctavos(){
+      if (!TABLA.length){ alert('Actualiza la tabla primero.'); return; }
+      // Build rounds UI once
+      buildTwoLegRound('wiog-octavos','wiog-octavos',8);
+      buildTwoLegRound('wiog-cuartos','wiog-cuartos',4);
+      buildTwoLegRound('wiog-semis','wiog-semis',2);
+      // Populate octavos
+      const top8 = TABLA.slice(0,8).map(r=>r.Equipo);
+      const winners=[];
+      for (let i=0;i<8;i++){ const el=$(`wiog-pl${i}-win`); if (!el || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; } winners.push(el.textContent); }
+      const shuffled = winners.sort(()=>Math.random()-0.5);
+      for (let i=0;i<8;i++){
+        const tie = root.querySelector(`#wiog-octavos-t${i}`); if (!tie) continue;
+        const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+        if (homes[0]) homes[0].textContent = shuffled[i];
+        if (aways[0]) aways[0].textContent = top8[i];
+        if (homes[1]) homes[1].textContent = top8[i];
+        if (aways[1]) aways[1].textContent = shuffled[i];
+        ['ida-a','ida-b','vta-a','vta-b'].forEach(s=>{ const el=tie.querySelector(`#wiog-octavos-t${i}-${s}`); if (el) el.value=''; });
+        const g=tie.querySelector(`#wiog-octavos-t${i}-global`); if (g) g.textContent='—';
+        const w=tie.querySelector(`#wiog-octavos-t${i}-win`); if (w) w.textContent='—';
+      }
+      // Chain: octavos -> cuartos -> semis -> final
+      connectTwoLeg('wiog-octavos', 8, (w8)=>{
+        for (let i=0;i<4;i++){
+          const A=w8[2*i], B=w8[2*i+1];
+          const tie=root.querySelector(`#wiog-cuartos-t${i}`); if (!tie) continue;
+          const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+          homes[0].textContent=A; aways[0].textContent=B; homes[1].textContent=B; aways[1].textContent=A;
+          ['ida-a','ida-b','vta-a','vta-b'].forEach(s=>{ const el=tie.querySelector(`#wiog-cuartos-t${i}-${s}`); if (el) el.value=''; });
+          const g=tie.querySelector(`#wiog-cuartos-t${i}-global`); if (g) g.textContent='—';
+          const w=tie.querySelector(`#wiog-cuartos-t${i}-win`); if (w) w.textContent='—';
+        }
+        connectTwoLeg('wiog-cuartos', 4, (w4)=>{
+          for (let i=0;i<2;i++){
+            const A=w4[2*i], B=w4[2*i+1];
+            const tie=root.querySelector(`#wiog-semis-t${i}`); if (!tie) continue;
+            const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+            homes[0].textContent=A; aways[0].textContent=B; homes[1].textContent=B; aways[1].textContent=A;
+            ['ida-a','ida-b','vta-a','vta-b'].forEach(s=>{ const el=tie.querySelector(`#wiog-semis-t${i}-${s}`); if (el) el.value=''; });
+            const g=tie.querySelector(`#wiog-semis-t${i}-global`); if (g) g.textContent='—';
+            const w=tie.querySelector(`#wiog-semis-t${i}-win`); if (w) w.textContent='—';
+          }
+          connectTwoLeg('wiog-semis', 2, (w2)=>{
+            const f = $('wiog-final'); f.innerHTML = '<h4>Gran Final</h4><div class="bracket"><div class="match cl-tie" id="wiog-final-t0"><span class="cl-home">'+w2[0]+'</span><input type="number" min="0" id="wiog-final-t0-a"><span class="cl-away">'+w2[1]+'</span><input type="number" min="0" id="wiog-final-t0-b"></div></div>';
+          });
+        });
+      });
+    }
+
+    // Wire buttons
+    $('wiog-agregar-jugadores')?.addEventListener('click', agregarJugadores);
+    $('wiog-agregar-equipos')?.addEventListener('click', agregarEquipos);
+    $('wiog-sortear-parejas')?.addEventListener('click', sortearParejas);
+    $('wiog-generar-fase')?.addEventListener('click', generarFaseLiga);
+    $('wiog-actualizar-tabla')?.addEventListener('click', actualizarTabla);
+    $('wiog-gen-playin')?.addEventListener('click', generarPlayin);
+    $('wiog-gen-octavos')?.addEventListener('click', generarOctavos);
+  })();
+  </script>
+</section>
 </body>
 </html>
