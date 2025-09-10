@@ -1386,32 +1386,32 @@ function cl_renderEstado(){
 }
 
 
+
 function cl_agregarJugadores(){
-  const ta = document.getElementById('cl-jugadores-input');
+  const ta = document.getElementById('cl-jugadores-input') || document.getElementById('jugadoresInput');
   if (!ta){ alert('No se encontró el área de jugadores.'); return; }
-  const raw = ta.value || '';
-  const lista = cl_unicos(cl_normalizarLista(raw));
+  let lista = cl_unicos(cl_normalizarLista(ta.value||''));
   if (lista.length === 0){ alert('Ingresa al menos 1 jugador.'); return; }
-  if (lista.length !== 36){
-    console.warn('Se registraron', lista.length, 'jugadores. Faltan', 36 - lista.length);
-  }
+  if (lista.length > 36) lista = lista.slice(0,36);
   window.CL_JUGADORES = lista;
   if (typeof cl_renderEstado === 'function') cl_renderEstado();
+  alert('✅ Jugadores cargados: ' + lista.length);
 }
+
+
 
 
 function cl_agregarEquipos(){
-  const ta2 = document.getElementById('cl-equipos-input');
+  const ta2 = document.getElementById('cl-equipos-input') || document.getElementById('listaEquipos');
   if (!ta2){ alert('No se encontró el área de equipos.'); return; }
-  const raw = ta2.value || '';
-  const lista = cl_unicos(cl_normalizarLista(raw));
+  let lista = cl_unicos(cl_normalizarLista(ta2.value||''));
   if (lista.length === 0){ alert('Ingresa al menos 1 equipo.'); return; }
-  if (lista.length !== 36){
-    console.warn('Se registraron', lista.length, 'equipos. Faltan', 36 - lista.length);
-  }
+  if (lista.length > 36) lista = lista.slice(0,36);
   window.CL_EQUIPOS = lista;
   if (typeof cl_renderEstado === 'function') cl_renderEstado();
+  alert('✅ Equipos cargados: ' + lista.length);
 }
+
 
 
 function cl_sortearParejas(){
