@@ -841,6 +841,13 @@
 @media (min-width: 1100px){
   #cl-wiog #cl-ko .ko-grid{ grid-template-columns: repeat(3, minmax(320px, 1fr)); align-items:start; }
 }
+
+/* === Horizontal KO (3 columnas): Octavos | Cuartos | Semis+Final === */
+#cl-wiog #cl-ko .ko-grid{ display:grid; gap:16px; grid-template-columns: 1fr; }
+#cl-wiog #cl-ko .ko-col{ display:flex; flex-direction:column; gap:16px; }
+@media (min-width: 1100px){
+  #cl-wiog #cl-ko .ko-grid{ grid-template-columns: repeat(3, minmax(320px, 1fr)); align-items:start; }
+}
 </style>
 </head>
 <body>
