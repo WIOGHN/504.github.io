@@ -1346,18 +1346,17 @@ window.cl_fallbackSortearParejas = function(){
   window.CL_PAREJAS = jugadores.map(function(j,i){ return {jugador:j, equipo:equipos[i]}; });
 };
 </script>
-
 </div>
 <div id="cl-parejas" style="margin-top:12px;"></div>
 <div style="margin-top:18px;">
-<button id="cl-generar-fase">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
+<button id="cl-generar-fase" onclick="(window.cl_generarFaseLiga)()">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
 </div>
 <div id="cl-fixtures" style="margin-top:16px;"></div>
-<button id="cl-actualizar-tabla">📊 Generar/Actualizar Tabla (estilo Champions)</button>
+<button id="cl-actualizar-tabla" onclick="(window.cl_actualizarTabla)()">📊 Generar/Actualizar Tabla (estilo Champions)</button>
 <div id="cl-standings" style="margin-top:12px;"></div>
 <div id="cl-playin-controls" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
-<button id="cl-gen-playin">🎟️ Generar Play‑in (9–24)</button>
-<button id="cl-gen-octavos">🏆 Generar Octavos (1–8 vs ganadores play‑in)</button>
+<button id="cl-gen-playin" onclick="(window.cl_generarPlayin)()">🎟️ Generar Play‑in (9–24)</button>
+<button id="cl-gen-octavos" onclick="(window.cl_generarOctavos)()">🏆 Generar Octavos (1–8 vs ganadores play‑in)</button>
 </div>
 <div id="cl-playin" style="margin-top:12px;"></div>
 <div id="cl-ko" style="margin-top:18px;">
@@ -1604,91 +1603,6 @@ function cl_hookAdvance(fromSel,toSel){
 
 function cl_generarOctavos(){
   if (!CL_TABLA.length){ alert('Actualiza la tabla primero.'); return; }
-  const top8 = cl_getTop8();
-  const winners=[];
-  for (let i=0;i<8;i++){ const el=document.getElementById(`pl${i}-win`); if (!el || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; } winners.push(el.textContent); }
-  const shuffled=[...winners].sort(()=>Math.random()-0.5);
-
-  // Rellenar 8 llaves a doble partido (cabezas juegan vuelta en casa)
-  for (let i=0;i<8;i++){
-    const tie = document.getElementById(`cl-octavos-t${i}`);
-    const homes = tie.querySelectorAll('.cl-home');
-    const aways = tie.querySelectorAll('.cl-away');
-    // ida: no cabeza en casa (ganador play-in)
-    homes[0].textContent = shuffled[i];
-    aways[0].textContent = top8[i];
-    // vuelta: cabeza en casa
-    homes[1].textContent = top8[i];
-    aways[1].textContent = shuffled[i];
-    // limpiar marcadores y global
-    ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{
-      const inp = tie.querySelector(`#cl-octavos-t${i}-${suf}`);
-      if (inp) inp.value='';
-    });
-    const g = tie.querySelector(`#cl-octavos-t${i}-global`); if (g) g.textContent='—';
-    const w = tie.querySelector(`#cl-octavos-t${i}-win`); if (w) w.textContent='—';
-  }
-
-  // Hook recalculo y avance
-  cl_connectTwoLeg('cl-octavos', 8, (winners)=>{
-    // Pasar a cuartos por orden del bracket (1vs2 -> Q1, 3vs4 -> Q2, ...)
-    for (let i=0;i<4;i++){
-      const tA = winners[2*i], tB = winners[2*i+1];
-      const tie = document.getElementById(`cl-cuartos-t${i}`);
-      const homes = tie.querySelectorAll('.cl-home');
-      const aways = tie.querySelectorAll('.cl-away');
-      // ida: A en casa, vuelta: B en casa
-      homes[0].textContent = tA; aways[0].textContent = tB;
-      homes[1].textContent = tB; aways[1].textContent = tA;
-      ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{ const el=tie.querySelector(`#cl-cuartos-t${i}-${suf}`); if (el) el.value=''; });
-      tie.querySelector(`#cl-cuartos-t${i}-global`).textContent='—';
-      tie.querySelector(`#cl-cuartos-t${i}-win`).textContent='—';
-    }
-    cl_connectTwoLeg('cl-cuartos', 4, (wQ)=>{
-      for (let i=0;i<2;i++){
-        const tA=wQ[2*i], tB=wQ[2*i+1];
-        const tie = document.getElementById(`cl-semis-t${i}`);
-        const homes=tie.querySelectorAll('.cl-home');
-        const aways=tie.querySelectorAll('.cl-away');
-        homes[0].textContent=tA; aways[0].textContent=tB;
-        homes[1].textContent=tB; aways[1].textContent=tA;
-        ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{ const el=tie.querySelector(`#cl-semis-t${i}-${suf}`); if (el) el.value=''; });
-        tie.querySelector(`#cl-semis-t${i}-global`).textContent='—';
-        tie.querySelector(`#cl-semis-t${i}-win`).textContent='—';
-      }
-      cl_connectTwoLeg('cl-semis', 2, (wS)=>{
-        // Final a partido único: wS[0] vs wS[1]
-        const f = document.getElementById('cl-final-t0');
-        const sp = f.querySelectorAll('span');
-        sp[0].textContent = wS[0];
-        sp[1].textContent = wS[1];
-        const ia = document.getElementById('cl-final-t0-a');
-        const ib = document.getElementById('cl-final-t0-b');
-        ia.value=''; ib.value='';
-        const checkFinal=()=>{
-          const a=parseInt(ia.value), b=parseInt(ib.value);
-          if (Number.isNaN(a)||Number.isNaN(b)) return;
-          if (a===b){
-            const pen = prompt(`Final empatada ${wS[0]} vs ${wS[1]}. Ganador:`);
-            // no propagamos más, solo mostramos marcador
-          }
-        };
-        ia.addEventListener('change', checkFinal);
-        ib.addEventListener('change', checkFinal);
-      });
-    });
-  });
-}
-
-  const top8 = cl_getTop8();
-  const winners=[];
-  for (let i=0;i<8;i++){ const el=document.getElementById(`pl${i}-win`); if (!el || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; } winners.push(el.textContent); }
-  const shuffled=[...winners].sort(()=>Math.random()-0.5);
-  const cards=document.querySelectorAll('#cl-octavos .match');
-  cards.forEach((card,i)=>{ const sp=card.querySelectorAll('span'); const inp=card.querySelectorAll('input'); sp[0].textContent=top8[i]; sp[1].textContent=shuffled[i]; inp[0].value=''; inp[1].value=''; });
-  cl_hookAdvance('#cl-octavos','#cl-cuartos'); cl_hookAdvance('#cl-cuartos','#cl-semis'); cl_hookAdvance('#cl-semis','#cl-final');
-}
-
 // Listeners
 document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('cl-agregar-jugadores')?.addEventListener('click', cl_agregarJugadores);
