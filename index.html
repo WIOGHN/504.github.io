@@ -1349,7 +1349,7 @@ window.cl_fallbackSortearParejas = function(){
 </div>
 <div id="cl-parejas" style="margin-top:12px;"></div>
 <div style="margin-top:18px;">
-<button id="cl-generar-fase" onclick="(window.cl_generarFaseLiga)()">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
+<button id="cl-generar-fase" onclick="(window.cl_generarFaseLiga||window.cl_fallbackGenerarFaseLiga)()">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
 </div>
 <div id="cl-fixtures" style="margin-top:16px;"></div>
 <button id="cl-actualizar-tabla" onclick="(window.cl_actualizarTabla)()">📊 Generar/Actualizar Tabla (estilo Champions)</button>
@@ -1601,20 +1601,81 @@ function cl_hookAdvance(fromSel,toSel){
 }
 
 
+
 function cl_generarOctavos(){
   if (!CL_TABLA.length){ alert('Actualiza la tabla primero.'); return; }
-// Listeners
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('cl-agregar-jugadores')?.addEventListener('click', cl_agregarJugadores);
-  document.getElementById('cl-agregar-equipos')?.addEventListener('click', cl_agregarEquipos);
-  document.getElementById('cl-sortear-parejas')?.addEventListener('click', cl_sortearParejas);
-  document.getElementById('cl-generar-fase')?.addEventListener('click', cl_generarFaseLiga);
-  document.getElementById('cl-actualizar-tabla')?.addEventListener('click', cl_actualizarTabla);
-  document.getElementById('cl-gen-playin')?.addEventListener('click', cl_generarPlayin);
-  document.getElementById('cl-gen-octavos')?.addEventListener('click', cl_generarOctavos);
-});
+  const top8 = CL_TABLA.slice(0,8).map(r=>r.Equipo);
+  const winners = [];
+  for (let i=0;i<8;i++){
+    const el = document.getElementById(`pl${i}-win`);
+    if (!el || !el.textContent || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; }
+    winners.push(el.textContent);
+  }
+  const shuffled = winners.slice().sort(()=>Math.random()-0.5);
 
-// Conecta inputs de una ronda a doble partido para calcular global y notificar winners
+  // Poblar llaves de Octavos (ida/vuelta) con vuelta en casa del cabeza (top8)
+  for (let i=0;i<8;i++){
+    const tie = document.getElementById(`cl-octavos-t${i}`);
+    if (!tie) continue;
+    const homes = tie.querySelectorAll('.cl-home');
+    const aways = tie.querySelectorAll('.cl-away');
+    if (homes[0]) homes[0].textContent = shuffled[i]; // ida: ganador play-in en casa
+    if (aways[0]) aways[0].textContent = top8[i];
+    if (homes[1]) homes[1].textContent = top8[i];     // vuelta: cabeza en casa
+    if (aways[1]) aways[1].textContent = shuffled[i];
+    ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{
+      const inp = tie.querySelector(`#cl-octavos-t${i}-${suf}`); if (inp) inp.value='';
+    });
+    const g = tie.querySelector(`#cl-octavos-t${i}-global`); if (g) g.textContent='—';
+    const w = tie.querySelector(`#cl-octavos-t${i}-win`); if (w) w.textContent='—';
+  }
+
+  // Conectar avances sucesivos
+  cl_connectTwoLeg('cl-octavos', 8, (winners8)=>{
+    for (let i=0;i<4;i++){
+      const A=winners8[2*i], B=winners8[2*i+1];
+      const tie=document.getElementById(`cl-cuartos-t${i}`);
+      if (!tie) continue;
+      const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+      if (homes[0]) homes[0].textContent = A;
+      if (aways[0]) aways[0].textContent = B;
+      if (homes[1]) homes[1].textContent = B;
+      if (aways[1]) aways[1].textContent = A;
+      ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{ const el=tie.querySelector(`#cl-cuartos-t${i}-${suf}`); if (el) el.value=''; });
+      const g=tie.querySelector(`#cl-cuartos-t${i}-global`); if (g) g.textContent='—';
+      const w=tie.querySelector(`#cl-cuartos-t${i}-win`); if (w) w.textContent='—';
+    }
+    cl_connectTwoLeg('cl-cuartos', 4, (w4)=>{
+      for (let i=0;i<2;i++){
+        const A=w4[2*i], B=w4[2*i+1];
+        const tie=document.getElementById(`cl-semis-t${i}`);
+        if (!tie) continue;
+        const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+        if (homes[0]) homes[0].textContent = A;
+        if (aways[0]) aways[0].textContent = B;
+        if (homes[1]) homes[1].textContent = B;
+        if (aways[1]) aways[1].textContent = A;
+        ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{ const el=tie.querySelector(`#cl-semis-t${i}-${suf}`); if (el) el.value=''; });
+        const g=tie.querySelector(`#cl-semis-t${i}-global`); if (g) g.textContent='—';
+        const w=tie.querySelector(`#cl-semis-t${i}-win`); if (w) w.textContent='—';
+      }
+      cl_connectTwoLeg('cl-semis', 2, (w2)=>{
+        // Final a partido único
+        const f = document.getElementById('cl-final-t0');
+        if (f){
+          const sp=f.querySelectorAll('span');
+          if (sp[0]) sp[0].textContent = w2[0];
+          if (sp[1]) sp[1].textContent = w2[1];
+          const ia=document.getElementById('cl-final-t0-a');
+          const ib=document.getElementById('cl-final-t0-b');
+          if (ia) ia.value=''; if (ib) ib.value='';
+        }
+      });
+    });
+  });
+}
+
+// Helper: dos partidos ida/vuelta para calcular global y ganador y avisar winners
 function cl_connectTwoLeg(prefix, count, onWinnersReady){
   const winners = new Array(count).fill('—');
   for (let i=0;i<count;i++){
@@ -1628,32 +1689,31 @@ function cl_connectTwoLeg(prefix, count, onWinnersReady){
     const home = document.querySelectorAll(`#${tieId} .cl-home`);
     const away = document.querySelectorAll(`#${tieId} .cl-away`);
     const recalc=()=>{
-      const a1=parseInt(idaA.value), b1=parseInt(idaB.value), a2=parseInt(vtaA.value), b2=parseInt(vtaB.value);
-      if ([a1,b1,a2,b2].some(Number.isNaN)){ g.textContent='—'; w.textContent='—'; winners[i]='—'; return; }
-      // Aggregate: teamHome(ida) + teamAway(ida) + teamHome(vta swapped) etc.
-      // Identify team names
-      const teamHomeIda = home[0].textContent;
-      const teamAwayIda = away[0].textContent;
-      const teamHomeVta = home[1].textContent; // which equals teamAwayIda by construction
-      const teamAwayVta = away[1].textContent; // equals teamHomeIda
-      // Goals per team (no away-goals rule)
-      const goalsHomeIda = a1, goalsAwayIda = b1;
-      const goalsHomeVta = a2, goalsAwayVta = b2;
-      const totalTeamA = goalsHomeIda + goalsAwayVta; // teamHomeIda aggregate
-      const totalTeamB = goalsAwayIda + goalsHomeVta; // teamAwayIda aggregate
-      g.textContent = `${totalTeamA}–${totalTeamB}`;
-      if (totalTeamA>totalTeamB){ w.textContent = teamHomeIda; winners[i]=teamHomeIda; }
-      else if (totalTeamA<totalTeamB){ w.textContent = teamAwayIda; winners[i]=teamAwayIda; }
-      else {
-        const pen = prompt(`Empate ${teamHomeIda} vs ${teamAwayIda}. Ganador por penales:`);
-        w.textContent = pen || '—'; winners[i] = pen || '—';
-      }
-      // if all winners decided, call next
+      const a1=parseInt(idaA?.value), b1=parseInt(idaB?.value), a2=parseInt(vtaA?.value), b2=parseInt(vtaB?.value);
+      if ([a1,b1,a2,b2].some(x=>Number.isNaN(x))){ if(g) g.textContent='—'; if(w) w.textContent='—'; winners[i]='—'; return; }
+      const teamHomeIda = home[0]?.textContent || '—';
+      const teamAwayIda = away[0]?.textContent || '—';
+      const totalA = a1 + b2; // equipo local en la ida
+      const totalB = b1 + a2; // equipo visitante en la ida
+      if (g) g.textContent = `${totalA}–${totalB}`;
+      let ganador = totalA>totalB ? teamHomeIda : totalB>totalA ? teamAwayIda : (prompt(`Empate ${teamHomeIda} vs ${teamAwayIda}. Ganador por penales:`)||'—');
+      if (w) w.textContent = ganador; winners[i]=ganador;
       if (winners.every(x=>x && x!=='—')) onWinnersReady([...winners]);
     };
-    [idaA,idaB,vtaA,vtaB].forEach(el=> el && el.addEventListener('change', recalc));
+    [idaA,idaB,vtaA,vtaB].forEach(el=> el && el.addEventListener('input', recalc));
   }
 }
+
+// Listeners (fuera de funciones)
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('cl-agregar-jugadores')?.addEventListener('click', cl_agregarJugadores);
+  document.getElementById('cl-agregar-equipos')?.addEventListener('click', cl_agregarEquipos);
+  document.getElementById('cl-sortear-parejas')?.addEventListener('click', cl_sortearParejas);
+  document.getElementById('cl-generar-fase')?.addEventListener('click', cl_generarFaseLiga);
+  document.getElementById('cl-actualizar-tabla')?.addEventListener('click', cl_actualizarTabla);
+  document.getElementById('cl-gen-playin')?.addEventListener('click', cl_generarPlayin);
+  document.getElementById('cl-gen-octavos')?.addEventListener('click', cl_generarOctavos);
+});
 
 // Exponer funciones al ámbito global por si falla el listener
 window.cl_agregarJugadores = cl_agregarJugadores;
