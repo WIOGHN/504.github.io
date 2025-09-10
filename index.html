@@ -682,6 +682,9 @@
   background:#eef1f4; border:1px solid #d8dde6; border-radius:8px; color:#111; display:inline-block; vertical-align:middle;
 }
 #cl-wiog #cl-octavos .match.compact:first-child{ background:#fff8e1; border-color:#ffe599; }
+
+/* === WIOG: Save/Load controls === */
+#cl-wiog #cl-storage-controls button{ min-width:220px; }
 </style>
 </head>
 <body>
@@ -1762,6 +1765,171 @@ window.cl_generarFaseLiga = cl_generarFaseLiga;
 window.cl_actualizarTabla = cl_actualizarTabla;
 window.cl_generarPlayin = cl_generarPlayin;
 window.cl_generarOctavos = cl_generarOctavos;
+
+
+// === Guardar / Cargar estado WIOG ===
+const WIOG_KEY = 'WIOG_STATE_V1';
+
+function cl_collectInputs(){
+  const map = {};
+  document.querySelectorAll('#cl-wiog input[type=number][id]').forEach(inp=>{
+    if (inp.id) map[inp.id] = inp.value;
+  });
+  return map;
+}
+function cl_applyInputs(map){
+  if (!map) return;
+  Object.entries(map).forEach(([id,val])=>{
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+}
+
+function cl_collectWinners(){
+  const map = {};
+  ['cl-octavos','cl-cuartos','cl-semis'].forEach(prefix=>{
+    const count = prefix==='cl-octavos'?8:prefix==='cl-cuartos'?4:2;
+    for (let i=0;i<count;i++){
+      const w = document.getElementById(`${prefix}-t${i}-win`);
+      if (w) map[`${prefix}-t${i}-win`] = w.textContent || '—';
+    }
+  });
+  const fA = document.getElementById('cl-final-t0-a')?.value || '';
+  const fB = document.getElementById('cl-final-t0-b')?.value || '';
+  const fHome = document.querySelector('#cl-final-t0 span:first-child')?.textContent || '';
+  const fAway = document.querySelector('#cl-final-t0 span:last-child')?.textContent || '';
+  map['final'] = {home:fHome, away:fAway, a:fA, b:fB};
+  return map;
+}
+function cl_applyWinners(map){
+  if (!map) return;
+  ['cl-octavos','cl-cuartos','cl-semis'].forEach(prefix=>{
+    const count = prefix==='cl-octavos'?8:prefix==='cl-cuartos'?4:2;
+    for (let i=0;i<count;i++){
+      const id = `${prefix}-t${i}-win`;
+      const el = document.getElementById(id);
+      if (el && map[id]!==undefined) el.textContent = map[id];
+    }
+  });
+  if (map.final){
+    const f = map.final;
+    const sp = document.querySelectorAll('#cl-final-t0 span');
+    if (sp[0]) sp[0].textContent = f.home || sp[0].textContent;
+    if (sp[1]) sp[1].textContent = f.away || sp[1].textContent;
+    const ia = document.getElementById('cl-final-t0-a');
+    const ib = document.getElementById('cl-final-t0-b');
+    if (ia) ia.value = f.a || '';
+    if (ib) ib.value = f.b || '';
+  }
+}
+
+function cl_guardarEstado(download=true){
+  try{
+    const state = {
+      ts: new Date().toISOString(),
+      jugadores: (window.CL_JUGADORES||[]),
+      equipos: (window.CL_EQUIPOS||[]),
+      parejas: (window.CL_PAREJAS||[]),
+      jornadas: (window.CL_JORNADAS||[]),
+      tabla: (window.CL_TABLA||[]),
+      inputs: cl_collectInputs(),
+      winners: cl_collectWinners()
+    };
+    // persistir en localStorage
+    localStorage.setItem(WIOG_KEY, JSON.stringify(state));
+    // descarga opcional
+    if (download){
+      const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'wiog_state.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(a.href);
+    }
+    alert('Estado de WIOG guardado.' + (download?' (y descargado)':''));
+  }catch(e){
+    console.error(e); alert('No se pudo guardar el estado.');
+  }
+}
+
+function cl_cargarEstado(fromFile=false, dataObj=null){
+  try{
+    let state = dataObj;
+    if (!state){
+      const raw = localStorage.getItem(WIOG_KEY);
+      if (!raw){ alert('No hay estado guardado en este navegador.'); return; }
+      state = JSON.parse(raw);
+    }
+    // Restaurar globals
+    window.CL_JUGADORES = state.jugadores||[];
+    window.CL_EQUIPOS   = state.equipos||[];
+    window.CL_PAREJAS   = state.parejas||[];
+    window.CL_JORNADAS  = state.jornadas||[];
+    window.CL_TABLA     = state.tabla||[];
+
+    // Reconstruir vistas mínimas
+    // 1) Estado de listas
+    try{ if (typeof cl_renderEstado==='function') cl_renderEstado(); }catch(_){}
+    // 2) Parejas sorteadas
+    if (CL_PAREJAS.length){
+      const cont = document.getElementById('cl-parejas');
+      if (cont){
+        cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
+        const grid = document.getElementById('cl-grid-parejas');
+        CL_PAREJAS.forEach(p=>{
+          const d = document.createElement('div'); d.className='cl-card';
+          d.innerHTML = '<strong>'+p.jugador+'</strong> ⇄ <span style="color:#ffd700; font-weight:700;">'+p.equipo+'</span>';
+          grid.appendChild(d);
+        });
+      }
+    }
+    // 3) Si existen jornadas, renderizarlas
+    if (CL_JORNADAS.length){
+      const cont=document.getElementById('cl-fixtures'); if (cont) cont.innerHTML='';
+      const mapJugador = new Map((CL_PAREJAS||[]).map(p=>[p.equipo,p.jugador]));
+      CL_JORNADAS.forEach((pairs,idx)=>{
+        const roundDiv=document.createElement('div'); roundDiv.className='cl-round';
+        roundDiv.innerHTML='<h4>Jornada '+(idx+1)+'</h4>';
+        const table=document.createElement('table'); table.className='cl-table';
+        table.innerHTML='<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th></tr></thead>';
+        const tbody=document.createElement('tbody');
+        pairs.forEach((pair,mIdx)=>{
+          const home=pair[0], away=pair[1];
+          const jl=mapJugador.get(home)||'', jv=mapJugador.get(away)||'';
+          const ida='cl-r'+(idx+1)+'-m'+mIdx+'-a', idb='cl-r'+(idx+1)+'-m'+mIdx+'-b';
+          const tr=document.createElement('tr');
+          tr.innerHTML='<td>'+home+'<br/><input type="number" min="0" id="'+ida+'" style="width:56px;"></td>' +
+                       '<td>'+away+'<br/><input type="number" min="0" id="'+idb+'" style="width:56px;"></td>' +
+                       '<td>'+jl+'</td><td>'+jv+'</td>';
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody); roundDiv.appendChild(table);
+        if (cont) cont.appendChild(roundDiv);
+      });
+    }
+
+    // 4) Aplicar valores de inputs y winners
+    cl_applyInputs(state.inputs||{});
+    cl_applyWinners(state.winners||{});
+
+    // 5) Si hay tabla, reconstruir visual
+    if (CL_TABLA.length){
+      if (typeof cl_fallbackActualizarTabla==='function'){
+        cl_fallbackActualizarTabla(); // re-render por bloques
+      }else if (typeof cl_actualizarTabla==='function'){
+        cl_actualizarTabla();
+      }
+    }
+
+    alert('Estado WIOG cargado.' + (fromFile?' (desde archivo)':''));
+  }catch(e){
+    console.error(e); alert('No se pudo cargar el estado.');
+  }
+}
+
+// Exponer
+window.cl_guardarEstado = cl_guardarEstado;
+window.cl_cargarEstado  = cl_cargarEstado;
 </script>
 </body>
 </html>
