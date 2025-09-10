@@ -848,6 +848,20 @@
 @media (min-width: 1100px){
   #cl-wiog #cl-ko .ko-grid{ grid-template-columns: repeat(3, minmax(320px, 1fr)); align-items:start; }
 }
+
+/* === Ajuste inputs de goles más pequeños e inline === */
+#cl-wiog #cl-fixtures .cl-round > .cl-table input[type=number],
+#cl-wiog .cl-playin-table input[type=number],
+#cl-wiog .cl-tie input[type=number]{
+  width:48px;
+  font-size:0.9rem;
+  padding:4px 6px;
+  display:inline-block;
+  vertical-align:middle;
+}
+/* Alinear marcador con texto del partido */
+#cl-wiog .cl-leg{ display:flex; align-items:center; gap:4px; flex-wrap:nowrap; }
+#cl-wiog .cl-leg input[type=number]{ flex:0 0 auto; }
 </style>
 </head>
 <body>
