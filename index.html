@@ -1821,5 +1821,33 @@ window.cl_generarOctavos = cl_generarOctavos;
 function cl_fallbackAddJugadores(){ try{ cl_agregarJugadores(); }catch(e){ alert('Error al agregar jugadores'); console.error(e);} }
 
 function cl_fallbackAddEquipos(){ try{ cl_agregarEquipos(); }catch(e){ alert('Error al agregar equipos'); console.error(e);} }</script>
-</body>
+<script id="cl-wiog-click-fix">
+// Minimal click binder for "Generar Fase de Liga" — no layout changes.
+(function(){
+  function bind(){
+    var btn = document.getElementById('cl-generar-fase');
+    if (!btn) return;
+    // keep existing onclick, just add a safe listener too
+    btn.addEventListener('click', function(){
+      try{
+        if (typeof window.cl_generarFaseLiga === 'function'){
+          window.cl_generarFaseLiga();
+        } else if (typeof window.cl_fallbackGenerarFaseLiga === 'function'){
+          window.cl_fallbackGenerarFaseLiga();
+        } else {
+          alert('No se encontró la función para generar la fase de liga.');
+        }
+      }catch(err){
+        alert('Error en "Generar Fase de Liga": ' + (err && err.message ? err.message : err));
+        console.error(err);
+      }
+    });
+  }
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
+</script></body>
 </html>
