@@ -763,7 +763,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const champ = sa > sb ? fs[0].innerText :
                             sb > sa ? fs[1].innerText :
                             prompt("Final empatada. Escribe el campeón:");
-              document.getElementById("campeon").innerHTML = "🏆 <span class='winner-highlight'>" + champ + "</span>";
+              document.getElementById("campeon").innerHTMLL = "🏆 <span class='winner-highlight'>" + champ + "</span>";
             };
             fa.addEventListener("change", autoFinal);
             fb.addEventListener("change", autoFinal);
@@ -818,7 +818,7 @@ function sortearGrupos() {
 
 function mostrarGrupos() {
   const cont = document.getElementById("grupos");
-  cont.innerHTML = '';
+  cont.innerHTMLL = '';
   for (let grupo in gruposGlobal) {
     const eq = gruposGlobal[grupo];
     const partidos = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
@@ -828,7 +828,7 @@ function mostrarGrupos() {
     });
     html += `<button onclick="generarTabla('${grupo}', ${JSON.stringify(eq).replace(/"/g, '&quot;')})">📊 Tabla</button>
              <div id="tabla_${grupo}"></div></div>`;
-    cont.innerHTML += html;
+    cont.innerHTMLL += html;
   }
 }
 
@@ -856,7 +856,7 @@ function generarTabla(grupo, eq) {
     html += `<tr${highlight}><td>${t.Equipo}</td><td>${t.PJ}</td><td>${t.PG}</td><td>${t.PE}</td><td>${t.PP}</td><td>${t.GF}</td><td>${t.GC}</td><td>${t.DG}</td><td>${t.Pts}</td></tr>`;
   });
   html += "</table>";
-  document.getElementById(`tabla_${grupo}`).innerHTML = html;
+  document.getElementById(`tabla_${grupo}`).innerHTMLL = html;
   clasificados = clasificados.filter(e => !eq.includes(e));
   clasificados = clasificados.concat(tabla.slice(0,2).map(t => t.Equipo));
   if (clasificados.length === 16) {
@@ -1016,7 +1016,7 @@ function mezclarJugadores() {
 
   const mezclados = [...lista].sort(() => Math.random() - 0.5);
   const html = `<h4>🎲 Orden Mezclado</h4><div>${mezclados.map(j => `<div>${j}</div>`).join('')}</div>`;
-  document.getElementById("resultadoJugadores").innerHTML = html;
+  document.getElementById("resultadoJugadores").innerHTMLL = html;
 }
 
 function distribuirAOctavos() {
@@ -1169,7 +1169,7 @@ function avanzarAFinal() {
         champion = s1 > s2 ? spans[0].innerText : spans[1].innerText;
       }
       if (champion) {
-        document.getElementById("campeonFinal").innerHTML = `<span style='color:#ffd700; font-size: 48px; font-weight:bold; text-shadow: 2px 2px 12px #ffd700;'>🏆 ${champion}</span>`;
+        document.getElementById("campeonFinal").innerHTMLL = `<span style='color:#ffd700; font-size: 48px; font-weight:bold; text-shadow: 2px 2px 12px #ffd700;'>🏆 ${champion}</span>`;
       }
     };
 
@@ -1300,8 +1300,8 @@ function __cl_norm(txt){ return (txt||'').split('\n').map(s=>s.trim()).filter(Bo
 function __cl_render(){
   var j=document.getElementById('cl-jugadores-estado');
   var e=document.getElementById('cl-equipos-estado');
-  if (j) j.innerHTML = "Jugadores cargados (<strong>"+window.CL_JUGADORES.length+"</strong>/36): " + window.CL_JUGADORES.join(", ") + (window.CL_JUGADORES.length===36?"":" <span style='color:#ffeb3b;'>(faltan "+(36-window.CL_JUGADORES.length)+")</span>");
-  if (e) e.innerHTML = "Equipos cargados (<strong>"+window.CL_EQUIPOS.length+"</strong>/36): " + window.CL_EQUIPOS.join(", ") + (window.CL_EQUIPOS.length===36?"":" <span style='color:#ffeb3b;'>(faltan "+(36-window.CL_EQUIPOS.length)+")</span>");
+  if (j) j.innerHTMLL = "Jugadores cargados (<strong>"+window.CL_JUGADORES.length+"</strong>/36): " + window.CL_JUGADORES.join(", ") + (window.CL_JUGADORES.length===36?"":" <span style='color:#ffeb3b;'>(faltan "+(36-window.CL_JUGADORES.length)+")</span>");
+  if (e) e.innerHTMLL = "Equipos cargados (<strong>"+window.CL_EQUIPOS.length+"</strong>/36): " + window.CL_EQUIPOS.join(", ") + (window.CL_EQUIPOS.length===36?"":" <span style='color:#ffeb3b;'>(faltan "+(36-window.CL_EQUIPOS.length)+")</span>");
 }
 window.cl_fallbackAddJugadores = function(){
   var ta=document.getElementById('cl-jugadores-input');
@@ -1335,11 +1335,11 @@ window.cl_fallbackSortearParejas = function(){
   // Render
   var cont = document.getElementById('cl-parejas');
   if (!cont){ alert('No se encontró el contenedor de parejas.'); return; }
-  cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
+  cont.innerHTMLL = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
   var grid = document.getElementById('cl-grid-parejas');
   for (var i=0;i<36;i++){
     var d = document.createElement('div'); d.className='cl-card';
-    d.innerHTML = '<strong>'+jugadores[i]+'</strong> ⇄ <span style="color:#ffd700; font-weight:700;">'+equipos[i]+'</span>';
+    d.innerHTMLL = '<strong>'+jugadores[i]+'</strong> ⇄ <span style="color:#ffd700; font-weight:700;">'+equipos[i]+'</span>';
     grid.appendChild(d);
   }
   // Persistir en window por si hace falta después
@@ -1349,7 +1349,7 @@ window.cl_fallbackSortearParejas = function(){
 </div>
 <div id="cl-parejas" style="margin-top:12px;"></div>
 <div style="margin-top:18px;">
-<button id="cl-generar-fase">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
+<button id="cl-generar-fase" onclick="(window.cl_generarFaseLiga||window.cl_fallbackGenerarFaseLiga)()">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
 </div>
 <div id="cl-fixtures" style="margin-top:16px;"></div>
 <button id="cl-actualizar-tabla">📊 Generar/Actualizar Tabla (estilo Champions)</button>
@@ -1384,8 +1384,8 @@ function cl_unicos(lista){
 function cl_renderEstado(){
   const j = document.getElementById('cl-jugadores-estado');
   const e = document.getElementById('cl-equipos-estado');
-  if (j) j.innerHTML = `Jugadores cargados (<strong>${CL_JUGADORES.length}</strong>/36): ${CL_JUGADORES.join(', ')} ` + (CL_JUGADORES.length===36?'':' <span style="color:#ffeb3b;">(faltan '+(36-CL_JUGADORES.length)+')</span>');
-  if (e) e.innerHTML = `Equipos cargados (<strong>${CL_EQUIPOS.length}</strong>/36): ${CL_EQUIPOS.join(', ')} ` + (CL_EQUIPOS.length===36?'':' <span style="color:#ffeb3b;">(faltan '+(36-CL_EQUIPOS.length)+')</span>');
+  if (j) j.innerHTMLL = `Jugadores cargados (<strong>${CL_JUGADORES.length}</strong>/36): ${CL_JUGADORES.join(', ')} ` + (CL_JUGADORES.length===36?'':' <span style="color:#ffeb3b;">(faltan '+(36-CL_JUGADORES.length)+')</span>');
+  if (e) e.innerHTMLL = `Equipos cargados (<strong>${CL_EQUIPOS.length}</strong>/36): ${CL_EQUIPOS.join(', ')} ` + (CL_EQUIPOS.length===36?'':' <span style="color:#ffeb3b;">(faltan '+(36-CL_EQUIPOS.length)+')</span>');
 }
 
 function cl_agregarJugadores(){
@@ -1403,22 +1403,30 @@ function cl_agregarEquipos(){
   CL_EQUIPOS = lista; cl_renderEstado();
 }
 
+
 function cl_sortearParejas(){
-  if (CL_JUGADORES.length !== 36 || CL_EQUIPOS.length !== 36){ alert('Primero carga 36 jugadores y 36 equipos.'); return; }
+  if (!Array.isArray(CL_JUGADORES) || !Array.isArray(CL_EQUIPOS) || CL_JUGADORES.length !== 36 || CL_EQUIPOS.length !== 36){
+    alert('Primero carga 36 jugadores y 36 equipos.'); return;
+  }
   const jugadores = [...CL_JUGADORES].sort(()=>Math.random()-0.5);
   const equipos   = [...CL_EQUIPOS].sort(()=>Math.random()-0.5);
-  CL_PAREJAS = jugadores.map((jug,i)=>({ jugador:jug, equipo:equipos[i] }));
+  const parejas = jugadores.map((jug,i)=>({ jugador:jug, equipo:equipos[i] }));
+  window.CL_PAREJAS = parejas;
+
   const cont = document.getElementById('cl-parejas');
   if (cont){
-    cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
+    cont.innerHTMLL = '<div class="cl-card"><h3 style="margin:6px 0;">Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
     const grid = document.getElementById('cl-grid-parejas');
-    CL_PAREJAS.forEach(p=>{
+    parejas.forEach(p=>{
       const d=document.createElement('div'); d.className='cl-card';
-      d.innerHTML = `<strong>${p.jugador}</strong> ⇄ <span style="color:#ffd700; font-weight:700;">${p.equipo}</span>`;
+      d.setAttribute('data-jugador', p.jugador); d.setAttribute('data-equipo', p.equipo);
+      d.innerHTMLL = `<strong>${p.jugador}</strong> ⇄ <span style="color:#ffd700; font-weight:700;">${p.equipo}</span>`;
       grid.appendChild(d);
     });
   }
+  alert('✅ 36 parejas generadas');
 }
+
 
 function cl_initOpponents(){ CL_MATCHUPS = new Map(CL_PAREJAS.map(p=>[p.equipo, new Set()])); }
 
@@ -1497,73 +1505,64 @@ function cl_ensureParejas(){
   return P;
 }
 
+
 function cl_generarFaseLiga(){
   const P = cl_ensureParejas(); if(!P) return;
-  if (CL_PAREJAS.length !== 36){ alert('Genera primero las parejas.'); return; }
-  cl_initOpponents();
-  const teams = CL_PAREJAS.map(p=>p.equipo);
-  const CL_HOME_COUNT = new Map(teams.map(t=>[t,0]));
+  const teams = P.map(p=>p.equipo);
+  const jx = new Map(P.map(p=>[p.equipo, p.jugador]));
+  const seen = new Map(teams.map(t=>[t,new Set()]));
+  const homeCount = new Map(teams.map(t=>[t,0]));
   const jornadas = [];
-  for (let r=1; r<=8; r++){
-    let ok=false, intentos=0, pairings=[];
-    while(!ok && intentos<2000){
-      intentos++; pairings=[];
-      const disp=[...teams].sort(()=>Math.random()-0.5);
-      let valido=true;
-      while(disp.length){
-        const a=disp.shift(); let emp=false;
-        for (let i=0;i<disp.length;i++){
-          const b=disp[i];
-          if (!CL_MATCHUPS.get(a).has(b)){
-            pairings.push([a,b]);
-            CL_MATCHUPS.get(a).add(b); CL_MATCHUPS.get(b).add(a);
-            disp.splice(i,1); emp=true; break;
-          }
+  const MAX=4000;
+  for(let r=0;r<8;r++){
+    let ok=false; let attempt=0; let round=[];
+    while(!ok && attempt<MAX){
+      attempt++; round=[];
+      const pool=[...teams].sort(()=>Math.random()-0.5);
+      const used=new Set(); let valid=true;
+      while(pool.length){
+        const a=pool.shift(); if(used.has(a)) continue;
+        let idx=-1,b=null;
+        for(let i=0;i<pool.length;i++){
+          const cand=pool[i];
+          if(used.has(cand)) continue;
+          if(!seen.get(a).has(cand)&&!seen.get(cand).has(a)){idx=i;b=cand;break;}
         }
-        if(!emp){ // rollback
-          for (const [x,y] of pairings){ CL_MATCHUPS.get(x).delete(y); CL_MATCHUPS.get(y).delete(x); }
-          valido=false; break;
-        }
+        if(idx==-1){valid=false;break;}
+        pool.splice(idx,1); used.add(a); used.add(b);
+        let home=a,away=b;
+        if((homeCount.get(b)||0)<(homeCount.get(a)||0)){home=b;away=a;}
+        round.push([home,away]);
       }
-      if (valido) ok=true;
+      if(valid) ok=true;
     }
-    if (!ok){ cl_initOpponents(); jornadas.length=0; r=0; continue; }
-
-    // balance home/away
-    pairings = pairings.map(([home,away])=>{
-      const hc = CL_HOME_COUNT.get(home), ac = CL_HOME_COUNT.get(away);
-      if (hc - ac > 0){ CL_HOME_COUNT.set(away, ac+1); return [away, home]; }
-      else { CL_HOME_COUNT.set(home, hc+1); return [home, away]; }
+    if(!ok){alert('No se pudo generar jornada sin repetir rivales');return;}
+    round.forEach(([h,a])=>{
+      seen.get(h).add(a); seen.get(a).add(h);
+      homeCount.set(h,(homeCount.get(h)||0)+1);
     });
-    jornadas.push(pairings);
+    jornadas.push(round);
   }
-  CL_JORNADAS = jornadas;
-
-  // render
-  const cont = document.getElementById('cl-fixtures'); if (cont) cont.innerHTML='';
-  const jx = new Map(CL_PAREJAS.map(p=>[p.equipo,p.jugador]));
-  jornadas.forEach((pairs, idx)=>{
-    const roundDiv = document.createElement('div'); roundDiv.className='cl-round';
-    roundDiv.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
-    const table = document.createElement('table'); table.className='cl-table';
-    table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th></tr></thead>';
-    const tbody = document.createElement('tbody');
-    pairs.forEach(([home,away], mIdx)=>{
-      const jl=jx.get(home)||'', jv=jx.get(away)||'';
-      const ida=`cl-r${idx+1}-m${mIdx}-a`, idb=`cl-r${idx+1}-m${mIdx}-b`;
+  window.CL_JORNADAS=jornadas;
+  const cont=document.getElementById('cl-fixtures'); if(cont) cont.innerHTMLL='';
+  jornadas.forEach((pairs,idx)=>{
+    const div=document.createElement('div'); div.className='cl-round cl-card';
+    div.innerHTMLL=`<h4>Jornada ${idx+1}</h4>`;
+    const table=document.createElement('table'); table.className='cl-table';
+    table.innerHTMLL='<thead><tr><th>Local</th><th>Visitante</th><th>Jugador Local</th><th>Jugador Visitante</th><th>Marcador</th></tr></thead>';
+    const tb=document.createElement('tbody');
+    pairs.forEach(([h,a],m)=>{
+      const jh=jx.get(h)||'', ja=jx.get(a)||'';
+      const ida=`cl-r${idx+1}-m${m}-a`, idb=`cl-r${idx+1}-m${m}-b`;
       const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${home}<br/><input type='number' min='0' id='${ida}' style='width:56px;'></td>`+
-                     `<td>${away}<br/><input type='number' min='0' id='${idb}' style='width:56px;'></td>`+
-                     `<td>${jl}</td><td>${jv}</td>`;
-      tbody.appendChild(tr);
+      tr.innerHTMLL=`<td>${h}</td><td>${a}</td><td>${jh}</td><td>${ja}</td><td><input type="number" min="0" id="${ida}" style="width:40px"> – <input type="number" min="0" id="${idb}" style="width:40px"></td>`;
+      tb.appendChild(tr);
     });
-    table.appendChild(tbody); roundDiv.appendChild(table);
-    if (cont) cont.appendChild(roundDiv);
+    table.appendChild(tb); div.appendChild(table); if(cont) cont.appendChild(div);
   });
-
-  cl_hookInputs();
-  document.getElementById('cl-generar-fase')?.scrollIntoView({behavior:'smooth',block:'start'});
+  if(typeof window.cl_hookInputs==='function') window.cl_hookInputs();
 }
+
 
 function cl_actualizarTabla(){
   if (!CL_PAREJAS.length || !CL_JORNADAS.length){ alert('Genera parejas y la fase de liga primero.'); return; }
@@ -1589,17 +1588,17 @@ function cl_actualizarTabla(){
   CL_TABLA = tabla;
 
   const cont = document.getElementById('cl-standings'); if (!cont) return;
-  cont.innerHTML='';
+  cont.innerHTMLL='';
   const mkTable=(rows,start)=>{
     const table=document.createElement('table'); table.className='cl-table';
-    table.innerHTML = '<thead><tr><th>#</th><th>Equipo</th><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>';
+    table.innerHTMLL = '<thead><tr><th>#</th><th>Equipo</th><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>';
     const tb=document.createElement('tbody');
-    rows.forEach((r,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${start+i}</td><td>${r.Equipo}</td><td>${r.Jugador}</td><td>${r.PJ}</td><td>${r.G}</td><td>${r.E}</td><td>${r.P}</td><td>${r.GF}</td><td>${r.GC}</td><td>${r.DG}</td><td><strong>${r.Pts}</strong></td>`; tb.appendChild(tr); });
+    rows.forEach((r,i)=>{ const tr=document.createElement('tr'); tr.innerHTMLL=`<td>${start+i}</td><td>${r.Equipo}</td><td>${r.Jugador}</td><td>${r.PJ}</td><td>${r.G}</td><td>${r.E}</td><td>${r.P}</td><td>${r.GF}</td><td>${r.GC}</td><td>${r.DG}</td><td><strong>${r.Pts}</strong></td>`; tb.appendChild(tr); });
     table.appendChild(tb); return table;
   };
-  const wrap1=document.createElement('div'); wrap1.className='cl-round cl-top8'; wrap1.innerHTML='<h4>1–8 Clasificación directa</h4>'; wrap1.appendChild(mkTable(tabla.slice(0,8),1));
-  const wrap2=document.createElement('div'); wrap2.className='cl-round cl-playin'; wrap2.innerHTML='<h4>9–24 Play-in</h4>'; wrap2.appendChild(mkTable(tabla.slice(8,24),9));
-  const wrap3=document.createElement('div'); wrap3.className='cl-round cl-elim'; wrap3.innerHTML='<h4>25–36 Eliminados</h4>'; wrap3.appendChild(mkTable(tabla.slice(24,36),25));
+  const wrap1=document.createElement('div'); wrap1.className='cl-round cl-top8'; wrap1.innerHTMLL='<h4>1–8 Clasificación directa</h4>'; wrap1.appendChild(mkTable(tabla.slice(0,8),1));
+  const wrap2=document.createElement('div'); wrap2.className='cl-round cl-playin'; wrap2.innerHTMLL='<h4>9–24 Play-in</h4>'; wrap2.appendChild(mkTable(tabla.slice(8,24),9));
+  const wrap3=document.createElement('div'); wrap3.className='cl-round cl-elim'; wrap3.innerHTMLL='<h4>25–36 Eliminados</h4>'; wrap3.appendChild(mkTable(tabla.slice(24,36),25));
   cont.appendChild(wrap1); cont.appendChild(wrap2); cont.appendChild(wrap3);
 }
 
@@ -1623,15 +1622,15 @@ function cl_generarPlayin(){
   const P = cl_ensureParejas(); if(!P) return;
   if (!CL_TABLA.length){ alert('Actualiza la tabla primero.'); return; }
   const {A,B} = cl_getPlayinSeeds(); if (A.length<8 || B.length<8){ alert('Se requieren puestos 9–24.'); return; }
-  const cont = document.getElementById('cl-playin'); cont.innerHTML = '<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
+  const cont = document.getElementById('cl-playin'); cont.innerHTMLL = '<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
   const wrap = cont.querySelector('.cl-round');
   const table=document.createElement('table'); table.className='cl-playin-table';
-  table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
+  table.innerHTMLL='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
   const tb=document.createElement('tbody');
   for (let i=0;i<8;i++){
     const seeded=A[i], unseeded=B[7-i];
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${seeded} (cabeza) vs ${unseeded}</td>`+
+    tr.innerHTMLL = `<td>${seeded} (cabeza) vs ${unseeded}</td>`+
                    `<td>${unseeded} <input type="number" min="0" id="pl${i}-ida-a" style="width:56px;"> – <input type="number" min="0" id="pl${i}-ida-b" style="width:56px;"> ${seeded}</td>`+
                    `<td>${seeded} <input type="number" min="0" id="pl${i}-vta-a" style="width:56px;"> – <input type="number" min="0" id="pl${i}-vta-b" style="width:56px;"> ${unseeded}</td>`+
                    `<td id="pl${i}-global">—</td><td id="pl${i}-win">—</td>`;
@@ -1762,8 +1761,6 @@ function cl_generarOctavos(){
   const shuffled=[...winners].sort(()=>Math.random()-0.5);
   const cards=document.querySelectorAll('#cl-octavos .match');
   cards.forEach((card,i)=>{ const sp=card.querySelectorAll('span'); const inp=card.querySelectorAll('input'); sp[0].textContent=top8[i]; sp[1].textContent=shuffled[i]; inp[0].value=''; inp[1].value=''; });
-  cl_hookAdvance('#cl-octavos','#cl-cuartos'); cl_hookAdvance('#cl-cuartos','#cl-semis'); cl_hookAdvance('#cl-semis','#cl-final');
-}
 
 // Listeners
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -1824,7 +1821,125 @@ window.cl_sortearParejas = cl_sortearParejas;
 window.cl_generarFaseLiga = cl_generarFaseLiga;
 window.cl_actualizarTabla = cl_actualizarTabla;
 window.cl_generarPlayin = cl_generarPlayin;
-window.cl_generarOctavos = cl_generarOctavos;
-</script>
-</body>
+window.cl_generarOctavos = cl_generarOctavos;</script>
+<script id="cl-wiog-override-fase">
+// === Overrides: Robust Generar Fase de Liga (self-contained) ===
+(function(){
+  function ensureParejas(){
+    // Prefer window.CL_PAREJAS si ya existe
+    let P = Array.isArray(window.CL_PAREJAS) ? window.CL_PAREJAS.slice() : [];
+    // Normalizar
+    const norm = (p)=> Array.isArray(p) ? ({jugador:p[0],equipo:p[1]}) : ({jugador:p?.jugador, equipo:p?.equipo});
+    P = P.map(norm).filter(x=>x && x.jugador && x.equipo);
+
+    if (P.length < 36){
+      const out = [];
+      const root = document.getElementById('cl-parejas') || document;
+      // data-attributes
+      root.querySelectorAll('[data-jugador][data-equipo]').forEach(el=>{
+        const jugador = el.getAttribute('data-jugador')?.trim();
+        const equipo  = el.getAttribute('data-equipo')?.trim();
+        if (jugador && equipo) out.push({jugador,equipo});
+      });
+      // text fallback with common separators
+      if (out.length === 0){
+        const seps = ["→","->","—","–","-","|",":","/"];
+        root.querySelectorAll('.cl-card, li, .pair, .pareja, .item, tr').forEach(el=>{
+          const t=(el.textContent||'').replace(/\s+/g,' ').trim();
+          for (const s of seps){
+            const k=t.indexOf(s);
+            if (k>0){
+              const a=t.slice(0,k).trim(), b=t.slice(k+s.length).trim();
+              if (a && b){ out.push({jugador:a, equipo:b}); break; }
+            }
+          }
+        });
+      }
+      if (out.length >= 36) P = out.slice(0,36);
+    }
+
+    if (P.length < 36){ return null; }
+    window.CL_PAREJAS = P;
+    window.CL_EQUIPOS = P.map(p=>p.equipo);
+    window.CL_JUGADORES = P.map(p=>p.jugador);
+    return P;
+  }
+
+  function generarFaseLiga(){
+    const P = ensureParejas();
+    if (!P){ alert('⚠️ No detecto 36 parejas. Genera o corrige las parejas.'); return; }
+    const teams = P.map(p=>p.equipo);
+    const jx = new Map(P.map(p=>[p.equipo, p.jugador]));
+
+    // Planificación 8 jornadas sin repetir rivales + balance local
+    const seen = new Map(teams.map(t=>[t,new Set()]));
+    const homeCount = new Map(teams.map(t=>[t,0]));
+    const jornadas = [];
+    const MAX = 5000;
+
+    for (let r=0; r<8; r++){
+      let ok=false, tries=0, roundPairs=null;
+      while(!ok && tries<MAX){
+        tries++;
+        roundPairs=[];
+        const pool=[...teams].sort(()=>Math.random()-0.5);
+        const used=new Set();
+        let valid=true;
+        while(pool.length){
+          const a=pool.shift();
+          if (used.has(a)) continue;
+          let idx=-1, b=null;
+          for (let i=0;i<pool.length;i++){
+            const cand=pool[i];
+            if (used.has(cand)) continue;
+            if (!seen.get(a).has(cand) && !seen.get(cand).has(a)){ idx=i; b=cand; break; }
+          }
+          if (idx===-1){ valid=false; break; }
+          pool.splice(idx,1);
+          used.add(a); used.add(b);
+          let home=a, away=b;
+          const ha=homeCount.get(a)||0, hb=homeCount.get(b)||0;
+          if (hb < ha){ home=b; away=a; }
+          roundPairs.push([home, away]);
+        }
+        if (valid) ok=true;
+      }
+      if (!ok){ alert('No pude construir la jornada sin repetir rivales. Intenta de nuevo.'); return; }
+      roundPairs.forEach(([h,a])=>{
+        seen.get(h).add(a); seen.get(a).add(h);
+        homeCount.set(h, (homeCount.get(h)||0)+1);
+      });
+      jornadas.push(roundPairs);
+    }
+
+    window.CL_JORNADAS = jornadas;
+    const cont = document.getElementById('cl-fixtures');
+    if (cont) cont.innerHTML = '';
+    jornadas.forEach((pairs, idx)=>{
+      const wrap=document.createElement('div'); wrap.className='cl-round cl-card';
+      wrap.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
+      const table=document.createElement('table'); table.className='cl-table';
+      table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th><th>Marcador</th></tr></thead>';
+      const tb=document.createElement('tbody');
+      pairs.forEach(([home,away], mIdx)=>{
+        const jl=jx.get(home)||'', jv=jx.get(away)||'';
+        const ida=`cl-r${idx+1}-m${mIdx}-a`, idb=`cl-r${idx+1}-m${mIdx}-b`;
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${home}</td><td>${away}</td><td>${jl}</td><td>${jv}</td><td><input id="${ida}" type="number" min="0" style="width:48px;"> – <input id="${idb}" type="number" min="0" style="width:48px;"></td>`;
+        tb.appendChild(tr);
+      });
+      table.appendChild(tb); wrap.appendChild(table);
+      if (cont) cont.appendChild(wrap);
+    });
+    if (typeof window.cl_hookInputs === 'function') window.cl_hookInputs();
+  }
+
+  // Exponer y bindear botón
+  window.cl_generarFaseLiga = generarFaseLiga;
+  const btn = document.getElementById('cl-generar-fase');
+  if (btn){
+    btn.onclick = ()=> window.cl_generarFaseLiga();
+  }
+})();
+</script></body>
 </html>
