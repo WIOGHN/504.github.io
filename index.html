@@ -1355,7 +1355,7 @@ window.cl_fallbackSortearParejas = function(){
 <button id="cl-actualizar-tabla">📊 Generar/Actualizar Tabla (estilo Champions)</button>
 <div id="cl-standings" style="margin-top:12px;"></div>
 <div id="cl-playin-controls" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
-<button id="cl-gen-playin" onclick="(window.cl_generarPlayin||window.cl_fallbackGenerarPlayin)()">🎟️ Generar Play‑in (9–24)</button>
+<button id="cl-gen-playin">🎟️ Generar Play‑in (9–24)</button>
 <button id="cl-gen-octavos">🏆 Generar Octavos (1–8 vs ganadores play‑in)</button>
 </div>
 <div id="cl-playin" style="margin-top:12px;"></div>
@@ -1428,9 +1428,12 @@ function cl_generarFaseLiga(){
     if (!Array.isArray(window.CL_PAREJAS) || window.CL_PAREJAS.length !== 36){
       alert('Genera primero las 36 parejas jugador–equipo.'); return;
     }
-    const teams = window.CL_PAREJAS.map(p=>p.equipo);
-    const jx = new Map(window.CL_PAREJAS.map(p=>[p.equipo, p.jugador]));
-    // Control de rivales ya jugados y equilibrio de localías
+    // Soportar objetos {jugador, equipo} o arrays [jugador, equipo]
+    const teams = window.CL_PAREJAS.map(p => p?.equipo ?? p?.[1]).filter(Boolean);
+    const jx = new Map(window.CL_PAREJAS.map(p => [ (p?.equipo ?? p?.[1]), (p?.jugador ?? p?.[0]) ]));
+    if (teams.length !== 36){ alert('No se detectaron 36 equipos en Parejas.'); return; }
+
+    // Evitar rivales repetidos y balancear localías
     const seen = new Map(teams.map(t=>[t,new Set()]));
     const homeCount = new Map(teams.map(t=>[t,0]));
     const jornadas = [];
@@ -1465,7 +1468,7 @@ function cl_generarFaseLiga(){
         if (valid){ ok = true; }
       }
       if (!ok){ alert('No se pudo construir la jornada sin repetir rivales. Intenta de nuevo.'); return; }
-      // Registrar rivales y actualizar localías
+      // Registrar
       roundPairs.forEach(([home,away])=>{
         seen.get(home).add(away); seen.get(away).add(home);
         homeCount.set(home, (homeCount.get(home)||0)+1);
@@ -1475,7 +1478,7 @@ function cl_generarFaseLiga(){
 
     window.CL_JORNADAS = jornadas;
 
-    // Pintar UI
+    // Render UI
     const cont = document.getElementById('cl-fixtures');
     if (cont){ cont.innerHTML=''; }
     jornadas.forEach((pairs, idx)=>{
@@ -1615,91 +1618,85 @@ function cl_hookAdvance(fromSel,toSel){
 }
 
 
+
 function cl_generarOctavos(){
-  if (!CL_TABLA.length){ alert('Actualiza la tabla primero.'); return; }
-  const top8 = cl_getTop8();
-  const winners=[];
-  for (let i=0;i<8;i++){ const el=document.getElementById(`pl${i}-win`); if (!el || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; } winners.push(el.textContent); }
-  const shuffled=[...winners].sort(()=>Math.random()-0.5);
+  if (!Array.isArray(CL_TABLA) || CL_TABLA.length < 8){ alert('Actualiza la tabla primero.'); return; }
+  const top8 = CL_TABLA.slice(0,8).map(r=>r.Equipo);
+
+  // Leer ganadores del play-in
+  const winners = [];
+  for (let i=0;i<8;i++){
+    const el = document.getElementById(`pl${i}-win`);
+    if (!el || !el.textContent || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; }
+    winners.push(el.textContent);
+  }
+  const shuffled = winners.slice().sort(()=>Math.random()-0.5);
 
   // Rellenar 8 llaves a doble partido (cabezas juegan vuelta en casa)
   for (let i=0;i<8;i++){
     const tie = document.getElementById(`cl-octavos-t${i}`);
+    if (!tie) continue;
     const homes = tie.querySelectorAll('.cl-home');
     const aways = tie.querySelectorAll('.cl-away');
-    // ida: no cabeza en casa (ganador play-in)
-    homes[0].textContent = shuffled[i];
-    aways[0].textContent = top8[i];
-    // vuelta: cabeza en casa
-    homes[1].textContent = top8[i];
-    aways[1].textContent = shuffled[i];
-    // limpiar marcadores y global
+    if (homes[0]) homes[0].textContent = shuffled[i]; // ida: play-in en casa
+    if (aways[0]) aways[0].textContent = top8[i];
+    if (homes[1]) homes[1].textContent = top8[i];     // vuelta: cabeza en casa
+    if (aways[1]) aways[1].textContent = shuffled[i];
     ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{
-      const inp = tie.querySelector(`#cl-octavos-t${i}-${suf}`);
-      if (inp) inp.value='';
+      const inp = tie.querySelector(`#cl-octavos-t${i}-${suf}`); if (inp) inp.value='';
     });
     const g = tie.querySelector(`#cl-octavos-t${i}-global`); if (g) g.textContent='—';
     const w = tie.querySelector(`#cl-octavos-t${i}-win`); if (w) w.textContent='—';
   }
 
-  // Hook recalculo y avance
-  cl_connectTwoLeg('cl-octavos', 8, (winners)=>{
-    // Pasar a cuartos por orden del bracket (1vs2 -> Q1, 3vs4 -> Q2, ...)
+  // Conectar avances sucesivos
+  cl_connectTwoLeg('cl-octavos', 8, (winners8)=>{
+    // Cuartos
     for (let i=0;i<4;i++){
-      const tA = winners[2*i], tB = winners[2*i+1];
-      const tie = document.getElementById(`cl-cuartos-t${i}`);
-      const homes = tie.querySelectorAll('.cl-home');
-      const aways = tie.querySelectorAll('.cl-away');
-      // ida: A en casa, vuelta: B en casa
-      homes[0].textContent = tA; aways[0].textContent = tB;
-      homes[1].textContent = tB; aways[1].textContent = tA;
+      const A=winners8[2*i], B=winners8[2*i+1];
+      const tie=document.getElementById(`cl-cuartos-t${i}`);
+      if (!tie) continue;
+      const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+      if (homes[0]) homes[0].textContent = A;
+      if (aways[0]) aways[0].textContent = B;
+      if (homes[1]) homes[1].textContent = B;
+      if (aways[1]) aways[1].textContent = A;
       ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{ const el=tie.querySelector(`#cl-cuartos-t${i}-${suf}`); if (el) el.value=''; });
-      tie.querySelector(`#cl-cuartos-t${i}-global`).textContent='—';
-      tie.querySelector(`#cl-cuartos-t${i}-win`).textContent='—';
+      const g=tie.querySelector(`#cl-cuartos-t${i}-global`); if (g) g.textContent='—';
+      const w=tie.querySelector(`#cl-cuartos-t${i}-win`); if (w) w.textContent='—';
     }
-    cl_connectTwoLeg('cl-cuartos', 4, (wQ)=>{
+    cl_connectTwoLeg('cl-cuartos', 4, (w4)=>{
+      // Semis
       for (let i=0;i<2;i++){
-        const tA=wQ[2*i], tB=wQ[2*i+1];
-        const tie = document.getElementById(`cl-semis-t${i}`);
-        const homes=tie.querySelectorAll('.cl-home');
-        const aways=tie.querySelectorAll('.cl-away');
-        homes[0].textContent=tA; aways[0].textContent=tB;
-        homes[1].textContent=tB; aways[1].textContent=tA;
+        const A=w4[2*i], B=w4[2*i+1];
+        const tie=document.getElementById(`cl-semis-t${i}`);
+        if (!tie) continue;
+        const homes=tie.querySelectorAll('.cl-home'), aways=tie.querySelectorAll('.cl-away');
+        if (homes[0]) homes[0].textContent = A;
+        if (aways[0]) aways[0].textContent = B;
+        if (homes[1]) homes[1].textContent = B;
+        if (aways[1]) aways[1].textContent = A;
         ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{ const el=tie.querySelector(`#cl-semis-t${i}-${suf}`); if (el) el.value=''; });
-        tie.querySelector(`#cl-semis-t${i}-global`).textContent='—';
-        tie.querySelector(`#cl-semis-t${i}-win`).textContent='—';
+        const g=tie.querySelector(`#cl-semis-t${i}-global`); if (g) g.textContent='—';
+        const w=tie.querySelector(`#cl-semis-t${i}-win`); if (w) w.textContent='—';
       }
-      cl_connectTwoLeg('cl-semis', 2, (wS)=>{
-        // Final a partido único: wS[0] vs wS[1]
+      cl_connectTwoLeg('cl-semis', 2, (w2)=>{
+        // Final (partido único)
         const f = document.getElementById('cl-final-t0');
-        const sp = f.querySelectorAll('span');
-        sp[0].textContent = wS[0];
-        sp[1].textContent = wS[1];
-        const ia = document.getElementById('cl-final-t0-a');
-        const ib = document.getElementById('cl-final-t0-b');
-        ia.value=''; ib.value='';
-        const checkFinal=()=>{
-          const a=parseInt(ia.value), b=parseInt(ib.value);
-          if (Number.isNaN(a)||Number.isNaN(b)) return;
-          if (a===b){
-            const pen = prompt(`Final empatada ${wS[0]} vs ${wS[1]}. Ganador:`);
-            // no propagamos más, solo mostramos marcador
-          }
-        };
-        ia.addEventListener('change', checkFinal);
-        ib.addEventListener('change', checkFinal);
+        if (f){
+          const sp=f.querySelectorAll('span');
+          if (sp[0]) sp[0].textContent = w2[0];
+          if (sp[1]) sp[1].textContent = w2[1];
+          const ia=document.getElementById('cl-final-t0-a');
+          const ib=document.getElementById('cl-final-t0-b');
+          if (ia) ia.value=''; if (ib) ib.value='';
+        }
       });
     });
   });
 }
 
-  const top8 = cl_getTop8();
-  const winners=[];
-  for (let i=0;i<8;i++){ const el=document.getElementById(`pl${i}-win`); if (!el || el.textContent==='—'){ alert('Completa los ganadores del play‑in.'); return; } winners.push(el.textContent); }
-  const shuffled=[...winners].sort(()=>Math.random()-0.5);
-  const cards=document.querySelectorAll('#cl-octavos .match');
-  cards.forEach((card,i)=>{ const sp=card.querySelectorAll('span'); const inp=card.querySelectorAll('input'); sp[0].textContent=top8[i]; sp[1].textContent=shuffled[i]; inp[0].value=''; inp[1].value=''; });
-  cl_hookAdvance('#cl-octavos','#cl-cuartos'); cl_hookAdvance('#cl-cuartos','#cl-semis'); 
+
 // Listeners
 document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('cl-agregar-jugadores')?.addEventListener('click', cl_agregarJugadores);
@@ -1761,52 +1758,5 @@ window.cl_actualizarTabla = cl_actualizarTabla;
 window.cl_generarPlayin = cl_generarPlayin;
 window.cl_generarOctavos = cl_generarOctavos;
 </script>
-<script>
-// === Fallback Play-in (9–24) ida/vuelta ===
-window.cl_fallbackGenerarPlayin = function(){
-  try{
-    if (!Array.isArray(window.CL_TABLA) || window.CL_TABLA.length<24){
-      alert('Genera/actualiza la tabla de la fase de liga primero.'); return;
-    }
-    const equipos = window.CL_TABLA.map(r=>r.Equipo);
-    const del9a24  = equipos.slice(8,24); // posiciones 9-24
-    const cont = document.getElementById('cl-playin');
-    cont.innerHTML = '<h4>Play-in (9–24) – Ida y Vuelta</h4>';
-    const tbl = document.createElement('table'); tbl.className='cl-playin-table';
-    tbl.innerHTML = `<thead><tr><th>Llave</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>`;
-    const tb = document.createElement('tbody');
-    for (let i=0;i<8;i++){
-      const A = del9a24[2*i], B = del9a24[2*i+1];
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${A} vs ${B}</td>
-        <td><input id="pl${i}-ida-a" type="number" min="0"> – <input id="pl${i}-ida-b" type="number" min="0"></td>
-        <td><input id="pl${i}-vta-a" type="number" min="0"> – <input id="pl${i}-vta-b" type="number" min="0"></td>
-        <td id="pl${i}-global">—</td>
-        <td id="pl${i}-win">—</td>`;
-      tb.appendChild(tr);
-    }
-    tbl.appendChild(tb); cont.appendChild(tbl);
-
-    // calculadora de global + ganador
-    for (let i=0;i<8;i++){
-      const idaA = document.getElementById(`pl${i}-ida-a`);
-      const idaB = document.getElementById(`pl${i}-ida-b`);
-      const vtaA = document.getElementById(`pl${i}-vta-a`);
-      const vtaB = document.getElementById(`pl${i}-vta-b`);
-      const g    = document.getElementById(`pl${i}-global`);
-      const w    = document.getElementById(`pl${i}-win`);
-      const recalc=()=>{
-        const a1=parseInt(idaA.value), b1=parseInt(idaB.value), a2=parseInt(vtaA.value), b2=parseInt(vtaB.value);
-        if ([a1,b1,a2,b2].some(Number.isNaN)){ g.textContent='—'; w.textContent='—'; return; }
-        const totalA = a1 + b2; const totalB = b1 + a2;
-        g.textContent = `${totalA}–${totalB}`;
-        w.textContent = totalA>totalB ? 'Local ida' : totalB>totalA ? 'Visitante ida' : '—';
-      };
-      [idaA,idaB,vtaA,vtaB].forEach(el=> el.addEventListener('input', recalc));
-    }
-    alert('✅ Play-in generado (fallback)');
-  }catch(e){ console.error(e); alert('❌ Error generando play-in (fallback)'); }
-};
-</script></body>
+</body>
 </html>
