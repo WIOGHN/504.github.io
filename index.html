@@ -1384,8 +1384,8 @@ function cl_renderEstado(){
   const e = document.getElementById('cl-equipos-estado');
   const nj = Array.isArray(window.CL_JUGADORES) ? window.CL_JUGADORES.length : 0;
   const ne = Array.isArray(window.CL_EQUIPOS) ? window.CL_EQUIPOS.length : 0;
-  if (j) j.innerHTML = `Jugadores cargados (<strong>${nj}</strong>/36) ${nj<36?`<span style="color:#ffeb3b;">(faltan ${36-nj})</span>`:''}`;
-  if (e) e.innerHTML = `Equipos cargados (<strong>${ne}</strong>/36) ${ne<36?`<span style="color:#ffeb3b;">(faltan ${36-ne})</span>`:''}`;
+  if (j) j.innerHTMLL = `Jugadores cargados (<strong>${nj}</strong>/36) ${nj<36?`<span style="color:#ffeb3b;">(faltan ${36-nj})</span>`:''}`;
+  if (e) e.innerHTMLL = `Equipos cargados (<strong>${ne}</strong>/36) ${ne<36?`<span style="color:#ffeb3b;">(faltan ${36-ne})</span>`:''}`;
 }
 
 
@@ -1418,22 +1418,33 @@ function cl_agregarEquipos(){
 
 
 
+
 function cl_sortearParejas(){
-  if (CL_JUGADORES.length !== 36 || CL_EQUIPOS.length !== 36){ alert('Primero carga 36 jugadores y 36 equipos.'); return; }
+  if (!Array.isArray(CL_JUGADORES) || !Array.isArray(CL_EQUIPOS) || CL_JUGADORES.length !== 36 || CL_EQUIPOS.length !== 36){
+    alert('Primero carga 36 jugadores y 36 equipos.'); return;
+  }
   const jugadores = [...CL_JUGADORES].sort(()=>Math.random()-0.5);
   const equipos   = [...CL_EQUIPOS].sort(()=>Math.random()-0.5);
-  CL_PAREJAS = jugadores.map((jug,i)=>({ jugador:jug, equipo:equipos[i] }));
+  const parejas = jugadores.map((jug,i)=>({ jugador:jug, equipo:equipos[i] }));
+  window.CL_PAREJAS = parejas;
+
   const cont = document.getElementById('cl-parejas');
   if (cont){
     cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
     const grid = document.getElementById('cl-grid-parejas');
-    CL_PAREJAS.forEach(p=>{
-      const d=document.createElement('div'); d.className='cl-card';
+    parejas.forEach(p=>{
+      const d=document.createElement('div'); 
+      d.className='cl-card';
+      d.setAttribute('data-jugador', p.jugador);
+      d.setAttribute('data-equipo', p.equipo);
       d.innerHTML = `<strong>${p.jugador}</strong> ⇄ <span style="color:#ffd700; font-weight:700;">${p.equipo}</span>`;
       grid.appendChild(d);
     });
   }
+  // actualizar estado si existe
+  if (typeof cl_renderEstado === 'function') cl_renderEstado();
 }
+
 
 function cl_initOpponents(){ CL_MATCHUPS = new Map(CL_PAREJAS.map(p=>[p.equipo, new Set()])); }
 
@@ -1521,18 +1532,18 @@ function cl_generarFaseLiga(){
 
     // 3) Pintar UI en #cl-fixtures
     const cont = document.getElementById('cl-fixtures');
-    if (cont) cont.innerHTML = '';
+    if (cont) cont.innerHTMLL = '';
     jornadas.forEach((pairs, idx)=>{
       const wrap=document.createElement('div'); wrap.className='cl-round cl-card';
-      wrap.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
+      wrap.innerHTMLL = `<h4>Jornada ${idx+1}</h4>`;
       const table=document.createElement('table'); table.className='cl-table';
-      table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th><th>Marcador</th></tr></thead>';
+      table.innerHTMLL = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th><th>Marcador</th></tr></thead>';
       const tb=document.createElement('tbody');
       pairs.forEach(([home,away], mIdx)=>{
         const jl=jx.get(home)||'', jv=jx.get(away)||'';
         const ida=`cl-r${idx+1}-m${mIdx}-a`, idb=`cl-r${idx+1}-m${mIdx}-b`;
         const tr=document.createElement('tr');
-        tr.innerHTML = `<td>${home}</td><td>${away}</td><td>${jl}</td><td>${jv}</td><td><input id="${ida}" type="number" min="0" style="width:48px;"> – <input id="${idb}" type="number" min="0" style="width:48px;"></td>`;
+        tr.innerHTMLL = `<td>${home}</td><td>${away}</td><td>${jl}</td><td>${jv}</td><td><input id="${ida}" type="number" min="0" style="width:48px;"> – <input id="${idb}" type="number" min="0" style="width:48px;"></td>`;
         tb.appendChild(tr);
       });
       table.appendChild(tb); wrap.appendChild(table);
@@ -1571,17 +1582,17 @@ function cl_actualizarTabla(){
   CL_TABLA = tabla;
 
   const cont = document.getElementById('cl-standings'); if (!cont) return;
-  cont.innerHTML='';
+  cont.innerHTMLL='';
   const mkTable=(rows,start)=>{
     const table=document.createElement('table'); table.className='cl-table';
-    table.innerHTML = '<thead><tr><th>#</th><th>Equipo</th><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>';
+    table.innerHTMLL = '<thead><tr><th>#</th><th>Equipo</th><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>';
     const tb=document.createElement('tbody');
-    rows.forEach((r,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${start+i}</td><td>${r.Equipo}</td><td>${r.Jugador}</td><td>${r.PJ}</td><td>${r.G}</td><td>${r.E}</td><td>${r.P}</td><td>${r.GF}</td><td>${r.GC}</td><td>${r.DG}</td><td><strong>${r.Pts}</strong></td>`; tb.appendChild(tr); });
+    rows.forEach((r,i)=>{ const tr=document.createElement('tr'); tr.innerHTMLL=`<td>${start+i}</td><td>${r.Equipo}</td><td>${r.Jugador}</td><td>${r.PJ}</td><td>${r.G}</td><td>${r.E}</td><td>${r.P}</td><td>${r.GF}</td><td>${r.GC}</td><td>${r.DG}</td><td><strong>${r.Pts}</strong></td>`; tb.appendChild(tr); });
     table.appendChild(tb); return table;
   };
-  const wrap1=document.createElement('div'); wrap1.className='cl-round cl-top8'; wrap1.innerHTML='<h4>1–8 Clasificación directa</h4>'; wrap1.appendChild(mkTable(tabla.slice(0,8),1));
-  const wrap2=document.createElement('div'); wrap2.className='cl-round cl-playin'; wrap2.innerHTML='<h4>9–24 Play-in</h4>'; wrap2.appendChild(mkTable(tabla.slice(8,24),9));
-  const wrap3=document.createElement('div'); wrap3.className='cl-round cl-elim'; wrap3.innerHTML='<h4>25–36 Eliminados</h4>'; wrap3.appendChild(mkTable(tabla.slice(24,36),25));
+  const wrap1=document.createElement('div'); wrap1.className='cl-round cl-top8'; wrap1.innerHTMLL='<h4>1–8 Clasificación directa</h4>'; wrap1.appendChild(mkTable(tabla.slice(0,8),1));
+  const wrap2=document.createElement('div'); wrap2.className='cl-round cl-playin'; wrap2.innerHTMLL='<h4>9–24 Play-in</h4>'; wrap2.appendChild(mkTable(tabla.slice(8,24),9));
+  const wrap3=document.createElement('div'); wrap3.className='cl-round cl-elim'; wrap3.innerHTMLL='<h4>25–36 Eliminados</h4>'; wrap3.appendChild(mkTable(tabla.slice(24,36),25));
   cont.appendChild(wrap1); cont.appendChild(wrap2); cont.appendChild(wrap3);
 }
 
@@ -1604,15 +1615,15 @@ function cl_getPlayinSeeds(){ return { A: CL_TABLA.slice(8,16).map(r=>r.Equipo),
 function cl_generarPlayin(){
   if (!CL_TABLA.length){ alert('Actualiza la tabla primero.'); return; }
   const {A,B} = cl_getPlayinSeeds(); if (A.length<8 || B.length<8){ alert('Se requieren puestos 9–24.'); return; }
-  const cont = document.getElementById('cl-playin'); cont.innerHTML = '<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
+  const cont = document.getElementById('cl-playin'); cont.innerHTMLL = '<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
   const wrap = cont.querySelector('.cl-round');
   const table=document.createElement('table'); table.className='cl-playin-table';
-  table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
+  table.innerHTMLL='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
   const tb=document.createElement('tbody');
   for (let i=0;i<8;i++){
     const seeded=A[i], unseeded=B[7-i];
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${seeded} (cabeza) vs ${unseeded}</td>`+
+    tr.innerHTMLL = `<td>${seeded} (cabeza) vs ${unseeded}</td>`+
                    `<td>${unseeded} <input type="number" min="0" id="pl${i}-ida-a" style="width:56px;"> – <input type="number" min="0" id="pl${i}-ida-b" style="width:56px;"> ${seeded}</td>`+
                    `<td>${seeded} <input type="number" min="0" id="pl${i}-vta-a" style="width:56px;"> – <input type="number" min="0" id="pl${i}-vta-b" style="width:56px;"> ${unseeded}</td>`+
                    `<td id="pl${i}-global">—</td><td id="pl${i}-win">—</td>`;
