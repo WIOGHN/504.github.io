@@ -1749,5 +1749,59 @@ window.cl_actualizarTabla = cl_actualizarTabla;
 window.cl_generarPlayin = cl_generarPlayin;
 window.cl_generarOctavos = cl_generarOctavos;
 </script>
+
+<div class="cl-card" id="cl-save-load" style="margin-top:30px; text-align:center;">
+<button id="cl-save" onclick="(window.cl_guardarEstado||function(){alert('Función de guardado no encontrada');})()">💾 Guardar Estado</button>
+<button class="secondary" id="cl-load" onclick="(window.cl_cargarEstado||function(){alert('Función de carga no encontrada');})()">📂 Cargar Estado</button>
+</div>
+
+<script>
+(function(){
+  function getAllState(){
+    const data = { _version: 1 };
+    document.querySelectorAll('#cl-wiog input, #cl-wiog textarea').forEach(inp=>{ if(inp.id) data[inp.id] = inp.value; });
+    document.querySelectorAll('#cl-wiog span[id], #cl-wiog td[id]').forEach(el=>{ data[el.id] = el.textContent; });
+    try{
+      data._CL_JUGADORES = (window.CL_JUGADORES||[]);
+      data._CL_EQUIPOS   = (window.CL_EQUIPOS||[]);
+      data._CL_PAREJAS   = (window.CL_PAREJAS||[]);
+      data._CL_JORNADAS  = (window.CL_JORNADAS||[]);
+      data._CL_TABLA     = (window.CL_TABLA||[]);
+    }catch(e){}
+    return data;
+  }
+  function applyAllState(data){
+    Object.keys(data).forEach(id=>{
+      if(id.startsWith('_')) return;
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(el.tagName==='INPUT' || el.tagName==='TEXTAREA') el.value = data[id];
+      else el.textContent = data[id];
+    });
+    if (Array.isArray(data._CL_JUGADORES)) window.CL_JUGADORES = data._CL_JUGADORES;
+    if (Array.isArray(data._CL_EQUIPOS))   window.CL_EQUIPOS   = data._CL_EQUIPOS;
+    if (Array.isArray(data._CL_PAREJAS))   window.CL_PAREJAS   = data._CL_PAREJAS;
+    if (Array.isArray(data._CL_JORNADAS))  window.CL_JORNADAS  = data._CL_JORNADAS;
+    if (Array.isArray(data._CL_TABLA))     window.CL_TABLA     = data._CL_TABLA;
+    try{
+      if (typeof cl_renderEstado === 'function') cl_renderEstado();
+      if (typeof cl_actualizarTabla === 'function') cl_actualizarTabla();
+    }catch(e){}
+  }
+  window.cl_guardarEstado = function(){
+    const data = getAllState();
+    localStorage.setItem('CL_WIOG_STATE', JSON.stringify(data));
+    alert('✅ Estado guardado');
+  };
+  window.cl_cargarEstado = function(){
+    const raw = localStorage.getItem('CL_WIOG_STATE');
+    if(!raw){ alert('⚠️ No hay estado guardado'); return; }
+    try{ const data = JSON.parse(raw); applyAllState(data); alert('📂 Estado cargado'); }
+    catch(e){ alert('❌ No se pudo cargar el estado'); }
+  };
+  document.getElementById('cl-save')?.addEventListener('click', cl_guardarEstado);
+  document.getElementById('cl-load')?.addEventListener('click', cl_cargarEstado);
+})();
+</script>
 </body>
 </html>
