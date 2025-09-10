@@ -1631,6 +1631,7 @@ function cl_generarOctavos(){
   }
 
   // Conectar avances sucesivos
+  cl_connectTwoLeg('cl-octavos', 8, ()=>{}, 'cl-cuartos');
   cl_connectTwoLeg('cl-octavos', 8, (winners8)=>{
     for (let i=0;i<4;i++){
       const A=winners8[2*i], B=winners8[2*i+1];
@@ -1676,8 +1677,29 @@ function cl_generarOctavos(){
 }
 
 // Helper: dos partidos ida/vuelta para calcular global y ganador y avisar winners
-function cl_connectTwoLeg(prefix, count, onWinnersReady){
+
+function cl_connectTwoLeg(prefix, count, onWinnersReady, nextPrefix=null){
   const winners = new Array(count).fill('—');
+  const updateNextPair = (i)=>{
+    if (!nextPrefix) return;
+    const pair = Math.floor(i/2);
+    const a = winners[2*pair], b = winners[2*pair+1];
+    if (!a || !b || a==='—' || b==='—') return;
+    // Map pair -> next tie index
+    const tie = document.getElementById(`${nextPrefix}-t${pair}`);
+    if (!tie) return;
+    const homes = tie.querySelectorAll('.cl-home');
+    const aways = tie.querySelectorAll('.cl-away');
+    // ida: A en casa; vuelta: B en casa (equilibrado)
+    if (homes[0]) homes[0].textContent = a;
+    if (aways[0]) aways[0].textContent = b;
+    if (homes[1]) homes[1].textContent = b;
+    if (aways[1]) aways[1].textContent = a;
+    ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{ const el=tie.querySelector(`#${nextPrefix}-t${pair}-${suf}`); if (el) el.value=''; });
+    const g=tie.querySelector(`#${nextPrefix}-t${pair}-global`); if (g) g.textContent='—';
+    const w=tie.querySelector(`#${nextPrefix}-t${pair}-win`); if (w) w.textContent='—';
+  };
+
   for (let i=0;i<count;i++){
     const tieId = `${prefix}-t${i}`;
     const idaA = document.getElementById(`${tieId}-ida-a`);
@@ -1693,11 +1715,13 @@ function cl_connectTwoLeg(prefix, count, onWinnersReady){
       if ([a1,b1,a2,b2].some(x=>Number.isNaN(x))){ if(g) g.textContent='—'; if(w) w.textContent='—'; winners[i]='—'; return; }
       const teamHomeIda = home[0]?.textContent || '—';
       const teamAwayIda = away[0]?.textContent || '—';
-      const totalA = a1 + b2; // equipo local en la ida
-      const totalB = b1 + a2; // equipo visitante en la ida
+      const totalA = a1 + b2; // local en la ida
+      const totalB = b1 + a2; // visitante en la ida
       if (g) g.textContent = `${totalA}–${totalB}`;
       let ganador = totalA>totalB ? teamHomeIda : totalB>totalA ? teamAwayIda : (prompt(`Empate ${teamHomeIda} vs ${teamAwayIda}. Ganador por penales:`)||'—');
       if (w) w.textContent = ganador; winners[i]=ganador;
+      // actualizar siguiente ronda para este par si ambos definidos
+      updateNextPair(i);
       if (winners.every(x=>x && x!=='—')) onWinnersReady([...winners]);
     };
     [idaA,idaB,vtaA,vtaB].forEach(el=> el && el.addEventListener('input', recalc));
