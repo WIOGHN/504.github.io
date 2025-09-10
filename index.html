@@ -1422,72 +1422,86 @@ function cl_sortearParejas(){
 
 function cl_initOpponents(){ CL_MATCHUPS = new Map(CL_PAREJAS.map(p=>[p.equipo, new Set()])); }
 
+
 function cl_generarFaseLiga(){
-  if (CL_PAREJAS.length !== 36){ alert('Genera primero las parejas.'); return; }
-  cl_initOpponents();
-  const teams = CL_PAREJAS.map(p=>p.equipo);
-  const CL_HOME_COUNT = new Map(teams.map(t=>[t,0]));
-  const jornadas = [];
-  for (let r=1; r<=8; r++){
-    let ok=false, intentos=0, pairings=[];
-    while(!ok && intentos<2000){
-      intentos++; pairings=[];
-      const disp=[...teams].sort(()=>Math.random()-0.5);
-      let valido=true;
-      while(disp.length){
-        const a=disp.shift(); let emp=false;
-        for (let i=0;i<disp.length;i++){
-          const b=disp[i];
-          if (!CL_MATCHUPS.get(a).has(b)){
-            pairings.push([a,b]);
-            CL_MATCHUPS.get(a).add(b); CL_MATCHUPS.get(b).add(a);
-            disp.splice(i,1); emp=true; break;
-          }
-        }
-        if(!emp){ // rollback
-          for (const [x,y] of pairings){ CL_MATCHUPS.get(x).delete(y); CL_MATCHUPS.get(y).delete(x); }
-          valido=false; break;
-        }
-      }
-      if (valido) ok=true;
+  try{
+    if (!Array.isArray(window.CL_PAREJAS) || window.CL_PAREJAS.length !== 36){
+      alert('Genera primero las 36 parejas jugador–equipo.'); return;
     }
-    if (!ok){ cl_initOpponents(); jornadas.length=0; r=0; continue; }
+    const teams = window.CL_PAREJAS.map(p=>p.equipo);
+    const jx = new Map(window.CL_PAREJAS.map(p=>[p.equipo, p.jugador]));
+    // Control de rivales ya jugados y equilibrio de localías
+    const seen = new Map(teams.map(t=>[t,new Set()]));
+    const homeCount = new Map(teams.map(t=>[t,0]));
+    const jornadas = [];
+    const MAX_ATTEMPTS = 4000;
 
-    // balance home/away
-    pairings = pairings.map(([home,away])=>{
-      const hc = CL_HOME_COUNT.get(home), ac = CL_HOME_COUNT.get(away);
-      if (hc - ac > 0){ CL_HOME_COUNT.set(away, ac+1); return [away, home]; }
-      else { CL_HOME_COUNT.set(home, hc+1); return [home, away]; }
+    for (let r=0; r<8; r++){
+      let ok=false, attempts=0, roundPairs=null;
+      while(!ok && attempts<MAX_ATTEMPTS){
+        attempts++;
+        roundPairs = [];
+        const pool = [...teams].sort(()=>Math.random()-0.5);
+        const used = new Set();
+        let valid = true;
+        while(pool.length){
+          const a = pool.shift();
+          if (used.has(a)) continue;
+          let oppIdx = -1, b = null;
+          for (let i=0;i<pool.length;i++){
+            const cand = pool[i];
+            if (used.has(cand)) continue;
+            if (!seen.get(a).has(cand) && !seen.get(cand).has(a)){ oppIdx = i; b = cand; break; }
+          }
+          if (oppIdx === -1){ valid = false; break; }
+          pool.splice(oppIdx,1);
+          used.add(a); used.add(b);
+          // Elegir local para balancear
+          let home = a, away = b;
+          const ha = homeCount.get(a)||0, hb = homeCount.get(b)||0;
+          if (hb < ha) { home=b; away=a; }
+          roundPairs.push([home, away]);
+        }
+        if (valid){ ok = true; }
+      }
+      if (!ok){ alert('No se pudo construir la jornada sin repetir rivales. Intenta de nuevo.'); return; }
+      // Registrar rivales y actualizar localías
+      roundPairs.forEach(([home,away])=>{
+        seen.get(home).add(away); seen.get(away).add(home);
+        homeCount.set(home, (homeCount.get(home)||0)+1);
+      });
+      jornadas.push(roundPairs);
+    }
+
+    window.CL_JORNADAS = jornadas;
+
+    // Pintar UI
+    const cont = document.getElementById('cl-fixtures');
+    if (cont){ cont.innerHTML=''; }
+    jornadas.forEach((pairs, idx)=>{
+      const roundDiv = document.createElement('div'); roundDiv.className='cl-round cl-card';
+      roundDiv.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
+      const table = document.createElement('table'); table.className='cl-table';
+      table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th><th>Marcador</th></tr></thead>';
+      const tbody = document.createElement('tbody');
+      pairs.forEach(([home,away], mIdx)=>{
+        const jl = jx.get(home)||''; const jv = jx.get(away)||'';
+        const ida = `cl-r${idx+1}-m${mIdx}-a`, idb = `cl-r${idx+1}-m${mIdx}-b`;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${home}</td><td>${away}</td><td>${jl}</td><td>${jv}</td><td><input type="number" min="0" id="${ida}" style="width:48px;"> – <input type="number" min="0" id="${idb}" style="width:48px;"></td>`;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody); roundDiv.appendChild(table);
+      if (cont) cont.appendChild(roundDiv);
     });
-    jornadas.push(pairings);
+
+    if (typeof window.cl_hookInputs === 'function') window.cl_hookInputs();
+    document.getElementById('cl-generar-fase')?.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){
+    console.error(e); alert('❌ Error generando fase de liga');
   }
-  CL_JORNADAS = jornadas;
-
-  // render
-  const cont = document.getElementById('cl-fixtures'); if (cont) cont.innerHTML='';
-  const jx = new Map(CL_PAREJAS.map(p=>[p.equipo,p.jugador]));
-  jornadas.forEach((pairs, idx)=>{
-    const roundDiv = document.createElement('div'); roundDiv.className='cl-round';
-    roundDiv.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
-    const table = document.createElement('table'); table.className='cl-table';
-    table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th></tr></thead>';
-    const tbody = document.createElement('tbody');
-    pairs.forEach(([home,away], mIdx)=>{
-      const jl=jx.get(home)||'', jv=jx.get(away)||'';
-      const ida=`cl-r${idx+1}-m${mIdx}-a`, idb=`cl-r${idx+1}-m${mIdx}-b`;
-      const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${home}<br/><input type='number' min='0' id='${ida}' style='width:56px;'></td>`+
-                     `<td>${away}<br/><input type='number' min='0' id='${idb}' style='width:56px;'></td>`+
-                     `<td>${jl}</td><td>${jv}</td>`;
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody); roundDiv.appendChild(table);
-    if (cont) cont.appendChild(roundDiv);
-  });
-
-  cl_hookInputs();
-  document.getElementById('cl-generar-fase')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
+
 
 function cl_actualizarTabla(){
   if (!CL_PAREJAS.length || !CL_JORNADAS.length){ alert('Genera parejas y la fase de liga primero.'); return; }
