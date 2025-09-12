@@ -2858,5 +2858,202 @@ window.cl_actualizarTabla = function(){
   else { hook(); }
 })();
 </script>
+
+<script>
+/* ====== WIOG: Guardado/Carga total en localStorage ====== */
+const WIOG_KEY = 'WIOG_CL_STATE_V1';
+function __text(el){ return el ? (el.textContent||'').trim() : ''; }
+function __val(el){ return el ? el.value : ''; }
+function __readLigaInputs(){
+  const res = {};
+  if (!Array.isArray(window.CL_JORNADAS) || !CL_JORNADAS.length) return res;
+  CL_JORNADAS.forEach((pairs, rIdx)=>{
+    pairs.forEach((_, mIdx)=>{
+      const aId = `cl-r${rIdx+1}-m${mIdx}-a`;
+      const bId = `cl-r${rIdx+1}-m${mIdx}-b`;
+      const aEl = document.getElementById(aId);
+      const bEl = document.getElementById(bId);
+      if (aEl) res[aId] = aEl.value || '';
+      if (bEl) res[bId] = bEl.value || '';
+    });
+  });
+  return res;
+}
+function __writeLigaInputs(map){
+  if (!map) return;
+  Object.entries(map).forEach(([id, v])=>{
+    const el = document.getElementById(id);
+    if (el) el.value = v;
+  });
+}
+function __readPlayIn(){
+  const ties = [];
+  for (let i=0;i<8;i++){
+    const rowSel = `#cl-playin tbody tr:nth-child(${i+1})`;
+    const pairTxt = __text(document.querySelector(`${rowSel} td:first-child`));
+    const seeded   = pairTxt.includes(' vs ') ? pairTxt.split(' vs ')[0] : '';
+    const unseeded = pairTxt.includes(' vs ') ? pairTxt.split(' vs ')[1] : '';
+    ties.push({
+      id: `pl${i}`,
+      seeded, unseeded,
+      ida_a: __val(document.getElementById(`pl${i}-ida-a`)),
+      ida_b: __val(document.getElementById(`pl${i}-ida-b`)),
+      vta_a: __val(document.getElementById(`pl${i}-vta-a`)),
+      vta_b: __val(document.getElementById(`pl${i}-vta-b`)),
+      global: __text(document.getElementById(`pl${i}-global`)),
+      win: __text(document.getElementById(`pl${i}-win`))
+    });
+  }
+  return ties;
+}
+function __writePlayIn(ties){
+  if (!Array.isArray(ties)) return;
+  for (let i=0;i<Math.min(8, ties.length); i++){
+    const t = ties[i];
+    const idaA = document.getElementById(`pl${i}-ida-a`);
+    const idaB = document.getElementById(`pl${i}-ida-b`);
+    const vtaA = document.getElementById(`pl${i}-vta-a`);
+    const vtaB = document.getElementById(`pl${i}-vta-b`);
+    if (idaA) idaA.value = t.ida_a || '';
+    if (idaB) idaB.value = t.ida_b || '';
+    if (vtaA) vtaA.value = t.vta_a || '';
+    if (vtaB) vtaB.value = t.vta_b || '';
+    const g = document.getElementById(`pl${i}-global`);
+    const w = document.getElementById(`pl${i}-win`);
+    if (g) g.textContent = t.global || '—';
+    if (w) w.textContent = t.win || '—';
+  }
+}
+function __readTwoLeg(prefix, count){
+  const ties = [];
+  for (let i=0;i<count;i++){
+    const tieId = `${prefix}-t${i}`;
+    const homes = document.querySelectorAll(`#${tieId} .cl-home`);
+    const aways = document.querySelectorAll(`#${tieId} .cl-away`);
+    ties.push({
+      id: tieId,
+      a_home: __text(homes[0]), b_away: __text(aways[0]),
+      b_home: __text(homes[1]), a_away: __text(aways[1]),
+      ida_a: __val(document.getElementById(`${tieId}-ida-a`)),
+      ida_b: __val(document.getElementById(`${tieId}-ida-b`)),
+      vta_a: __val(document.getElementById(`${tieId}-vta-a`)),
+      vta_b: __val(document.getElementById(`${tieId}-vta-b`)),
+      global: __text(document.getElementById(`${tieId}-global`)),
+      win: __text(document.getElementById(`${tieId}-win`)),
+    });
+  }
+  return ties;
+}
+function __writeTwoLeg(prefix, ties){
+  if (!Array.isArray(ties)) return;
+  for (let i=0;i<ties.length;i++){
+    const t = ties[i];
+    const tieId = t.id || `${prefix}-t${i}`;
+    const homes = document.querySelectorAll(`#${tieId} .cl-home`);
+    const aways = document.querySelectorAll(`#${tieId} .cl-away`);
+    if (homes.length>=2 && aways.length>=2){
+      homes[0].textContent = t.a_home || '';
+      aways[0].textContent = t.b_away || '';
+      homes[1].textContent = t.b_home || '';
+      aways[1].textContent = t.a_away || '';
+    }
+    const idaA = document.getElementById(`${tieId}-ida-a`);
+    const idaB = document.getElementById(`${tieId}-ida-b`);
+    const vtaA = document.getElementById(`${tieId}-vta-a`);
+    const vtaB = document.getElementById(`${tieId}-vta-b`);
+    if (idaA) idaA.value = t.ida_a || '';
+    if (idaB) idaB.value = t.ida_b || '';
+    if (vtaA) vtaA.value = t.vta_a || '';
+    if (vtaB) vtaB.value = t.vta_b || '';
+    const g = document.getElementById(`${tieId}-global`);
+    const w = document.getElementById(`${tieId}-win`);
+    if (g) g.textContent = t.global || '—';
+    if (w) w.textContent = t.win || '—';
+  }
+  if (typeof window.cl_visualSwapAll === 'function') window.cl_visualSwapAll();
+  if (typeof window.cl_fixSecondLegOrder === 'function') window.cl_fixSecondLegOrder();
+}
+function cl_wiog_save(){
+  try{
+    const state = {
+      CL_JUGADORES: Array.isArray(window.CL_JUGADORES) ? window.CL_JUGADORES : [],
+      CL_EQUIPOS:   Array.isArray(window.CL_EQUIPOS)   ? window.CL_EQUIPOS   : [],
+      CL_PAREJAS:   Array.isArray(window.CL_PAREJAS)   ? window.CL_PAREJAS   : [],
+      CL_JORNADAS:  Array.isArray(window.CL_JORNADAS)  ? window.CL_JORNADAS  : [],
+      CL_TABLA:     Array.isArray(window.CL_TABLA)     ? window.CL_TABLA     : [],
+      LIGA_INPUTS: __readLigaInputs(),
+      PLAYIN: document.getElementById('cl-playin')?.querySelector('table') ? __readPlayIn() : null,
+      KO_OCTAVOS: document.getElementById('cl-octavos') ? __readTwoLeg('cl-octavos', 8) : null,
+      KO_CUARTOS: document.getElementById('cl-cuartos') ? __readTwoLeg('cl-cuartos', 4) : null,
+      KO_SEMIS:   document.getElementById('cl-semis')   ? __readTwoLeg('cl-semis', 2)   : null,
+      FINAL: {
+        home: __text(document.querySelector('#cl-final-t0 .cl-home')),
+        away: __text(document.querySelector('#cl-final-t0 .cl-away')),
+        a: __val(document.getElementById('cl-final-t0-a')),
+        b: __val(document.getElementById('cl-final-t0-b'))
+      }
+    };
+    localStorage.setItem(WIOG_KEY, JSON.stringify(state));
+    alert('✅ Champions WIOG guardado correctamente.');
+  }catch(e){
+    console.error(e); alert('❌ Error al guardar: ' + (e && e.message ? e.message : e));
+  }
+}
+async function cl_wiog_load(){
+  try{
+    const raw = localStorage.getItem(WIOG_KEY);
+    if (!raw){ alert('No hay un guardado de Champions WIOG.'); return; }
+    const state = JSON.parse(raw);
+    window.CL_JUGADORES = Array.isArray(state.CL_JUGADORES) ? state.CL_JUGADORES : [];
+    window.CL_EQUIPOS   = Array.isArray(state.CL_EQUIPOS)   ? state.CL_EQUIPOS   : [];
+    window.CL_PAREJAS   = Array.isArray(state.CL_PAREJAS)   ? state.CL_PAREJAS   : [];
+    window.CL_JORNADAS  = Array.isArray(state.CL_JORNADAS)  ? state.CL_JORNADAS  : [];
+    window.CL_TABLA     = Array.isArray(state.CL_TABLA)     ? state.CL_TABLA     : [];
+    if (typeof window.cl_renderEstado === 'function') window.cl_renderEstado();
+    if (window.CL_PAREJAS.length === 36 && typeof window.cl_generarFaseLiga === 'function'){
+      const fixtures = document.getElementById('cl-fixtures');
+      if (fixtures) fixtures.innerHTML = '';
+      window.cl_generarFaseLiga();
+    }
+    __writeLigaInputs(state.LIGA_INPUTS || {});
+    if (typeof window.cl_actualizarTabla === 'function') window.cl_actualizarTabla();
+    if (state.PLAYIN){
+      if (!document.querySelector('#cl-playin table') && typeof window.cl_generarPlayin === 'function'){
+        window.cl_generarPlayin();
+      }
+      __writePlayIn(state.PLAYIN);
+    }
+    if (state.KO_OCTAVOS){
+      if (typeof window.cl_generarOctavos === 'function'){
+        window.cl_generarOctavos();
+      }
+      __writeTwoLeg('cl-octavos', state.KO_OCTAVOS);
+    }
+    if (state.KO_CUARTOS) __writeTwoLeg('cl-cuartos', state.KO_CUARTOS);
+    if (state.KO_SEMIS)   __writeTwoLeg('cl-semis',   state.KO_SEMIS);
+    if (state.FINAL){
+      const homeLbl = document.querySelector('#cl-final-t0 .cl-home');
+      const awayLbl = document.querySelector('#cl-final-t0 .cl-away');
+      const a = document.getElementById('cl-final-t0-a');
+      const b = document.getElementById('cl-final-t0-b');
+      if (homeLbl) homeLbl.textContent = state.FINAL.home || '—';
+      if (awayLbl) awayLbl.textContent = state.FINAL.away || '—';
+      if (a) a.value = state.FINAL.a || '';
+      if (b) b.value = state.FINAL.b || '';
+    }
+    if (typeof window.cl_autoWireKO === 'function') window.cl_autoWireKO();
+    alert('📂 Champions WIOG cargado. Puedes seguir exactamente donde lo dejaste.');
+  }catch(e){
+    console.error(e); alert('❌ Error al cargar: ' + (e && e.message ? e.message : e));
+  }
+}
+(function(){
+  const btnSave = document.getElementById('cl-wiog-save');
+  const btnLoad = document.getElementById('cl-wiog-load');
+  if (btnSave) btnSave.addEventListener('click', cl_wiog_save);
+  if (btnLoad) btnLoad.addEventListener('click', cl_wiog_load);
+})();
+</script>
+
 </body>
 </html>
