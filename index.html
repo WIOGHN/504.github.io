@@ -3529,698 +3529,101 @@ async function cl_wiog_load(){
   new MutationObserver(enhanceInputs).observe(document.body, {childList:true, subtree:true});
 })();
 </script>
-<!-- === Patch: Cuartos de Final (global + ganador + persistencia tras cargar) === -->
-<script id="cl-cuartos-persist">
+<!-- === Patch: Cuartos→Semifinales automático (funciona tras Cargar y al editar) === -->
+<script id="cl-cuartos-to-semis-link">
 (function(){
-  const PKEY = "CL_CUARTOS_PAIRS_V1";
-  const SKEY = "CL_CUARTOS_SCORES_V1";
-  const N_TIES = 4; // cl-cuartos-t0..t3
+  const Q_PKEY = "CL_CUARTOS_PAIRS_V1";
+  const Q_SKEY = "CL_CUARTOS_SCORES_V1";
+  const S_PKEY = "CL_SEMIS_PAIRS_V1";
+  const S_SKEY = "CL_SEMIS_SCORES_V1";
 
-  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
   function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
-
-  function tieIds(i){
-    const base = `cl-cuartos-t${i}`;
-    return {
-      idaA: `${base}-ida-a`,
-      idaB: `${base}-ida-b`,
-      vtaA: `${base}-vta-a`,
-      vtaB: `${base}-vta-b`,
-      global: `${base}-global`,
-      win: `${base}-win`,
-      selector: `#${base}`
-    };
-  }
-
-  function renderPairs(pairs){
-    // pairs: [{home, away}] — home is the team at .cl-home in Ida
-    for (let i=0;i<N_TIES;i++){
-      const sel = tieIds(i).selector;
-      const tie = document.querySelector(sel);
-      if (!tie || !pairs[i]) continue;
-      const homes = tie.querySelectorAll('.cl-home');
-      const aways = tie.querySelectorAll('.cl-away');
-      // Ida: home vs away
-      if (homes[0]) homes[0].textContent = pairs[i].home||'—';
-      if (aways[0]) aways[0].textContent = pairs[i].away||'—';
-      // Vuelta: invertido
-      if (homes[1]) homes[1].textContent = pairs[i].away||'—';
-      if (aways[1]) aways[1].textContent = pairs[i].home||'—';
-    }
-  }
-
-  function parsePairsFromDOM(){
-    const out = [];
-    for (let i=0;i<N_TIES;i++){
-      const sel = tieIds(i).selector;
-      const homes = document.querySelectorAll(`${sel} .cl-home`);
-      const aways = document.querySelectorAll(`${sel} .cl-away`);
-      if (homes.length<2 || aways.length<2) return null;
-      const home = (homes[0].textContent||'').trim();
-      const away = (aways[0].textContent||'').trim();
-      if (!home || !away || home==='—' || away==='—') return null;
-      out.push({home, away});
-    }
-    return out.length===N_TIES ? out : null;
-  }
-
-  function saveScores(){
-    const state = {};
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
-        const el = document.getElementById(ids[k]);
-        if (el) state[ids[k]] = el.value;
-      });
-      const g = document.getElementById(ids.global);
-      const w = document.getElementById(ids.win);
-      if (g) state[ids.global] = g.textContent||'';
-      if (w) state[ids.win]    = w.textContent||'';
-    }
-    save(SKEY, state);
-  }
-
-  function restoreScores(){
-    const state = load(SKEY)||{};
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
-        const el = document.getElementById(ids[k]);
-        if (el && state.hasOwnProperty(ids[k])) el.value = state[ids[k]];
-      });
-      const g = document.getElementById(ids.global);
-      const w = document.getElementById(ids.win);
-      if (g && state.hasOwnProperty(ids.global)) g.textContent = state[ids.global];
-      if (w && state.hasOwnProperty(ids.win))    w.textContent = state[ids.win];
-    }
-  }
-
-  function bindCalc(){
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      const tie = document.querySelector(ids.selector);
-      if (!tie) continue;
-      const inputs = ['idaA','idaB','vtaA','vtaB'].map(k=>document.getElementById(ids[k]));
-      const homes = tie.querySelectorAll('.cl-home');
-      const aways = tie.querySelectorAll('.cl-away');
-      const gEl = document.getElementById(ids.global);
-      const wEl = document.getElementById(ids.win);
-      const handler = ()=>{
-        const a1 = parseInt(inputs[0]?.value), b1 = parseInt(inputs[1]?.value);
-        const a2 = parseInt(inputs[2]?.value), b2 = parseInt(inputs[3]?.value);
-        if ([a1,b1,a2,b2].some(Number.isNaN)){
-          if (gEl) gEl.textContent = '—';
-          if (wEl) wEl.textContent = '—';
-          saveScores();
-          return;
-        }
-        const teamA = (homes[0]?.textContent||'').trim(); // Ida local
-        const teamB = (aways[0]?.textContent||'').trim(); // Ida visitante
-        const goalsA = a1 + (Number.isNaN(b2) ? 0 : b2);
-        const goalsB = b1 + (Number.isNaN(a2) ? 0 : a2);
-        if (gEl) gEl.textContent = `${goalsA}–${goalsB}`;
-        if (goalsA>goalsB){ if (wEl) wEl.textContent = teamA; }
-        else if (goalsA<goalsB){ if (wEl) wEl.textContent = teamB; }
-        else {
-          const pen = prompt(`Empate ${teamA} vs ${teamB}. Ganador por penales:`);
-          if (wEl) wEl.textContent = pen || '—';
-        }
-        saveScores();
-      };
-      inputs.forEach(el=> el && el.addEventListener('change', handler));
-    }
-  }
-
-  function boot(){
-    const pairs = load(PKEY);
-    if (pairs && Array.isArray(pairs) && pairs.length===N_TIES){
-      renderPairs(pairs);
-      bindCalc();
-      restoreScores();
-    } else {
-      const parsed = parsePairsFromDOM();
-      if (parsed){ save(PKEY, parsed); }
-      bindCalc();
-      restoreScores();
-    }
-
-    const targets = [];
-    for (let i=0;i<N_TIES;i++){
-      const tie = document.querySelector(tieIds(i).selector);
-      if (tie) targets.push(tie);
-    }
-    const mo = new MutationObserver(()=>{
-      const parsed = parsePairsFromDOM();
-      if (parsed) save(PKEY, parsed);
-    });
-    targets.forEach(node=> mo.observe(node, {subtree:true, characterData:true, childList:true}));
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-
-  window.cl_resetCuartos = function(){
-    localStorage.removeItem(PKEY);
-    localStorage.removeItem(SKEY);
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{ const el = document.getElementById(ids[k]); if (el) el.value=''; });
-      const g = document.getElementById(ids.global);
-      const w = document.getElementById(ids.win);
-      if (g) g.textContent = '—';
-      if (w) w.textContent = '—';
-    }
-    alert("Cuartos de Final restablecidos.");
-  };
-})();
-</script>
-
-
-<!-- === Patch: Semifinales (global + ganador + persistencia tras cargar) === -->
-<script id="cl-semis-persist">
-(function(){
-  const PKEY = "CL_SEMIS_PAIRS_V1";
-  const SKEY = "CL_SEMIS_SCORES_V1";
-  const N_TIES = 2; // cl-semis-t0..t1
-
-  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
-  function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
-
-  function tieIds(i){
-    const base = `cl-semis-t${i}`;
-    return {
-      idaA: `${base}-ida-a`,
-      idaB: `${base}-ida-b`,
-      vtaA: `${base}-vta-a`,
-      vtaB: `${base}-vta-b`,
-      global: `${base}-global`,
-      win: `${base}-win`,
-      selector: `#${base}`
-    };
-  }
-
-  function renderPairs(pairs){
-    for (let i=0;i<N_TIES;i++){
-      const sel = tieIds(i).selector;
-      const tie = document.querySelector(sel);
-      if (!tie || !pairs[i]) continue;
-      const homes = tie.querySelectorAll('.cl-home');
-      const aways = tie.querySelectorAll('.cl-away');
-      if (homes[0]) homes[0].textContent = pairs[i].home||'—';
-      if (aways[0]) aways[0].textContent = pairs[i].away||'—';
-      if (homes[1]) homes[1].textContent = pairs[i].away||'—';
-      if (aways[1]) aways[1].textContent = pairs[i].home||'—';
-    }
-  }
-
-  function parsePairsFromDOM(){
-    const out = [];
-    for (let i=0;i<N_TIES;i++){
-      const sel = tieIds(i).selector;
-      const homes = document.querySelectorAll(`${sel} .cl-home`);
-      const aways = document.querySelectorAll(`${sel} .cl-away`);
-      if (homes.length<1 || aways.length<1) return null;
-      const home = (homes[0].textContent||'').trim();
-      const away = (aways[0].textContent||'').trim();
-      if (!home || !away || home==='—' || away==='—') return null;
-      out.push({home, away});
-    }
-    return out.length===N_TIES ? out : null;
-  }
-
-  function saveScores(){
-    const state = {};
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
-        const el = document.getElementById(ids[k]);
-        if (el) state[ids[k]] = el.value;
-      });
-      const g = document.getElementById(ids.global);
-      const w = document.getElementById(ids.win);
-      if (g) state[ids.global] = g.textContent||'';
-      if (w) state[ids.win]    = w.textContent||'';
-    }
-    save(SKEY, state);
-  }
-
-  function restoreScores(){
-    const state = load(SKEY)||{};
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
-        const el = document.getElementById(ids[k]);
-        if (el && state.hasOwnProperty(ids[k])) el.value = state[ids[k]];
-      });
-      const g = document.getElementById(ids.global);
-      const w = document.getElementById(ids.win);
-      if (g && state.hasOwnProperty(ids.global)) g.textContent = state[ids.global];
-      if (w && state.hasOwnProperty(ids.win))    w.textContent = state[ids.win];
-    }
-  }
-
-  function bindCalc(){
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      const tie = document.querySelector(ids.selector);
-      if (!tie) continue;
-      const inputs = ['idaA','idaB','vtaA','vtaB'].map(k=>document.getElementById(ids[k]));
-      const homes = tie.querySelectorAll('.cl-home');
-      const aways = tie.querySelectorAll('.cl-away');
-      const gEl = document.getElementById(ids.global);
-      const wEl = document.getElementById(ids.win);
-      const handler = ()=>{
-        const a1 = parseInt(inputs[0]?.value), b1 = parseInt(inputs[1]?.value);
-        const a2 = parseInt(inputs[2]?.value), b2 = parseInt(inputs[3]?.value);
-        if ([a1,b1].some(Number.isNaN)){
-          if (gEl) gEl.textContent = '—';
-          if (wEl) wEl.textContent = '—';
-          saveScores();
-          return;
-        }
-        const teamA = (homes[0]?.textContent||'').trim();
-        const teamB = (aways[0]?.textContent||'').trim();
-        // soporta final/semi a un solo partido si no hay vuelta
-        const goalsA = (Number.isNaN(a1)?0:a1) + (Number.isNaN(b2)?0:b2);
-        const goalsB = (Number.isNaN(b1)?0:b1) + (Number.isNaN(a2)?0:a2);
-        if (gEl) gEl.textContent = `${goalsA}–${goalsB}`;
-        if (goalsA>goalsB){ if (wEl) wEl.textContent = teamA; }
-        else if (goalsA<goalsB){ if (wEl) wEl.textContent = teamB; }
-        else {
-          const pen = prompt(`Empate ${teamA} vs ${teamB}. Ganador por penales:`);
-          if (wEl) wEl.textContent = pen || '—';
-        }
-        saveScores();
-      };
-      inputs.forEach(el=> el && el.addEventListener('change', handler));
-    }
-  }
-
-  function boot(){
-    const pairs = load(PKEY);
-    if (pairs && Array.isArray(pairs) && pairs.length===N_TIES){
-      renderPairs(pairs);
-      bindCalc();
-      restoreScores();
-    } else {
-      const parsed = parsePairsFromDOM();
-      if (parsed){ save(PKEY, parsed); }
-      bindCalc();
-      restoreScores();
-    }
-
-    const targets = [];
-    for (let i=0;i<N_TIES;i++){
-      const tie = document.querySelector(tieIds(i).selector);
-      if (tie) targets.push(tie);
-    }
-    const mo = new MutationObserver(()=>{
-      const parsed = parsePairsFromDOM();
-      if (parsed) save(PKEY, parsed);
-    });
-    targets.forEach(node=> mo.observe(node, {subtree:true, characterData:true, childList:true}));
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-
-  window.cl_resetSemis = function(){
-    localStorage.removeItem(PKEY);
-    localStorage.removeItem(SKEY);
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{ const el = document.getElementById(ids[k]); if (el) el.value=''; });
-      const g = document.getElementById(ids.global);
-      const w = document.getElementById(ids.win);
-      if (g) g.textContent = '—';
-      if (w) w.textContent = '—';
-    }
-    alert("Semifinales restablecidas.");
-  };
-})();
-</script>
-
-<!-- === Patch: Final (global + ganador + persistencia tras cargar) === -->
-<script id="cl-final-persist">
-(function(){
-  const PKEY = "CL_FINAL_PAIRS_V1";
-  const SKEY = "CL_FINAL_SCORES_V1";
-  const N_TIES = 1; // cl-final-t0
-
-  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
-  function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
-
-  function tieIds(i){
-    const base = `cl-final-t${i}`;
-    return {
-      idaA: `${base}-ida-a`,
-      idaB: `${base}-ida-b`,
-      vtaA: `${base}-vta-a`,
-      vtaB: `${base}-vta-b`,
-      global: `${base}-global`,
-      win: `${base}-win`,
-      selector: `#${base}`
-    };
-  }
-
-  function renderPairs(pairs){
-    for (let i=0;i<N_TIES;i++){
-      const sel = tieIds(i).selector;
-      const tie = document.querySelector(sel);
-      if (!tie || !pairs[i]) continue;
-      const homes = tie.querySelectorAll('.cl-home');
-      const aways = tie.querySelectorAll('.cl-away');
-      if (homes[0]) homes[0].textContent = pairs[i].home||'—';
-      if (aways[0]) aways[0].textContent = pairs[i].away||'—';
-      if (homes[1]) homes[1].textContent = pairs[i].away||'—';
-      if (aways[1]) aways[1].textContent = pairs[i].home||'—';
-    }
-  }
-
-  function parsePairsFromDOM(){
-    const out = [];
-    for (let i=0;i<N_TIES;i++){
-      const sel = tieIds(i).selector;
-      const homes = document.querySelectorAll(`${sel} .cl-home`);
-      const aways = document.querySelectorAll(`${sel} .cl-away`);
-      if (homes.length<1 || aways.length<1) return null;
-      const home = (homes[0].textContent||'').trim();
-      const away = (aways[0].textContent||'').trim();
-      if (!home || !away || home==='—' || away==='—') return null;
-      out.push({home, away});
-    }
-    return out.length===N_TIES ? out : null;
-  }
-
-  function saveScores(){
-    const state = {};
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
-        const el = document.getElementById(ids[k]);
-        if (el) state[ids[k]] = el.value;
-      });
-      const g = document.getElementById(ids.global);
-      const w = document.getElementById(ids.win);
-      if (g) state[ids.global] = g.textContent||'';
-      if (w) state[ids.win]    = w.textContent||'';
-    }
-    save(SKEY, state);
-  }
-
-  function restoreScores(){
-    const state = load(SKEY)||{};
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
-        const el = document.getElementById(ids[k]);
-        if (el && state.hasOwnProperty(ids[k])) el.value = state[ids[k]];
-      });
-      const g = document.getElementById(ids.global);
-      const w = document.getElementById(ids.win);
-      if (g && state.hasOwnProperty(ids.global)) g.textContent = state[ids.global];
-      if (w && state.hasOwnProperty(ids.win))    w.textContent = state[ids.win];
-    }
-  }
-
-  function bindCalc(){
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      const tie = document.querySelector(ids.selector);
-      if (!tie) continue;
-      const inputs = ['idaA','idaB','vtaA','vtaB'].map(k=>document.getElementById(ids[k]));
-      const homes = tie.querySelectorAll('.cl-home');
-      const aways = tie.querySelectorAll('.cl-away');
-      const gEl = document.getElementById(ids.global);
-      const wEl = document.getElementById(ids.win);
-      const handler = ()=>{
-        const a1 = parseInt(inputs[0]?.value), b1 = parseInt(inputs[1]?.value);
-        const a2 = parseInt(inputs[2]?.value), b2 = parseInt(inputs[3]?.value);
-        if ([a1,b1].some(Number.isNaN)){
-          if (gEl) gEl.textContent = '—';
-          if (wEl) wEl.textContent = '—';
-          saveScores();
-          return;
-        }
-        const teamA = (homes[0]?.textContent||'').trim();
-        const teamB = (aways[0]?.textContent||'').trim();
-        const goalsA = (Number.isNaN(a1)?0:a1) + (Number.isNaN(b2)?0:b2);
-        const goalsB = (Number.isNaN(b1)?0:b1) + (Number.isNaN(a2)?0:a2);
-        if (gEl) gEl.textContent = `${goalsA}–${goalsB}`;
-        if (goalsA>goalsB){ if (wEl) wEl.textContent = teamA; }
-        else if (goalsA<goalsB){ if (wEl) wEl.textContent = teamB; }
-        else {
-          const pen = prompt(`Empate ${teamA} vs ${teamB}. Ganador por penales:`);
-          if (wEl) wEl.textContent = pen || '—';
-        }
-        saveScores();
-      };
-      inputs.forEach(el=> el && el.addEventListener('change', handler));
-    }
-  }
-
-  function boot(){
-    const pairs = load(PKEY);
-    if (pairs && Array.isArray(pairs) && pairs.length===N_TIES){
-      renderPairs(pairs);
-      bindCalc();
-      restoreScores();
-    } else {
-      const parsed = parsePairsFromDOM();
-      if (parsed){ save(PKEY, parsed); }
-      bindCalc();
-      restoreScores();
-    }
-
-    const targets = [];
-    for (let i=0;i<N_TIES;i++){
-      const tie = document.querySelector(tieIds(i).selector);
-      if (tie) targets.push(tie);
-    }
-    const mo = new MutationObserver(()=>{
-      const parsed = parsePairsFromDOM();
-      if (parsed) save(PKEY, parsed);
-    });
-    targets.forEach(node=> mo.observe(node, {subtree:true, characterData:true, childList:true}));
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-
-  window.cl_resetFinal = function(){
-    localStorage.removeItem(PKEY);
-    localStorage.removeItem(SKEY);
-    for (let i=0;i<N_TIES;i++){
-      const ids = tieIds(i);
-      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{ const el = document.getElementById(ids[k]); if (el) el.value=''; });
-      const g = document.getElementById(ids.global);
-      const w = document.getElementById(ids.win);
-      if (g) g.textContent = '—';
-      if (w) w.textContent = '—';
-    }
-    // limpiar posibles indicadores de campeón
-    const champ = document.getElementById("campeon") || document.getElementById("campeonFinal");
-    if (champ) champ.innerHTML = "";
-    alert("Final restablecida.");
-  };
-})();
-</script>
-
-
-<!-- === Patch: Liga Fija (parejas + jornadas persistentes; no se desordenan al cargar) === -->
-<script id="cl-liga-fixed-persist">
-(function(){
-  const PKEY = "CL_PAREJAS_FIXED_V1";
-  const RKEY = "CL_JORNADAS_FIXED_V1";
-
-  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
-  function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
-
-  function renderPairs(parejas){
-    const cont = document.getElementById('cl-parejas');
-    if (!cont) return;
-    if (!document.getElementById('cl-grid-parejas')){
-      cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
-    } else {
-      document.getElementById('cl-grid-parejas').innerHTML = "";
-    }
-    const grid = document.getElementById('cl-grid-parejas');
-    parejas.forEach(p=>{
-      const d=document.createElement('div'); 
-      d.className='cl-card';
-      d.setAttribute('data-jugador', p.jugador);
-      d.setAttribute('data-equipo', p.equipo);
-      d.innerHTML = `<strong>${p.jugador}</strong> ⇄ <span style="color:#3399ff; font-weight:700;">${p.equipo}</span>`;
-      grid.appendChild(d);
-    });
-  }
-
-  function renderFixtures(jornadas){
-    const contId = 'cl-fixtures';
-    let cont = document.getElementById(contId);
-    if (!cont){
-      cont = document.createElement('div'); cont.id=contId;
-      document.body.appendChild(cont);
-    } else {
-      cont.innerHTML = '';
-    }
-    const P = Array.isArray(window.CL_PAREJAS) ? window.CL_PAREJAS : [];
-    const jx = new Map(P.map(p=>[p.equipo, p.jugador]));
-    jornadas.forEach((pairs, idx)=>{
-      const wrap=document.createElement('div'); wrap.className='cl-round cl-card';
-      wrap.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
-      const table=document.createElement('table'); table.className='cl-table';
-      table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th><th>Marcador</th></tr></thead>';
-      const tb=document.createElement('tbody');
-      pairs.forEach(([home,away], mIdx)=>{
-        const jl=jx.get(home)||'', jv=jx.get(away)||'';
-        const ida=`cl-r${idx+1}-m${mIdx}-a`, idb=`cl-r${idx+1}-m${mIdx}-b`;
-        const tr=document.createElement('tr');
-        tr.innerHTML = `<td>${home}</td><td>${away}</td><td>${jl}</td><td>${jv}</td>
-                        <td><input id="${ida}" type="number" min="0" style="width:48px;"> – 
-                            <input id="${idb}" type="number" min="0" style="width:48px;"></td>`;
-        tb.appendChild(tr);
-      });
-      table.appendChild(tb); wrap.appendChild(table);
-      cont.appendChild(wrap);
-    });
-    if (typeof window.cl_hookInputs === 'function') window.cl_hookInputs();
-  }
-
-  // Guardar/leer parejas de DOM si es necesario
-  function readPairsFromDOM(){
-    const cards = Array.from((document.getElementById('cl-parejas')||document).querySelectorAll('[data-jugador][data-equipo]'));
-    if (cards.length){
-      return cards.map(el=>({jugador:el.getAttribute('data-jugador'), equipo:el.getAttribute('data-equipo')}));
-    }
-    // fallback por lista textual: <li>Jugador - Equipo</li>
-    const lis = Array.from((document.getElementById('cl-parejas')||document).querySelectorAll('li'));
-    if (lis.length){
-      const arr = [];
-      lis.forEach(li=>{
-        const t=(li.textContent||'').split(' - ');
-        if (t.length===2) arr.push({jugador:t[0].trim(), equipo:t[1].trim()});
-      });
-      if (arr.length) return arr;
-    }
-    return null;
-  }
-
-  // Patch sorteo parejas
-  if (typeof window.cl_sortearParejas === 'function'){
-    const __orig = window.cl_sortearParejas;
-    window.cl_sortearParejas = function(){
-      const saved = load(PKEY);
-      if (saved && saved.length){ window.CL_PAREJAS = saved.slice(); renderPairs(saved); return; }
-      __orig();
-      const P = Array.isArray(window.CL_PAREJAS)?window.CL_PAREJAS:readPairsFromDOM();
-      if (P && P.length) { window.CL_PAREJAS = P; save(PKEY, P); }
-    };
-  }
-
-  // Patch generar liga
-  if (typeof window.cl_generarFaseLiga === 'function'){
-    const __orig = window.cl_generarFaseLiga;
-    window.cl_generarFaseLiga = function(){
-      const sp = load(PKEY);
-      if (sp && sp.length){ window.CL_PAREJAS = sp.slice(); renderPairs(sp); }
-      const sj = load(RKEY);
-      if (sj && sj.length){ window.CL_JORNADAS = sj.slice(); renderFixtures(sj); return; }
-      __orig();
-      if (Array.isArray(window.CL_JORNADAS) && window.CL_JORNADAS.length) save(RKEY, window.CL_JORNADAS);
-      if (Array.isArray(window.CL_PAREJAS)  && window.CL_PAREJAS.length)  save(PKEY, window.CL_PAREJAS);
-    };
-  }
-
-  // Boot: si hay datos guardados, mostrarlos sin remezclar
-  function boot(){
-    const sp = load(PKEY); if (sp && sp.length){ window.CL_PAREJAS = sp.slice(); try{ renderPairs(sp);}catch(e){} }
-    const sj = load(RKEY); if (sj && sj.length){ window.CL_JORNADAS = sj.slice(); try{ renderFixtures(sj);}catch(e){} }
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-})();
-</script>
-
-
-<!-- === Patch: Semis→Final automático (reflecta ganadores en la Final y persiste) === -->
-
-<script id="cl-semis-to-final-link">
-(function(){
-  const SEMI_SKEY = "CL_SEMIS_SCORES_V1";
-  const FINAL_PKEY = "CL_FINAL_PAIRS_V1";
-
   function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
 
-  function setFinalPairs(winners){
-    if (!Array.isArray(winners) || winners.length !== 2) return;
-    const [w0, w1] = winners;
-    if (!w0 || !w1 || w0==='—' || w1==='—') return;
-    // DOM
-    const homes = document.querySelectorAll('#cl-final-t0 .cl-home');
-    const aways = document.querySelectorAll('#cl-final-t0 .cl-away');
+  function getQuarterWinners(){
+    const W = [];
+    for (let i=0;i<4;i++){
+      const w = (document.getElementById(`cl-cuartos-t${i}-win`)?.textContent||'').trim();
+      W.push(w || '—');
+    }
+    return W;
+  }
+
+  
+function setSemisFromWinners(W){
+  if (!Array.isArray(W) || W.length!==4) return false;
+  if (W.some(w=>!w || w==='—')) return false;
+  const pairs = [{home: W[0], away: W[1]}, {home: W[2], away: W[3]}];
+
+  for (let i=0;i<2;i++){
+    const tie = document.getElementById(`cl-semis-t${i}`);
+    if (!tie) continue;
+    const homes = tie.querySelectorAll('.cl-home');
+    const aways = tie.querySelectorAll('.cl-away');
+    const curHome = (homes[0]?.textContent||'').trim();
+    const curAway = (aways[0]?.textContent||'').trim();
+    const willChange = (curHome !== pairs[i].home) || (curAway !== pairs[i].away);
+
     if (homes.length){
-      homes[0].textContent = w0;
-      if (homes[1]) homes[1].textContent = w1;
+      homes[0].textContent = pairs[i].home;
+      if (homes[1]) homes[1].textContent = pairs[i].away;
     }
     if (aways.length){
-      aways[0].textContent = w1;
-      if (aways[1]) aways[1].textContent = w0;
+      aways[0].textContent = pairs[i].away;
+      if (aways[1]) aways[1].textContent = pairs[i].home;
     }
-    // Persistir
-    save(FINAL_PKEY, [{home: w0, away: w1}]);
+
+    if (willChange){
+      const ids = [
+        `cl-semis-t${i}-ida-a`, `cl-semis-t${i}-ida-b`,
+        `cl-semis-t${i}-vta-a`, `cl-semis-t${i}-vta-b`
+      ];
+      ids.forEach(id=>{ const el=document.getElementById(id); if (el) el.value=''; });
+      const g = document.getElementById(`cl-semis-t${i}-global`);
+      const w = document.getElementById(`cl-semis-t${i}-win`);
+      if (g) g.textContent = '—';
+      if (w) w.textContent = '—';
+    }
   }
 
-  function currentSemiWinners(){
-    const w0 = (document.getElementById('cl-semis-t0-win')?.textContent||'').trim();
-    const w1 = (document.getElementById('cl-semis-t1-win')?.textContent||'').trim();
-    return [w0||'—', w1||'—'];
+  try{ localStorage.setItem('CL_SEMIS_PAIRS_V1', JSON.stringify(pairs)); }catch(e){}
+  return true;
+}
+
+
+  function recomputeFromQuarters(){
+    const winners = getQuarterWinners();
+    setSemisFromWinners(winners);
   }
 
-  function recomputeFromSemis(){
-    const winners = currentSemiWinners();
-    setFinalPairs(winners);
-  }
-
-  // Bind observers and events to keep Final synced even after loading data
   function bind(){
-    // Observe winner nodes for text changes
-    ['0','1'].forEach(i=>{
-      const el = document.getElementById(`cl-semis-t${i}-win`);
-      if (!el) return;
-      const mo = new MutationObserver(()=> recomputeFromSemis());
+    for (let i=0;i<4;i++){
+      const el = document.getElementById(`cl-cuartos-t${i}-win`);
+      if (!el) continue;
+      const mo = new MutationObserver(()=> recomputeFromQuarters());
       mo.observe(el, {childList:true, characterData:true, subtree:true});
+    }
+    document.querySelectorAll('#cl-cuartos input[type="number"]').forEach(el=>{
+      el.addEventListener('change', ()=> setTimeout(recomputeFromQuarters, 0));
     });
-
-    // Recompute when any input in Semis changes (después de que otros scripts actualicen ganador)
-    document.querySelectorAll('#cl-semis input[type="number"]').forEach(el=>{
-      el.addEventListener('change', ()=> setTimeout(recomputeFromSemis, 0));
-    });
-
-    // Si existe botón Cargar, recomputar tras cargar (con pequeño retraso)
     const loadBtn = document.getElementById('cl-cargar');
     if (loadBtn){
-      loadBtn.addEventListener('click', ()=> {
-        // varias pasadas por si el proceso de carga es asíncrono
-        [100, 300, 700, 1200].forEach(ms => setTimeout(recomputeFromSemis, ms));
+      loadBtn.addEventListener('click', ()=>{
+        [100, 300, 700, 1200].forEach(ms => setTimeout(recomputeFromQuarters, ms));
       });
     }
-
-    // Fallback: al iniciar y unos ticks después
-    setTimeout(recomputeFromSemis, 0);
-    [250, 800, 2000].forEach(ms => setTimeout(recomputeFromSemis, ms));
-
-    // Escuchar storage por si la carga ocurre desde otra pestaña (defensivo)
     window.addEventListener('storage', (e)=>{
-      if (e && e.key === SEMI_SKEY) setTimeout(recomputeFromSemis, 0);
+      if (e && (e.key===Q_SKEY || e.key===Q_PKEY)) setTimeout(recomputeFromQuarters, 0);
     });
+
+    setTimeout(recomputeFromQuarters, 0);
+    [250, 800, 2000].forEach(ms => setTimeout(recomputeFromQuarters, ms));
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
 })();
 </script>
-
 
 
 <!-- === Reset al final: Restablecer Torneo (Completo) === -->
@@ -4261,7 +3664,6 @@ async function cl_wiog_load(){
     clearGlobals();
     clearUI();
     alert("✅ Torneo restablecido por completo. Inicia uno nuevo (sortear parejas y generar liga).");
-    // Desplazar al inicio si hace falta
     try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(e){}
   };
 
@@ -4274,6 +3676,454 @@ async function cl_wiog_load(){
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
   else bind();
+})();
+</script>
+
+
+<!-- === Patch: Liga congelada exactamente como se guardó (snapshot de HTML) === -->
+<script id="cl-liga-freeze-html">
+(function(){
+  const K_PAREJAS  = "CL_LIGA_HTML_PAREJAS_V1";
+  const K_FIXTURES = "CL_LIGA_HTML_FIXTURES_V1";
+  const K_TABLE    = "CL_LIGA_HTML_STANDINGS_V1";
+  const K_META     = "CL_LIGA_META_V1"; // opcional: fecha/hora, versión, etc.
+
+  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+  function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
+  function snap(selector){
+    const el = document.getElementById(selector);
+    return el ? el.innerHTML : null;
+  }
+  function restore(selector, html){
+    const el = document.getElementById(selector);
+    if (el && typeof html === 'string'){ el.innerHTML = html; }
+  }
+
+  // Congela: guarda HTML exacto de los 3 contenedores principales
+  function freezeLeagueHTML(){
+    const parejas  = snap('cl-parejas');
+    const fixtures = snap('cl-fixtures');
+    const table    = snap('cl-standings');
+    if (parejas && fixtures){ // con parejas+fixtures basta para fijar orden y jornadas
+      save(K_PAREJAS, parejas);
+      save(K_FIXTURES, fixtures);
+      if (table) save(K_TABLE, table);
+      save(K_META, {ts: Date.now(), ver: 1});
+    }
+  }
+
+  // Restaura el snapshot si existe
+  function restoreLeagueHTML(){
+    const p = load(K_PAREJAS);
+    const f = load(K_FIXTURES);
+    const t = load(K_TABLE);
+    if (p && f){
+      restore('cl-parejas', p);
+      restore('cl-fixtures', f);
+      if (t) restore('cl-standings', t);
+      return true;
+    }
+    return false;
+  }
+
+  // Interceptar generación de liga para que, si ya hay snapshot, NO reordene nada
+  (function interceptGenerate(){
+    if (typeof window.cl_generarFaseLiga === 'function'){
+      const __orig = window.cl_generarFaseLiga;
+      window.cl_generarFaseLiga = function(){
+        // Si ya existe snapshot, solo restaurar y salir
+        if (restoreLeagueHTML()){ return; }
+        // Si no hay snapshot aún, dejar que genere normalmente y luego congelar
+        __orig();
+        // dar tiempo a que el DOM termine de pintar (por si es async)
+        setTimeout(freezeLeagueHTML, 0);
+        setTimeout(freezeLeagueHTML, 100);
+      };
+    } else {
+      // Si no hay función, al menos intenta congelar tras carga inicial
+      setTimeout(()=>{ if (!restoreLeagueHTML()) freezeLeagueHTML(); }, 500);
+    }
+  })();
+
+  // Al cargar la página, intenta restaurar exactamente lo guardado
+  function boot(){
+    if (!restoreLeagueHTML()){
+      // si no hay snapshot aún, intenta crear uno si la liga ya está dibujada
+      setTimeout(freezeLeagueHTML, 800);
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  // Invalida y vuelve a generar si el usuario usa el botón de reset total
+  const resetWrap = function(){
+    // Borrar snapshots explícitamente cuando se resetee
+    try{
+      localStorage.removeItem(K_PAREJAS);
+      localStorage.removeItem(K_FIXTURES);
+      localStorage.removeItem(K_TABLE);
+      localStorage.removeItem(K_META);
+    }catch(e){}
+  };
+  // Si existe la función reset total, envuélvela para limpiar snapshots también
+  if (typeof window.cl_resetTorneoTotal === 'function'){
+    const __reset = window.cl_resetTorneoTotal;
+    window.cl_resetTorneoTotal = function(){
+      resetWrap();
+      __reset();
+    };
+  } else {
+    // Exponer una función por si acaso
+    window.cl_resetLigaSnapshots = resetWrap;
+  }
+
+  // También tras Cargar: volver a restaurar (o congelar si recién se generó)
+  const loadBtn = document.getElementById('cl-cargar');
+  if (loadBtn){
+    loadBtn.addEventListener('click', ()=>{
+      [200, 600, 1200].forEach(ms=> setTimeout(()=>{
+        if (!restoreLeagueHTML()) freezeLeagueHTML();
+      }, ms));
+    });
+  }
+})();
+</script>
+
+
+<!-- === Patch: Cuartos (GLOBAL + GANADOR + persistencia + post-Cargar) === -->
+
+
+
+
+<!-- === Patch: Semis (GLOBAL + GANADOR + persistencia + post-Cargar) === -->
+
+
+
+
+
+<!-- === Patch: Semifinales → Final automático y persistente (incluye post-Cargar) === -->
+
+<script id="cl-semis-to-final-link">
+(function(){
+  const SEMI_SKEY = "CL_SEMIS_SCORES_V1";
+  const FINAL_PKEY = "CL_FINAL_PAIRS_V1";
+
+  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+
+  function winnersFromSemis(){
+    const w0 = (document.getElementById('cl-semis-t0-win')?.textContent||'').trim();
+    const w1 = (document.getElementById('cl-semis-t1-win')?.textContent||'').trim();
+    return [w0 || '—', w1 || '—'];
+  }
+
+  function setFinalPairs(winners){
+    if (!Array.isArray(winners) || winners.length!==2) return;
+    const a = (winners[0]||'').trim();
+    const b = (winners[1]||'').trim();
+    if (!a || a==='—' || !b || b==='—') return;
+    const homes = document.querySelectorAll('#cl-final-t0 .cl-home');
+    const aways = document.querySelectorAll('#cl-final-t0 .cl-away');
+    if (homes.length){
+      homes[0].textContent = a;
+      if (homes[1]) homes[1].textContent = b;
+    }
+    if (aways.length){
+      aways[0].textContent = b;
+      if (aways[1]) aways[1].textContent = a;
+    }
+    save(FINAL_PKEY, [{home:a, away:b}]);
+  }
+
+  function recompute(){ setFinalPairs(winnersFromSemis()); }
+
+  function bind(){
+    // Observe winners text changes
+    ['0','1'].forEach(i=>{
+      const el = document.getElementById(`cl-semis-t${i}-win`);
+      if (!el) return;
+      const mo = new MutationObserver(()=> recompute());
+      mo.observe(el, {childList:true, characterData:true, subtree:true});
+    });
+    // Also on inputs change
+    document.querySelectorAll('#cl-semis input[type="number"]').forEach(el=>{
+      el.addEventListener('change', ()=> setTimeout(recompute, 0));
+    });
+    // After Load, run several passes
+    const loadBtn = document.getElementById('cl-cargar');
+    if (loadBtn){
+      loadBtn.addEventListener('click', ()=>{
+        [80, 200, 500, 1000, 1600].forEach(ms => setTimeout(recompute, ms));
+      });
+    }
+    // Storage change
+    window.addEventListener('storage', (e)=>{
+      if (e && e.key === SEMI_SKEY) setTimeout(recompute, 0);
+    });
+    // Startup passes
+    setTimeout(recompute, 0);
+    [250, 800, 1800].forEach(ms => setTimeout(recompute, ms));
+  }
+
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+</script>
+
+
+
+<!-- === Patch: Octavos → Cuartos automático y persistente (incluye post-Cargar) === -->
+<script id="cl-octavos-to-cuartos-link">
+(function(){
+  const OCT_SKEY = "CL_OCT_SCORES_V1";
+  const OCT_PKEY = "CL_OCT_PAIRS_V1";
+  const QF_PKEY  = "CL_CUARTOS_PAIRS_V1";
+  const QF_SKEY  = "CL_CUARTOS_SCORES_V1";
+
+  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+  function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
+
+  function winnersFromOctavos(){
+    const W = [];
+    for (let i=0;i<8;i++){
+      const w = (document.getElementById(`cl-octavos-t${i}-win`)?.textContent||'').trim();
+      W.push(w || '—');
+    }
+    return W;
+  }
+
+  // Map: (t0 vs t1)->QF0, (t2 vs t3)->QF1, (t4 vs t5)->QF2, (t6 vs t7)->QF3
+  
+function setCuartosFromOctavos(W){
+  if (!Array.isArray(W) || W.length!==8) return false;
+  if (W.some(w=>!w || w==='—')) return false;
+
+  const pairs = [
+    {home: W[0], away: W[1]},
+    {home: W[2], away: W[3]},
+    {home: W[4], away: W[5]},
+    {home: W[6], away: W[7]}
+  ];
+
+  for (let i=0;i<4;i++){
+    const tie = document.getElementById(`cl-cuartos-t${i}`);
+    if (!tie) continue;
+    const homes = tie.querySelectorAll('.cl-home');
+    const aways = tie.querySelectorAll('.cl-away');
+    const curHome = (homes[0]?.textContent||'').trim();
+    const curAway = (aways[0]?.textContent||'').trim();
+    const willChange = (curHome !== pairs[i].home) || (curAway !== pairs[i].away);
+
+    // Update labels
+    if (homes.length){
+      homes[0].textContent = pairs[i].home;
+      if (homes[1]) homes[1].textContent = pairs[i].away;
+    }
+    if (aways.length){
+      aways[0].textContent = pairs[i].away;
+      if (aways[1]) aways[1].textContent = pairs[i].home;
+    }
+
+    // Only clear scores if pairing actually changed
+    if (willChange){
+      ['ida-a','ida-b','vta-a','vta-b'].forEach(suf=>{
+        const el = document.getElementById(`cl-cuartos-t${i}-${suf}`);
+        if (el) el.value = '';
+      });
+      const g = document.getElementById(`cl-cuartos-t${i}-global`);
+      const w = document.getElementById(`cl-cuartos-t${i}-win`);
+      if (g) g.textContent = '—';
+      if (w) w.textContent = '—';
+    }
+  }
+
+  // Persist pairs only (don't clobber scores unless changed)
+  try{ localStorage.setItem('CL_CUARTOS_PAIRS_V1', JSON.stringify(pairs)); }catch(e){}
+  return true;
+}
+
+
+  function recompute(){
+    setCuartosFromOctavos(winnersFromOctavos());
+  }
+
+  function bind(){
+    // Observe winner nodes in Octavos
+    for (let i=0;i<8;i++){
+      const el = document.getElementById(`cl-octavos-t${i}-win`);
+      if (!el) continue;
+      const mo = new MutationObserver(()=> recompute());
+      mo.observe(el, {childList:true, characterData:true, subtree:true});
+    }
+    // React to changes on Octavos inputs (after other scripts recalc winners)
+    document.querySelectorAll('#cl-octavos input[type="number"]').forEach(el=>{
+      el.addEventListener('change', ()=> setTimeout(recompute, 0));
+    });
+    // After pressing Cargar, run several passes
+    const loadBtn = document.getElementById('cl-cargar');
+    if (loadBtn){
+      loadBtn.addEventListener('click', ()=>{
+        [100, 300, 700, 1200].forEach(ms => setTimeout(recompute, ms));
+      });
+    }
+    // Sync on storage changes (octavos scores/pairs)
+    window.addEventListener('storage', (e)=>{
+      if (e && (e.key===OCT_SKEY || e.key===OCT_PKEY)) setTimeout(recompute, 0);
+    });
+    // Initial passes
+    setTimeout(recompute, 0);
+    [250, 800, 2000].forEach(ms => setTimeout(recompute, ms));
+  }
+
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+</script>
+
+
+<!-- === Patch V2 (ID-agnostic): Cuartos & Semis global/winner detection + persistence === -->
+
+
+
+<!-- === Patch (save-only): Persistir goles/inputs en Cuartos y Semifinal === -->
+
+
+
+<!-- === Patch (minimal): Recalcular GLOBAL y GANADOR en Cuartos y Semifinal === -->
+
+
+
+<!-- === Patch (fix-rebinder): Guardar goles + detectar global/ganador con re-binding tras Cargar/DOM === -->
+<script id="cl-ko-fix-rebinder">
+(function(){
+  const K_QF = "CL_CUARTOS_SCORES_V1";
+  const K_SF = "CL_SEMIS_SCORES_V1";
+
+  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+  function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
+  function parseIntSafe(v){ const n = parseInt(v); return Number.isNaN(n) ? null : n; }
+
+  function getTies(containerId){
+    const root = document.getElementById(containerId);
+    if (!root) return [];
+    const ties = [];
+    const phase = containerId.replace('cl-',''); // 'cuartos'|'semis'
+    for (let i=0;i<8;i++){
+      const n = document.getElementById(`cl-${phase}-t${i}`);
+      if (n) ties.push(n);
+    }
+    if (!ties.length) root.querySelectorAll('.cl-card, .cl-tie, [data-tie]').forEach(n=> ties.push(n));
+    return ties;
+  }
+
+  function collectInputs(containerId){
+    const root = document.getElementById(containerId);
+    if (!root) return [];
+    return Array.from(root.querySelectorAll('input[type="number"]'));
+  }
+
+  function snapshot(containerId){
+    const data = {};
+    collectInputs(containerId).forEach((el, idx)=>{
+      const k = (el.id && el.id.trim().length) ? el.id.trim() : `${containerId}#${idx}`;
+      data[k] = el.value;
+    });
+    return data;
+  }
+
+  function restore(containerId, obj){
+    if (!obj) return;
+    const inputs = collectInputs(containerId);
+    inputs.forEach((el, idx)=>{
+      const k = (el.id && el.id.trim().length) ? el.id.trim() : `${containerId}#${idx}`;
+      if (obj.hasOwnProperty(k)) el.value = obj[k];
+    });
+  }
+
+  function computeTie(tie){
+    const homes = tie.querySelectorAll('.cl-home');
+    const aways = tie.querySelectorAll('.cl-away');
+    const A = (homes[0]?.textContent||'').trim();
+    const B = (aways[0]?.textContent||'').trim();
+    const inputs = Array.from(tie.querySelectorAll('input[type="number"]'));
+    const a1 = parseIntSafe(inputs[0]?.value);
+    const b1 = parseIntSafe(inputs[1]?.value);
+    const a2 = parseIntSafe(inputs[2]?.value);
+    const b2 = parseIntSafe(inputs[3]?.value);
+    const gA = (a1||0) + (b2||0);
+    const gB = (b1||0) + (a2||0);
+
+    let globalText = '—';
+    let winnerText = '—';
+    if (a1!==null || b1!==null || a2!==null || b2!==null){
+      globalText = `${gA}–${gB}`;
+      if (gA>gB) winnerText = A||'—';
+      else if (gB>gA) winnerText = B||'—';
+      else {
+        const current = (tie.querySelector('[id$="-win"]')?.textContent || tie.querySelector('.cl-win')?.textContent || '').trim();
+        if (current) winnerText = current;
+      }
+    }
+    let gEl = tie.querySelector('[id$="-global"]') || tie.querySelector('.cl-global');
+    let wEl = tie.querySelector('[id$="-win"]')    || tie.querySelector('.cl-win');
+    if (!gEl){ gEl = document.createElement('div'); gEl.className='cl-global'; tie.appendChild(gEl); }
+    if (!wEl){ wEl = document.createElement('div'); wEl.className='cl-win';    tie.appendChild(wEl); }
+    gEl.textContent = globalText;
+    wEl.textContent = winnerText;
+  }
+
+  function recompute(containerId){
+    getTies(containerId).forEach(computeTie);
+  }
+
+  function bindInputs(containerId, storageKey){
+    const root = document.getElementById(containerId);
+    if (!root) return;
+    const handler = ()=>{ save(storageKey, snapshot(containerId)); recompute(containerId); };
+    collectInputs(containerId).forEach(el=>{
+      ['input','change','blur'].forEach(ev=> el.addEventListener(ev, handler));
+    });
+    // Mutation observer: when DOM under container changes, rebind and recompute
+    const mo = new MutationObserver(()=>{
+      setTimeout(()=>{
+        collectInputs(containerId).forEach(el=>{
+          ['input','change','blur'].forEach(ev=> el.addEventListener(ev, handler));
+        });
+        recompute(containerId);
+      }, 0);
+    });
+    mo.observe(root, {subtree:true, childList:true});
+  }
+
+  function setup(containerId, storageKey){
+    // Initial restore + recompute + save
+    restore(containerId, load(storageKey));
+    recompute(containerId);
+    save(storageKey, snapshot(containerId));
+    // Bind for current inputs and observe DOM changes
+    bindInputs(containerId, storageKey);
+    // After pressing Cargar, do multiple passes: restore, recompute, save, and rebind
+    const loadBtn = document.getElementById('cl-cargar');
+    if (loadBtn){
+      loadBtn.addEventListener('click', ()=>{
+        [80,200,500,1000,1600].forEach(ms=> setTimeout(()=>{
+          restore(containerId, load(storageKey));
+          recompute(containerId);
+          save(storageKey, snapshot(containerId));
+          bindInputs(containerId, storageKey);
+        }, ms));
+      });
+    }
+    // Save on unload as extra safety
+    window.addEventListener('beforeunload', ()=> save(storageKey, snapshot(containerId)));
+  }
+
+  function boot(){
+    setup('cl-cuartos', K_QF);
+    setup('cl-semis',   K_SF);
+  }
+
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();
 </script>
 
