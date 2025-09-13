@@ -757,10 +757,6 @@
   #cl-playin .cl-playin-table thead th { padding: 8px 10px; }
   #cl-playin .cl-playin-table tbody td { padding: 6px 8px; }
 }
-
-/* Ajuste: 'Encuentros' con las dos piernas apiladas */
-#cl-playin .cl-playin-table .cell-enc { padding-top: 16px; padding-bottom: 16px; }
-#cl-playin .cl-playin-table .cell-enc .cl-leg + .cl-leg { margin-top: 8px; }
 </style>
 <style id="cl-octavos-grid-css">
 #cl-octavos .bracket {
@@ -1454,6 +1450,38 @@ function guardarTorneo() {
 }
 
 function cargarTorneo() {
+  // === parche: no mover la UI ni re-renderizar al cargar ===
+  const __sx = window.scrollX, __sy = window.scrollY;
+  const __prevScroll = document.documentElement.style.scrollBehavior;
+  document.documentElement.style.scrollBehavior = 'auto';
+
+  const data = localStorage.getItem("torneoWiog");
+  if (!data) {
+    alert("No hay un torneo guardado.");
+    return;
+  }
+
+  const estado = JSON.parse(data);
+  equipos = estado.equipos || [];
+  gruposGlobal = estado.gruposGlobal || {};
+  clasificados = estado.clasificados || [];
+
+  // mostrarEquipos(); // suprimido para no mover UI
+  // mostrarGrupos(); // suprimido para no mover UI
+
+  setTimeout(() => {
+    Object.entries(estado.resultados).forEach(([id, val]) => {
+      const input = document.getElementById(id);
+      if (input) input.value = val;
+    });
+  }, 300); // esperar a que los inputs existan
+
+  // === restaurar scroll y comportamiento ===
+  window.scrollTo(__sx, __sy);
+  setTimeout(()=>{ document.documentElement.style.scrollBehavior = __prevScroll || ''; }, 0);
+
+}
+
   const data = localStorage.getItem("torneoWiog");
   if (!data) {
     alert("No hay un torneo guardado.");
@@ -2172,12 +2200,15 @@ function cl_generarPlayin(){
   const cont = document.getElementById('cl-playin'); cont.innerHTML = '<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
   const wrap = cont.querySelector('.cl-round');
   const table=document.createElement('table'); table.className='cl-playin-table';
-  table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Encuentros</th><th>Global</th><th>Ganador</th></tr></thead>';
+  table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
   const tb=document.createElement('tbody');
   for (let i=0;i<8;i++){
     const seeded=A[i], unseeded=B[7-i];
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${seeded} vs ${unseeded}</td>`+`<td class="cell-enc"><div class="cl-leg"><span class="team">${unseeded}</span> <input type="number" min="0" id="pl${i}-ida-a" style="width:56px;"> <span class="dash">–</span> <input type="number" min="0" id="pl${i}-ida-b" style="width:56px;"> <span class="team">${seeded}</span></div><div class="cl-leg" style="margin-top:8px"><span class="team">${seeded}</span> <input type="number" min="0" id="pl${i}-vta-a" style="width:56px;"> <span class="dash">–</span> <input type="number" min="0" id="pl${i}-vta-b" style="width:56px;"> <span class="team">${unseeded}</span></div></td>`+`<td id="pl${i}-global">—</td>`+`<td id="pl${i}-win">—</td>`;
+    tr.innerHTML = `<td>${seeded} vs ${unseeded}</td>`+
+                   `<td>${unseeded} <input type="number" min="0" id="pl${i}-ida-a" style="width:56px;"> – <input type="number" min="0" id="pl${i}-ida-b" style="width:56px;"> ${seeded}</td>`+
+                   `<td>${seeded} <input type="number" min="0" id="pl${i}-vta-a" style="width:56px;"> – <input type="number" min="0" id="pl${i}-vta-b" style="width:56px;"> ${unseeded}</td>`+
+                   `<td id="pl${i}-global">—</td><td id="pl${i}-win">—</td>`;
     tb.appendChild(tr);
   }
   table.appendChild(tb); wrap.appendChild(table);
@@ -2620,7 +2651,7 @@ window.cl_actualizarTabla = function(){
         cont.innerHTML = '<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
         var wrap = cont.querySelector('.cl-round');
         var table = document.createElement('table'); table.className = 'cl-playin-table';
-        table.innerHTML = '<thead><tr><th>Emparejamiento</th><th>Encuentros</th><th>Global</th><th>Ganador</th></tr></thead>';
+        table.innerHTML = '<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
         var tb = document.createElement('tbody');
 
         for (var i=0;i<8;i++){
