@@ -757,6 +757,10 @@
   #cl-playin .cl-playin-table thead th { padding: 8px 10px; }
   #cl-playin .cl-playin-table tbody td { padding: 6px 8px; }
 }
+
+/* Ajuste: 'Encuentros' con las dos piernas apiladas */
+#cl-playin .cl-playin-table .cell-enc { padding-top: 16px; padding-bottom: 16px; }
+#cl-playin .cl-playin-table .cell-enc .cl-leg + .cl-leg { margin-top: 8px; }
 </style>
 <style id="cl-octavos-grid-css">
 #cl-octavos .bracket {
@@ -771,7 +775,6 @@
 @media (max-width: 768px)  { #cl-octavos .bracket { grid-template-columns: repeat(2, minmax(200px, 1fr)); } }
 @media (max-width: 520px)  { #cl-octavos .bracket { grid-template-columns: 1fr; } }
 </style>
-
 <style id="force-yellow-to-#3399ff">
 /* Fuerza todos los amarillos conocidos a azul */
 .btn-warning, .bg-warning, .text-warning, .border-warning,
@@ -794,8 +797,364 @@
   border-color: #3399ff !important;
 }
 </style>
+<style>table { margin-left: auto; margin-right: auto; }</style><style id="cl-standings-champions-style">
+/* === Champions Standing: centrado + estilo pro === */
+#cl-standings { 
+  max-width: 1100px; 
+  margin: 24px auto; 
+}
+#cl-standings .cl-legend {
+  justify-content: center;
+}
+#cl-standings .cl-table {
+  width: 95%;
+  margin-left: auto;
+  margin-right: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #111;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+  border: 1px solid #2a2a2a;
+}
+#cl-standings .cl-table thead th {
+  background: linear-gradient(180deg, #1d1d1d, #151515);
+  color: #3399ff;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  padding: 12px 10px;
+  border-bottom: 1px solid #2a2a2a;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+#cl-standings .cl-table tbody td {
+  background: #1b1b1b;
+  color: #eee;
+  padding: 10px 10px;
+  border-bottom: 1px solid #242424;
+  vertical-align: middle;
+}
+#cl-standings .cl-table tbody tr:nth-child(even) td {
+  background: #161616;
+}
+#cl-standings .cl-table tbody tr:hover td {
+  background: #202020;
+}
+#cl-standings .cl-table td strong { color: inherit !important; }
+/* Badges mejorados */
+#cl-standings .cl-badge.ok { background:#0f2d1f; color:#22c55e; border-color:#14532d; }
+#cl-standings .cl-badge.playin { background:#2b1f06; color:#f59e0b; border-color:#8a6d1e; }
+#cl-standings .cl-badge.out { background:#2b1111; color:#ef4444; border-color:#7f1d1d; }
 
-</head>
+/* Numeración, equipo y jugador en azul brillante */
+#cl-standings .cl-table tbody td:first-child,
+#cl-standings .cl-table tbody td:nth-child(2),
+#cl-standings .cl-table tbody td:nth-child(3) {
+  color: #33aaff;
+  font-weight: 600;
+}
+
+/* Numeración, nombre de equipo y jugador en azul brillante */
+#cl-standings .cl-table tbody td:first-child,
+#cl-standings .cl-table tbody td:nth-child(2),
+#cl-standings .cl-table tbody td:nth-child(3) {
+  color: #33aaff !important;
+  font-weight: 600;
+}
+
+/* === Colores por posición === */
+/* Clasificados directos (1–8) en verde */
+#cl-standings .cl-table tbody tr:nth-child(-n+8) td:first-child,
+#cl-standings .cl-table tbody tr:nth-child(-n+8) td:nth-child(2),
+#cl-standings .cl-table tbody tr:nth-child(-n+8) td:nth-child(3) {
+  color: #22c55e !important; /* Verde */
+  font-weight: 700;
+}
+
+/* Repechaje (9–12) en amarillo */
+#cl-standings .cl-table tbody tr:nth-child(n+9):nth-child(-n+12) td:first-child,
+#cl-standings .cl-table tbody tr:nth-child(n+9):nth-child(-n+12) td:nth-child(2),
+#cl-standings .cl-table tbody tr:nth-child(n+9):nth-child(-n+12) td:nth-child(3) {
+  color: #facc15 !important; /* Amarillo */
+  font-weight: 700;
+}
+
+/* Eliminados (13–16) en rojo */
+#cl-standings .cl-table tbody tr:nth-child(n+13) td:first-child,
+#cl-standings .cl-table tbody tr:nth-child(n+13) td:nth-child(2),
+#cl-standings .cl-table tbody tr:nth-child(n+13) td:nth-child(3) {
+  color: #ef4444 !important; /* Rojo */
+  font-weight: 700;
+}
+
+/* === FIX: Colores correctos por estado (usa clases ok/playin/out) === */
+#cl-standings .cl-table tbody tr.ok td:first-child,
+#cl-standings .cl-table tbody tr.ok td:nth-child(2),
+#cl-standings .cl-table tbody tr.ok td:nth-child(3) {
+  color: #22c55e !important; /* Verde: clasificados (1–8) */
+  font-weight: 700;
+}
+#cl-standings .cl-table tbody tr.playin td:first-child,
+#cl-standings .cl-table tbody tr.playin td:nth-child(2),
+#cl-standings .cl-table tbody tr.playin td:nth-child(3) {
+  color: #facc15 !important; /* Amarillo: repechaje (9–24) */
+  font-weight: 700;
+}
+#cl-standings .cl-table tbody tr.out td:first-child,
+#cl-standings .cl-table tbody tr.out td:nth-child(2),
+#cl-standings .cl-table tbody tr.out td:nth-child(3) {
+  color: #ef4444 !important; /* Rojo: eliminados (25–36) */
+  font-weight: 700;
+}
+
+/* === Sincroniza colores con badges (ok/playin/out) y aplica también a Pts === */
+/* Columnas objetivo: # (1), Equipo (2), Jugador (3), Pts (11) */
+
+
+
+/* Opcional: refuerzo visual al pasar el mouse, sin cambiar el color base */
+
+
+
+
+/* === Extiende colores de estado (ok/playin/out) también a GF, GC, DG === */
+/* Asumiendo columnas: GF (8), GC (9), DG (10) */
+
+
+
+
+/* === Extiende colores de estado a todas las columnas estadísticas === */
+/* Asumiendo: PJ (4), G (5), E (6), P (7), GF (8), GC (9), DG (10), Pts (11) */
+
+/* Clasificados directos */
+
+
+/* Repechaje */
+
+
+/* Eliminados */
+
+
+/* === Ajuste PTS: que sigan estrictamente el color del badge === */
+/* Columna PTS (11) sincronizada con estado */
+
+
+
+
+/* === PTS en blanco, independientemente del badge === */
+
+
+/* === PTS solo en blanco === */
+
+
+/* === PTS siempre en blanco === */
+
+
+/* === Colores por puesto (aplica a toda la fila: #, Equipo, Jugador, PJ, G, E, P, GF, GC, DG, Pts) === */
+#cl-standings .cl-table tbody tr.ok td {
+  color: #22c55e !important; /* Verde: clasificados */
+  font-weight: 700;
+}
+#cl-standings .cl-table tbody tr.playin td {
+  color: #facc15 !important; /* Amarillo: repechaje */
+  font-weight: 700;
+}
+#cl-standings .cl-table tbody tr.out td {
+  color: #ef4444 !important; /* Rojo: eliminados */
+  font-weight: 700;
+}
+
+/* Ensure descendants in PTS cells inherit the row color */
+#cl-standings .cl-table tbody tr.ok  td:nth-child(11) * { color: #22c55e !important; }
+#cl-standings .cl-table tbody tr.playin td:nth-child(11) * { color: #facc15 !important; }
+#cl-standings .cl-table tbody tr.out    td:nth-child(11) * { color: #ef4444 !important; }
+
+/* === Liga más viva: animaciones, hover, header y barra de PTS === */
+
+/* Header con más relieve */
+#cl-standings .cl-table thead th {
+  background: linear-gradient(180deg, #242424, #161616);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+  border-bottom: 1px solid #2f2f2f;
+}
+
+/* Aparición suave de filas con escalonado */
+#cl-standings .cl-table tbody tr {
+  opacity: 0;
+  transform: translateY(6px);
+  animation: cl-row-in 480ms ease-out var(--delay, 0ms) forwards;
+}
+@keyframes cl-row-in {
+  to { opacity: 1; transform: none; }
+}
+
+/* Hover tintado según estado */
+#cl-standings .cl-table tbody tr.ok:hover td    { background: rgba(34,197,94,0.08); }
+#cl-standings .cl-table tbody tr.playin:hover td{ background: rgba(250,204,21,0.10); }
+#cl-standings .cl-table tbody tr.out:hover td   { background: rgba(239,68,68,0.08); }
+
+/* PTS con barra proporcional (usa --pts-ratio) */
+#cl-standings .cl-table tbody td:nth-child(11) {
+  position: relative;
+  white-space: nowrap;
+  font-weight: 800;
+}
+#cl-standings .cl-table tbody td:nth-child(11)::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 6px;
+  height: 4px;
+  background: currentColor;
+  opacity: .55;
+  border-radius: 999px;
+  width: var(--pts-ratio, 0%);
+  transform-origin: left center;
+}
+
+/* Badges con pulso sutil */
+#cl-standings .cl-badge {
+  box-shadow: inset 0 0 0 1px currentColor;
+  animation: cl-pulse 2.8s ease-in-out infinite;
+}
+#cl-standings tr.ok .cl-badge     { color:#22c55e; }
+#cl-standings tr.playin .cl-badge  { color:#facc15; }
+#cl-standings tr.out .cl-badge     { color:#ef4444; }
+
+@keyframes cl-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor, inset 0 0 0 1px currentColor; }
+  50%      { box-shadow: 0 0 14px 2px currentColor, inset 0 0 0 1px currentColor; }
+}
+
+/* Borde sutil entre bloques (1–8 / 9–24 / 25+ ) */
+#cl-standings .cl-table tbody tr:nth-child(8)  td { border-bottom: 1px solid rgba(255,255,255,0.06); }
+#cl-standings .cl-table tbody tr:nth-child(24) td { border-bottom: 1px solid rgba(255,255,255,0.06); }
+
+/* Rayas suaves y líneas delimitadoras */
+#cl-standings .cl-table tbody td {
+  border-bottom: 1px dashed rgba(255,255,255,0.05);
+}
+#cl-standings .cl-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Asegurar que <strong> herede color de la fila */
+#cl-standings .cl-table td strong { color: inherit !important; }
+
+/* === Fase de liga "viva" para la tabla de jornadas === */
+
+/* Aplica a cualquier tabla que tenga inputs (marcadores) */
+table:has(input) {
+  width: 100%;
+  margin: 16px auto 28px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #121212;
+  box-shadow: 0 10px 28px rgba(0,0,0,.45);
+  border: 1px solid #262626;
+}
+table:has(input) thead th {
+  background: linear-gradient(180deg, #1e1e1e, #151515);
+  color: #dfe7ff;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  padding: 12px 10px;
+  border-bottom: 1px solid #2a2a2a;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+table:has(input) tbody td {
+  padding: 12px 10px;
+  border-bottom: 1px dashed rgba(255,255,255,.06);
+  vertical-align: middle;
+}
+
+/* Rayado y hover suave */
+table:has(input) tbody tr:nth-child(even) td { background: #121212; }
+table:has(input) tbody tr:nth-child(odd)  td { background: #0f0f0f; }
+table:has(input) tbody tr:hover td { background: #171717; }
+
+/* Nombres centrados y espaciados */
+table:has(input) tbody td:nth-child(1),
+table:has(input) tbody td:nth-child(2),
+table:has(input) tbody td:nth-child(3),
+table:has(input) tbody td:nth-child(4) {
+  color: #eaeaea;
+  font-weight: 600;
+}
+
+/* Celda de marcador con layout pill */
+table:has(input) tbody td:has(input) {
+  min-width: 160px;
+}
+table:has(input) tbody td:has(input) {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+table:has(input) tbody td:has(input) .dash {
+  opacity: .5;
+}
+
+/* Inputs de marcador */
+table:has(input) input[type="number"] {
+  width: 64px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #2a2a2a;
+  background: #1a1a1a;
+  color: #f1f5f9;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  outline: none;
+  transition: box-shadow .2s ease, border-color .2s ease, transform .1s ease;
+}
+table:has(input) input[type="number"]:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96,165,250,.2);
+  transform: translateY(-1px);
+}
+
+/* Cuando ambos inputs tienen valor, remarcar */
+table:has(input) td:has(input[data-filled="1"]) input[type="number"] {
+  border-color: #3b82f6;
+}
+table:has(input) td:has(input[data-filled="1"])::after {
+  content: "✓";
+  font-weight: 900;
+  opacity: .7;
+  margin-left: 6px;
+}
+
+/* Botones/inputs deshabilitados */
+table:has(input) input[disabled] {
+  opacity: .6;
+  filter: grayscale(.2);
+}
+
+/* Etiqueta de Jornada (si existe un h3/h4 encima) */
+h3:has(+ table input), h4:has(+ table input) {
+  text-align: center;
+  color: #cfe4ff;
+  font-weight: 800;
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 0 rgba(0,0,0,.5);
+}
+
+/* Soporte si marcas estados por fila (ok/playin/out) para tintar nombres */
+table:has(input) tbody tr.ok td { color: #22c55e; }
+table:has(input) tbody tr.playin td { color: #facc15; }
+table:has(input) tbody tr.out td { color: #ef4444; }
+table:has(input) tbody tr td:has(input) { color: unset; } /* la celda de marcador no hereda el color del estado */
+</style></head>
 <body>
 <h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1>
 <br/>
@@ -1813,15 +2172,12 @@ function cl_generarPlayin(){
   const cont = document.getElementById('cl-playin'); cont.innerHTML = '<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
   const wrap = cont.querySelector('.cl-round');
   const table=document.createElement('table'); table.className='cl-playin-table';
-  table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
+  table.innerHTML='<thead><tr><th>Emparejamiento</th><th>Encuentros</th><th>Global</th><th>Ganador</th></tr></thead>';
   const tb=document.createElement('tbody');
   for (let i=0;i<8;i++){
     const seeded=A[i], unseeded=B[7-i];
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${seeded} vs ${unseeded}</td>`+
-                   `<td>${unseeded} <input type="number" min="0" id="pl${i}-ida-a" style="width:56px;"> – <input type="number" min="0" id="pl${i}-ida-b" style="width:56px;"> ${seeded}</td>`+
-                   `<td>${seeded} <input type="number" min="0" id="pl${i}-vta-a" style="width:56px;"> – <input type="number" min="0" id="pl${i}-vta-b" style="width:56px;"> ${unseeded}</td>`+
-                   `<td id="pl${i}-global">—</td><td id="pl${i}-win">—</td>`;
+    tr.innerHTML = `<td>${seeded} vs ${unseeded}</td>`+`<td class="cell-enc"><div class="cl-leg"><span class="team">${unseeded}</span> <input type="number" min="0" id="pl${i}-ida-a" style="width:56px;"> <span class="dash">–</span> <input type="number" min="0" id="pl${i}-ida-b" style="width:56px;"> <span class="team">${seeded}</span></div><div class="cl-leg" style="margin-top:8px"><span class="team">${seeded}</span> <input type="number" min="0" id="pl${i}-vta-a" style="width:56px;"> <span class="dash">–</span> <input type="number" min="0" id="pl${i}-vta-b" style="width:56px;"> <span class="team">${unseeded}</span></div></td>`+`<td id="pl${i}-global">—</td>`+`<td id="pl${i}-win">—</td>`;
     tb.appendChild(tr);
   }
   table.appendChild(tb); wrap.appendChild(table);
@@ -2264,7 +2620,7 @@ window.cl_actualizarTabla = function(){
         cont.innerHTML = '<div class="cl-round"><h4>Play‑in (9–24) – Ida y vuelta</h4></div>';
         var wrap = cont.querySelector('.cl-round');
         var table = document.createElement('table'); table.className = 'cl-playin-table';
-        table.innerHTML = '<thead><tr><th>Emparejamiento</th><th>Ida</th><th>Vuelta</th><th>Global</th><th>Ganador</th></tr></thead>';
+        table.innerHTML = '<thead><tr><th>Emparejamiento</th><th>Encuentros</th><th>Global</th><th>Ganador</th></tr></thead>';
         var tb = document.createElement('tbody');
 
         for (var i=0;i<8;i++){
@@ -2671,9 +3027,9 @@ window.cl_actualizarTabla = function(){
 })();
 </script>
 <div id="cl-wiog-controls" style="margin:20px 0; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-  <button id="cl-wiog-save">💾 Guardar Champions (WIOG)</button>
-  <button id="cl-wiog-load">📂 Cargar Champions (WIOG)</button>
-  <input id="cl-wiog-file" type="file" accept="application/json" style="display:none;">
+<button id="cl-wiog-save">💾 Guardar Champions (WIOG)</button>
+<button id="cl-wiog-load">📂 Cargar Champions (WIOG)</button>
+<input accept="application/json" id="cl-wiog-file" style="display:none;" type="file"/>
 </div>
 <script id="cl-wiog-io">
 (function(){
@@ -2882,7 +3238,6 @@ window.cl_actualizarTabla = function(){
   else { hook(); }
 })();
 </script>
-
 <script>
 /* ====== WIOG: Guardado/Carga total en localStorage ====== */
 const WIOG_KEY = 'WIOG_CL_STATE_V1';
@@ -3078,6 +3433,100 @@ async function cl_wiog_load(){
   if (btnLoad) btnLoad.addEventListener('click', cl_wiog_load);
 })();
 </script>
+<script>
+(function(){
+  function enhanceTable(table){
+    if (table.dataset.enhanced) return;
+    table.dataset.enhanced = "1";
+    try{
+      const tbody = table.tBodies && table.tBodies[0];
+      if(!tbody) return;
+      const rows = Array.from(tbody.rows);
+      // max Pts
+      let maxPts = 0;
+      rows.forEach(r => {
+        const c = r.cells[10];
+        if(!c) return;
+        const v = parseFloat((c.textContent||'').trim()) || 0;
+        if (v > maxPts) maxPts = v;
+      });
+      // set ratio + stagger
+      rows.forEach((r,i) => {
+        r.style.setProperty('--delay', (i*25)+'ms');
+        const c = r.cells[10];
+        if(!c) return;
+        const v = parseFloat((c.textContent||'').trim()) || 0;
+        const ratio = maxPts ? Math.max(0, Math.min(1, v/maxPts)) : 0;
+        c.style.setProperty('--pts-ratio', (ratio*100).toFixed(0)+'%');
+      });
+    }catch(e){ console.warn('Enhance table failed', e); }
+  }
 
-</body>
+  function tryEnhance(){
+    const t = document.querySelector('#cl-standings .cl-table');
+    if (t) enhanceTable(t);
+  }
+
+  // Initial try after current JS finishes
+  setTimeout(tryEnhance, 50);
+  // Observe for dynamic render
+  const target = document.getElementById('cl-standings') || document.body;
+  const obs = new MutationObserver(() => tryEnhance());
+  obs.observe(target, { childList: true, subtree: true });
+})();
+</script><script>
+(function(){
+  function enhanceInputs() {
+    const inputs = Array.from(document.querySelectorAll('table input[type="number"]'));
+    if (!inputs.length) return;
+    inputs.forEach((inp,i) => {
+      if (inp.dataset.enhanced) return;
+      inp.dataset.enhanced = '1';
+      inp.setAttribute('min','0'); inp.setAttribute('max','20');
+      inp.addEventListener('input', () => {
+        const v = inp.value.trim();
+        if (v !== '' && !isNaN(v)) inp.dataset.filled = '1'; else inp.dataset.filled = '';
+        // auto-advance al siguiente input en la misma celda o fila
+        if (v !== '' && v.length >= 1) {
+          const row = inp.closest('tr');
+          if (!row) return;
+          const cell = inp.closest('td');
+          const cellInputs = cell ? Array.from(cell.querySelectorAll('input[type="number"]')) : [inp];
+          const idx = cellInputs.indexOf(inp);
+          if (idx === 0 && cellInputs[1]) cellInputs[1].focus();
+        }
+      });
+      inp.addEventListener('keydown', (e) => {
+        const row = inp.closest('tr');
+        if (!row) return;
+        const cells = Array.from(row.cells);
+        const cellIndex = inp.closest('td') ? cells.indexOf(inp.closest('td')) : -1;
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          // Siguiente input en la fila
+          const all = Array.from(row.querySelectorAll('input[type="number"]'));
+          const idx = all.indexOf(inp);
+          if (all[idx+1]) all[idx+1].focus();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const all = Array.from(row.querySelectorAll('input[type="number"]'));
+          const idx = all.indexOf(inp);
+          if (all[idx-1]) all[idx-1].focus();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          // Ir a la primera casilla de la siguiente fila
+          const next = row.nextElementSibling;
+          if (next) {
+            const nInp = next.querySelector('input[type="number"]');
+            if (nInp) nInp.focus();
+          }
+        }
+      });
+    });
+  }
+  // intenta al inicio y observa cambios dinámicos
+  setTimeout(enhanceInputs, 50);
+  new MutationObserver(enhanceInputs).observe(document.body, {childList:true, subtree:true});
+})();
+</script></body>
 </html>
