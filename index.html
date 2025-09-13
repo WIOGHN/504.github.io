@@ -771,7 +771,6 @@
 @media (max-width: 768px)  { #cl-octavos .bracket { grid-template-columns: repeat(2, minmax(200px, 1fr)); } }
 @media (max-width: 520px)  { #cl-octavos .bracket { grid-template-columns: 1fr; } }
 </style>
-
 <style id="force-yellow-to-#3399ff">
 /* Fuerza todos los amarillos conocidos a azul */
 .btn-warning, .bg-warning, .text-warning, .border-warning,
@@ -794,8 +793,180 @@
   border-color: #3399ff !important;
 }
 </style>
+<style>table { margin-left: auto; margin-right: auto; }</style><style id="cl-standings-champions-style">
+/* === Champions Standing: centrado + estilo pro === */
+#cl-standings { 
+  max-width: 1100px; 
+  margin: 24px auto; 
+}
+#cl-standings .cl-legend {
+  justify-content: center;
+}
+#cl-standings .cl-table {
+  width: 95%;
+  margin-left: auto;
+  margin-right: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #111;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+  border: 1px solid #2a2a2a;
+}
+#cl-standings .cl-table thead th {
+  background: linear-gradient(180deg, #1d1d1d, #151515);
+  color: #3399ff;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  padding: 12px 10px;
+  border-bottom: 1px solid #2a2a2a;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+#cl-standings .cl-table tbody td {
+  background: #1b1b1b;
+  color: #eee;
+  padding: 10px 10px;
+  border-bottom: 1px solid #242424;
+  vertical-align: middle;
+}
+#cl-standings .cl-table tbody tr:nth-child(even) td {
+  background: #161616;
+}
+#cl-standings .cl-table tbody tr:hover td {
+  background: #202020;
+}
+#cl-standings .cl-table td strong { color: inherit !important; }
+/* Badges mejorados */
+#cl-standings .cl-badge.ok { background:#0f2d1f; color:#22c55e; border-color:#14532d; }
+#cl-standings .cl-badge.playin { background:#2b1f06; color:#f59e0b; border-color:#8a6d1e; }
+#cl-standings .cl-badge.out { background:#2b1111; color:#ef4444; border-color:#7f1d1d; }
 
-</head>
+/* Numeración, equipo y jugador en azul brillante */
+#cl-standings .cl-table tbody td:first-child,
+#cl-standings .cl-table tbody td:nth-child(2),
+#cl-standings .cl-table tbody td:nth-child(3) {
+  color: #33aaff;
+  font-weight: 600;
+}
+
+/* Numeración, nombre de equipo y jugador en azul brillante */
+#cl-standings .cl-table tbody td:first-child,
+#cl-standings .cl-table tbody td:nth-child(2),
+#cl-standings .cl-table tbody td:nth-child(3) {
+  color: #33aaff !important;
+  font-weight: 600;
+}
+
+/* === Colores por posición === */
+/* Clasificados directos (1–8) en verde */
+#cl-standings .cl-table tbody tr:nth-child(-n+8) td:first-child,
+#cl-standings .cl-table tbody tr:nth-child(-n+8) td:nth-child(2),
+#cl-standings .cl-table tbody tr:nth-child(-n+8) td:nth-child(3) {
+  color: #22c55e !important; /* Verde */
+  font-weight: 700;
+}
+
+/* Repechaje (9–12) en amarillo */
+#cl-standings .cl-table tbody tr:nth-child(n+9):nth-child(-n+12) td:first-child,
+#cl-standings .cl-table tbody tr:nth-child(n+9):nth-child(-n+12) td:nth-child(2),
+#cl-standings .cl-table tbody tr:nth-child(n+9):nth-child(-n+12) td:nth-child(3) {
+  color: #facc15 !important; /* Amarillo */
+  font-weight: 700;
+}
+
+/* Eliminados (13–16) en rojo */
+#cl-standings .cl-table tbody tr:nth-child(n+13) td:first-child,
+#cl-standings .cl-table tbody tr:nth-child(n+13) td:nth-child(2),
+#cl-standings .cl-table tbody tr:nth-child(n+13) td:nth-child(3) {
+  color: #ef4444 !important; /* Rojo */
+  font-weight: 700;
+}
+
+/* === FIX: Colores correctos por estado (usa clases ok/playin/out) === */
+#cl-standings .cl-table tbody tr.ok td:first-child,
+#cl-standings .cl-table tbody tr.ok td:nth-child(2),
+#cl-standings .cl-table tbody tr.ok td:nth-child(3) {
+  color: #22c55e !important; /* Verde: clasificados (1–8) */
+  font-weight: 700;
+}
+#cl-standings .cl-table tbody tr.playin td:first-child,
+#cl-standings .cl-table tbody tr.playin td:nth-child(2),
+#cl-standings .cl-table tbody tr.playin td:nth-child(3) {
+  color: #facc15 !important; /* Amarillo: repechaje (9–24) */
+  font-weight: 700;
+}
+#cl-standings .cl-table tbody tr.out td:first-child,
+#cl-standings .cl-table tbody tr.out td:nth-child(2),
+#cl-standings .cl-table tbody tr.out td:nth-child(3) {
+  color: #ef4444 !important; /* Rojo: eliminados (25–36) */
+  font-weight: 700;
+}
+
+/* === Sincroniza colores con badges (ok/playin/out) y aplica también a Pts === */
+/* Columnas objetivo: # (1), Equipo (2), Jugador (3), Pts (11) */
+
+
+
+/* Opcional: refuerzo visual al pasar el mouse, sin cambiar el color base */
+
+
+
+
+/* === Extiende colores de estado (ok/playin/out) también a GF, GC, DG === */
+/* Asumiendo columnas: GF (8), GC (9), DG (10) */
+
+
+
+
+/* === Extiende colores de estado a todas las columnas estadísticas === */
+/* Asumiendo: PJ (4), G (5), E (6), P (7), GF (8), GC (9), DG (10), Pts (11) */
+
+/* Clasificados directos */
+
+
+/* Repechaje */
+
+
+/* Eliminados */
+
+
+/* === Ajuste PTS: que sigan estrictamente el color del badge === */
+/* Columna PTS (11) sincronizada con estado */
+
+
+
+
+/* === PTS en blanco, independientemente del badge === */
+
+
+/* === PTS solo en blanco === */
+
+
+/* === PTS siempre en blanco === */
+
+
+/* === Colores por puesto (aplica a toda la fila: #, Equipo, Jugador, PJ, G, E, P, GF, GC, DG, Pts) === */
+#cl-standings .cl-table tbody tr.ok td {
+  color: #22c55e !important; /* Verde: clasificados */
+  font-weight: 700;
+}
+#cl-standings .cl-table tbody tr.playin td {
+  color: #facc15 !important; /* Amarillo: repechaje */
+  font-weight: 700;
+}
+#cl-standings .cl-table tbody tr.out td {
+  color: #ef4444 !important; /* Rojo: eliminados */
+  font-weight: 700;
+}
+
+/* Ensure descendants in PTS cells inherit the row color */
+#cl-standings .cl-table tbody tr.ok  td:nth-child(11) * { color: #22c55e !important; }
+#cl-standings .cl-table tbody tr.playin td:nth-child(11) * { color: #facc15 !important; }
+#cl-standings .cl-table tbody tr.out    td:nth-child(11) * { color: #ef4444 !important; }
+</style></head>
 <body>
 <h1>🏆 COPA WIOG – Mundial Visual con Llave Automática</h1>
 <br/>
@@ -2671,9 +2842,9 @@ window.cl_actualizarTabla = function(){
 })();
 </script>
 <div id="cl-wiog-controls" style="margin:20px 0; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-  <button id="cl-wiog-save">💾 Guardar Champions (WIOG)</button>
-  <button id="cl-wiog-load">📂 Cargar Champions (WIOG)</button>
-  <input id="cl-wiog-file" type="file" accept="application/json" style="display:none;">
+<button id="cl-wiog-save">💾 Guardar Champions (WIOG)</button>
+<button id="cl-wiog-load">📂 Cargar Champions (WIOG)</button>
+<input accept="application/json" id="cl-wiog-file" style="display:none;" type="file"/>
 </div>
 <script id="cl-wiog-io">
 (function(){
@@ -2882,7 +3053,6 @@ window.cl_actualizarTabla = function(){
   else { hook(); }
 })();
 </script>
-
 <script>
 /* ====== WIOG: Guardado/Carga total en localStorage ====== */
 const WIOG_KEY = 'WIOG_CL_STATE_V1';
@@ -3078,6 +3248,5 @@ async function cl_wiog_load(){
   if (btnLoad) btnLoad.addEventListener('click', cl_wiog_load);
 })();
 </script>
-
 </body>
 </html>
