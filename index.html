@@ -1850,74 +1850,6 @@ window.cl_fallbackSortearParejas = function(){
 <div style="margin-top:18px;">
 <button id="cl-generar-fase" onclick="(window.cl_generarFaseLiga||window.cl_fallbackGenerarFaseLiga)()" type="button">📅 Generar Fase de Liga – Champions League WIOG (36 equipos, 8 jornadas)</button>
 </div>
-<!-- === UI: Botón para restablecer el torneo (Liga) === -->
-
-
-<script id="cl-reset-liga-script">
-(function(){
-  // Claves usadas por los parches (Liga fija + posibles KO congelados)
-  const KEYS = [
-    "CL_PAREJAS_FIXED_V1",
-    "CL_JORNADAS_FIXED_V1",
-    "CL_PL_PAIRS_V1",
-    "CL_PL_SCORES_V1",
-    "CL_OCT_PAIRS_V1",
-    "CL_OCT_SCORES_V1"
-  ];
-
-  function clearLocal(){
-    KEYS.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
-  }
-  function clearGlobals(){
-    try { window.CL_PAREJAS  = []; } catch(e){}
-    try { window.CL_JORNADAS = []; } catch(e){}
-    try { window.CL_TABLA    = []; } catch(e){}
-  }
-  function clearUI(){
-    const ids = [
-      "cl-parejas","cl-fixtures","cl-standings",
-      "cl-playin","cl-octavos","cl-cuartos","cl-semis","cl-final"
-    ];
-    ids.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ""; });
-
-    // Limpiar inputs numéricos de play-in / octavos si quedaran en el DOM
-    const prefixes = ["pl", "cl-octavos-t", "cl-cuartos-t", "cl-semis-t", "cl-final-t"];
-    document.querySelectorAll('input[type="number"]').forEach(inp => {
-      const id = inp.id||"";
-      if (prefixes.some(p => id.startsWith(p))) inp.value = "";
-    });
-
-    // Limpiar campeón/indicadores si existiesen
-    const maybe = ["campeon","campeonFinal"];
-    maybe.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML=""; });
-  }
-
-  // Si existe un reset integral anterior, sustitúyelo
-  window.cl_resetTorneoTotal = function(){
-    clearLocal();
-    clearGlobals();
-    clearUI();
-    alert("✅ Torneo restablecido por completo. Ya puedes iniciar uno nuevo (sortear parejas y generar liga).");
-  };
-
-  // Hacer que el botón ejecute el reset total
-  function bind(){
-    const btn = document.getElementById("cl-reset-liga");
-    if (!btn) return;
-    btn.textContent = "♻️ Restablecer Torneo (Completo)";
-    btn.addEventListener("click", function(){
-      try { window.cl_resetTorneoTotal(); } catch(e){ alert("Error al restablecer: " + (e?.message||e)); }
-    });
-  }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bind);
-  } else {
-    bind();
-  }
-})();
-</script>
-
-
 <div id="cl-fixtures" style="margin-top:16px;"></div>
 <button id="cl-actualizar-tabla" onclick="window.cl_actualizarTabla &amp;&amp; window.cl_actualizarTabla()" type="button">📊 Generar/Actualizar Tabla (estilo Champions)</button>
 <div id="cl-standings" style="margin-top:12px;"></div>
@@ -3597,30 +3529,521 @@ async function cl_wiog_load(){
   new MutationObserver(enhanceInputs).observe(document.body, {childList:true, subtree:true});
 })();
 </script>
-<!-- === Patch: Fijar orden de jugadores/equipos y jornadas (no se mueven al cargar) === -->
-<script id="cl-fixed-order-persist">
+<!-- === Patch: Cuartos de Final (global + ganador + persistencia tras cargar) === -->
+<script id="cl-cuartos-persist">
+(function(){
+  const PKEY = "CL_CUARTOS_PAIRS_V1";
+  const SKEY = "CL_CUARTOS_SCORES_V1";
+  const N_TIES = 4; // cl-cuartos-t0..t3
+
+  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+  function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
+
+  function tieIds(i){
+    const base = `cl-cuartos-t${i}`;
+    return {
+      idaA: `${base}-ida-a`,
+      idaB: `${base}-ida-b`,
+      vtaA: `${base}-vta-a`,
+      vtaB: `${base}-vta-b`,
+      global: `${base}-global`,
+      win: `${base}-win`,
+      selector: `#${base}`
+    };
+  }
+
+  function renderPairs(pairs){
+    // pairs: [{home, away}] — home is the team at .cl-home in Ida
+    for (let i=0;i<N_TIES;i++){
+      const sel = tieIds(i).selector;
+      const tie = document.querySelector(sel);
+      if (!tie || !pairs[i]) continue;
+      const homes = tie.querySelectorAll('.cl-home');
+      const aways = tie.querySelectorAll('.cl-away');
+      // Ida: home vs away
+      if (homes[0]) homes[0].textContent = pairs[i].home||'—';
+      if (aways[0]) aways[0].textContent = pairs[i].away||'—';
+      // Vuelta: invertido
+      if (homes[1]) homes[1].textContent = pairs[i].away||'—';
+      if (aways[1]) aways[1].textContent = pairs[i].home||'—';
+    }
+  }
+
+  function parsePairsFromDOM(){
+    const out = [];
+    for (let i=0;i<N_TIES;i++){
+      const sel = tieIds(i).selector;
+      const homes = document.querySelectorAll(`${sel} .cl-home`);
+      const aways = document.querySelectorAll(`${sel} .cl-away`);
+      if (homes.length<2 || aways.length<2) return null;
+      const home = (homes[0].textContent||'').trim();
+      const away = (aways[0].textContent||'').trim();
+      if (!home || !away || home==='—' || away==='—') return null;
+      out.push({home, away});
+    }
+    return out.length===N_TIES ? out : null;
+  }
+
+  function saveScores(){
+    const state = {};
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
+        const el = document.getElementById(ids[k]);
+        if (el) state[ids[k]] = el.value;
+      });
+      const g = document.getElementById(ids.global);
+      const w = document.getElementById(ids.win);
+      if (g) state[ids.global] = g.textContent||'';
+      if (w) state[ids.win]    = w.textContent||'';
+    }
+    save(SKEY, state);
+  }
+
+  function restoreScores(){
+    const state = load(SKEY)||{};
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
+        const el = document.getElementById(ids[k]);
+        if (el && state.hasOwnProperty(ids[k])) el.value = state[ids[k]];
+      });
+      const g = document.getElementById(ids.global);
+      const w = document.getElementById(ids.win);
+      if (g && state.hasOwnProperty(ids.global)) g.textContent = state[ids.global];
+      if (w && state.hasOwnProperty(ids.win))    w.textContent = state[ids.win];
+    }
+  }
+
+  function bindCalc(){
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      const tie = document.querySelector(ids.selector);
+      if (!tie) continue;
+      const inputs = ['idaA','idaB','vtaA','vtaB'].map(k=>document.getElementById(ids[k]));
+      const homes = tie.querySelectorAll('.cl-home');
+      const aways = tie.querySelectorAll('.cl-away');
+      const gEl = document.getElementById(ids.global);
+      const wEl = document.getElementById(ids.win);
+      const handler = ()=>{
+        const a1 = parseInt(inputs[0]?.value), b1 = parseInt(inputs[1]?.value);
+        const a2 = parseInt(inputs[2]?.value), b2 = parseInt(inputs[3]?.value);
+        if ([a1,b1,a2,b2].some(Number.isNaN)){
+          if (gEl) gEl.textContent = '—';
+          if (wEl) wEl.textContent = '—';
+          saveScores();
+          return;
+        }
+        const teamA = (homes[0]?.textContent||'').trim(); // Ida local
+        const teamB = (aways[0]?.textContent||'').trim(); // Ida visitante
+        const goalsA = a1 + (Number.isNaN(b2) ? 0 : b2);
+        const goalsB = b1 + (Number.isNaN(a2) ? 0 : a2);
+        if (gEl) gEl.textContent = `${goalsA}–${goalsB}`;
+        if (goalsA>goalsB){ if (wEl) wEl.textContent = teamA; }
+        else if (goalsA<goalsB){ if (wEl) wEl.textContent = teamB; }
+        else {
+          const pen = prompt(`Empate ${teamA} vs ${teamB}. Ganador por penales:`);
+          if (wEl) wEl.textContent = pen || '—';
+        }
+        saveScores();
+      };
+      inputs.forEach(el=> el && el.addEventListener('change', handler));
+    }
+  }
+
+  function boot(){
+    const pairs = load(PKEY);
+    if (pairs && Array.isArray(pairs) && pairs.length===N_TIES){
+      renderPairs(pairs);
+      bindCalc();
+      restoreScores();
+    } else {
+      const parsed = parsePairsFromDOM();
+      if (parsed){ save(PKEY, parsed); }
+      bindCalc();
+      restoreScores();
+    }
+
+    const targets = [];
+    for (let i=0;i<N_TIES;i++){
+      const tie = document.querySelector(tieIds(i).selector);
+      if (tie) targets.push(tie);
+    }
+    const mo = new MutationObserver(()=>{
+      const parsed = parsePairsFromDOM();
+      if (parsed) save(PKEY, parsed);
+    });
+    targets.forEach(node=> mo.observe(node, {subtree:true, characterData:true, childList:true}));
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  window.cl_resetCuartos = function(){
+    localStorage.removeItem(PKEY);
+    localStorage.removeItem(SKEY);
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{ const el = document.getElementById(ids[k]); if (el) el.value=''; });
+      const g = document.getElementById(ids.global);
+      const w = document.getElementById(ids.win);
+      if (g) g.textContent = '—';
+      if (w) w.textContent = '—';
+    }
+    alert("Cuartos de Final restablecidos.");
+  };
+})();
+</script>
+
+
+<!-- === Patch: Semifinales (global + ganador + persistencia tras cargar) === -->
+<script id="cl-semis-persist">
+(function(){
+  const PKEY = "CL_SEMIS_PAIRS_V1";
+  const SKEY = "CL_SEMIS_SCORES_V1";
+  const N_TIES = 2; // cl-semis-t0..t1
+
+  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+  function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
+
+  function tieIds(i){
+    const base = `cl-semis-t${i}`;
+    return {
+      idaA: `${base}-ida-a`,
+      idaB: `${base}-ida-b`,
+      vtaA: `${base}-vta-a`,
+      vtaB: `${base}-vta-b`,
+      global: `${base}-global`,
+      win: `${base}-win`,
+      selector: `#${base}`
+    };
+  }
+
+  function renderPairs(pairs){
+    for (let i=0;i<N_TIES;i++){
+      const sel = tieIds(i).selector;
+      const tie = document.querySelector(sel);
+      if (!tie || !pairs[i]) continue;
+      const homes = tie.querySelectorAll('.cl-home');
+      const aways = tie.querySelectorAll('.cl-away');
+      if (homes[0]) homes[0].textContent = pairs[i].home||'—';
+      if (aways[0]) aways[0].textContent = pairs[i].away||'—';
+      if (homes[1]) homes[1].textContent = pairs[i].away||'—';
+      if (aways[1]) aways[1].textContent = pairs[i].home||'—';
+    }
+  }
+
+  function parsePairsFromDOM(){
+    const out = [];
+    for (let i=0;i<N_TIES;i++){
+      const sel = tieIds(i).selector;
+      const homes = document.querySelectorAll(`${sel} .cl-home`);
+      const aways = document.querySelectorAll(`${sel} .cl-away`);
+      if (homes.length<1 || aways.length<1) return null;
+      const home = (homes[0].textContent||'').trim();
+      const away = (aways[0].textContent||'').trim();
+      if (!home || !away || home==='—' || away==='—') return null;
+      out.push({home, away});
+    }
+    return out.length===N_TIES ? out : null;
+  }
+
+  function saveScores(){
+    const state = {};
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
+        const el = document.getElementById(ids[k]);
+        if (el) state[ids[k]] = el.value;
+      });
+      const g = document.getElementById(ids.global);
+      const w = document.getElementById(ids.win);
+      if (g) state[ids.global] = g.textContent||'';
+      if (w) state[ids.win]    = w.textContent||'';
+    }
+    save(SKEY, state);
+  }
+
+  function restoreScores(){
+    const state = load(SKEY)||{};
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
+        const el = document.getElementById(ids[k]);
+        if (el && state.hasOwnProperty(ids[k])) el.value = state[ids[k]];
+      });
+      const g = document.getElementById(ids.global);
+      const w = document.getElementById(ids.win);
+      if (g && state.hasOwnProperty(ids.global)) g.textContent = state[ids.global];
+      if (w && state.hasOwnProperty(ids.win))    w.textContent = state[ids.win];
+    }
+  }
+
+  function bindCalc(){
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      const tie = document.querySelector(ids.selector);
+      if (!tie) continue;
+      const inputs = ['idaA','idaB','vtaA','vtaB'].map(k=>document.getElementById(ids[k]));
+      const homes = tie.querySelectorAll('.cl-home');
+      const aways = tie.querySelectorAll('.cl-away');
+      const gEl = document.getElementById(ids.global);
+      const wEl = document.getElementById(ids.win);
+      const handler = ()=>{
+        const a1 = parseInt(inputs[0]?.value), b1 = parseInt(inputs[1]?.value);
+        const a2 = parseInt(inputs[2]?.value), b2 = parseInt(inputs[3]?.value);
+        if ([a1,b1].some(Number.isNaN)){
+          if (gEl) gEl.textContent = '—';
+          if (wEl) wEl.textContent = '—';
+          saveScores();
+          return;
+        }
+        const teamA = (homes[0]?.textContent||'').trim();
+        const teamB = (aways[0]?.textContent||'').trim();
+        // soporta final/semi a un solo partido si no hay vuelta
+        const goalsA = (Number.isNaN(a1)?0:a1) + (Number.isNaN(b2)?0:b2);
+        const goalsB = (Number.isNaN(b1)?0:b1) + (Number.isNaN(a2)?0:a2);
+        if (gEl) gEl.textContent = `${goalsA}–${goalsB}`;
+        if (goalsA>goalsB){ if (wEl) wEl.textContent = teamA; }
+        else if (goalsA<goalsB){ if (wEl) wEl.textContent = teamB; }
+        else {
+          const pen = prompt(`Empate ${teamA} vs ${teamB}. Ganador por penales:`);
+          if (wEl) wEl.textContent = pen || '—';
+        }
+        saveScores();
+      };
+      inputs.forEach(el=> el && el.addEventListener('change', handler));
+    }
+  }
+
+  function boot(){
+    const pairs = load(PKEY);
+    if (pairs && Array.isArray(pairs) && pairs.length===N_TIES){
+      renderPairs(pairs);
+      bindCalc();
+      restoreScores();
+    } else {
+      const parsed = parsePairsFromDOM();
+      if (parsed){ save(PKEY, parsed); }
+      bindCalc();
+      restoreScores();
+    }
+
+    const targets = [];
+    for (let i=0;i<N_TIES;i++){
+      const tie = document.querySelector(tieIds(i).selector);
+      if (tie) targets.push(tie);
+    }
+    const mo = new MutationObserver(()=>{
+      const parsed = parsePairsFromDOM();
+      if (parsed) save(PKEY, parsed);
+    });
+    targets.forEach(node=> mo.observe(node, {subtree:true, characterData:true, childList:true}));
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  window.cl_resetSemis = function(){
+    localStorage.removeItem(PKEY);
+    localStorage.removeItem(SKEY);
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{ const el = document.getElementById(ids[k]); if (el) el.value=''; });
+      const g = document.getElementById(ids.global);
+      const w = document.getElementById(ids.win);
+      if (g) g.textContent = '—';
+      if (w) w.textContent = '—';
+    }
+    alert("Semifinales restablecidas.");
+  };
+})();
+</script>
+
+<!-- === Patch: Final (global + ganador + persistencia tras cargar) === -->
+<script id="cl-final-persist">
+(function(){
+  const PKEY = "CL_FINAL_PAIRS_V1";
+  const SKEY = "CL_FINAL_SCORES_V1";
+  const N_TIES = 1; // cl-final-t0
+
+  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+  function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
+
+  function tieIds(i){
+    const base = `cl-final-t${i}`;
+    return {
+      idaA: `${base}-ida-a`,
+      idaB: `${base}-ida-b`,
+      vtaA: `${base}-vta-a`,
+      vtaB: `${base}-vta-b`,
+      global: `${base}-global`,
+      win: `${base}-win`,
+      selector: `#${base}`
+    };
+  }
+
+  function renderPairs(pairs){
+    for (let i=0;i<N_TIES;i++){
+      const sel = tieIds(i).selector;
+      const tie = document.querySelector(sel);
+      if (!tie || !pairs[i]) continue;
+      const homes = tie.querySelectorAll('.cl-home');
+      const aways = tie.querySelectorAll('.cl-away');
+      if (homes[0]) homes[0].textContent = pairs[i].home||'—';
+      if (aways[0]) aways[0].textContent = pairs[i].away||'—';
+      if (homes[1]) homes[1].textContent = pairs[i].away||'—';
+      if (aways[1]) aways[1].textContent = pairs[i].home||'—';
+    }
+  }
+
+  function parsePairsFromDOM(){
+    const out = [];
+    for (let i=0;i<N_TIES;i++){
+      const sel = tieIds(i).selector;
+      const homes = document.querySelectorAll(`${sel} .cl-home`);
+      const aways = document.querySelectorAll(`${sel} .cl-away`);
+      if (homes.length<1 || aways.length<1) return null;
+      const home = (homes[0].textContent||'').trim();
+      const away = (aways[0].textContent||'').trim();
+      if (!home || !away || home==='—' || away==='—') return null;
+      out.push({home, away});
+    }
+    return out.length===N_TIES ? out : null;
+  }
+
+  function saveScores(){
+    const state = {};
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
+        const el = document.getElementById(ids[k]);
+        if (el) state[ids[k]] = el.value;
+      });
+      const g = document.getElementById(ids.global);
+      const w = document.getElementById(ids.win);
+      if (g) state[ids.global] = g.textContent||'';
+      if (w) state[ids.win]    = w.textContent||'';
+    }
+    save(SKEY, state);
+  }
+
+  function restoreScores(){
+    const state = load(SKEY)||{};
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{
+        const el = document.getElementById(ids[k]);
+        if (el && state.hasOwnProperty(ids[k])) el.value = state[ids[k]];
+      });
+      const g = document.getElementById(ids.global);
+      const w = document.getElementById(ids.win);
+      if (g && state.hasOwnProperty(ids.global)) g.textContent = state[ids.global];
+      if (w && state.hasOwnProperty(ids.win))    w.textContent = state[ids.win];
+    }
+  }
+
+  function bindCalc(){
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      const tie = document.querySelector(ids.selector);
+      if (!tie) continue;
+      const inputs = ['idaA','idaB','vtaA','vtaB'].map(k=>document.getElementById(ids[k]));
+      const homes = tie.querySelectorAll('.cl-home');
+      const aways = tie.querySelectorAll('.cl-away');
+      const gEl = document.getElementById(ids.global);
+      const wEl = document.getElementById(ids.win);
+      const handler = ()=>{
+        const a1 = parseInt(inputs[0]?.value), b1 = parseInt(inputs[1]?.value);
+        const a2 = parseInt(inputs[2]?.value), b2 = parseInt(inputs[3]?.value);
+        if ([a1,b1].some(Number.isNaN)){
+          if (gEl) gEl.textContent = '—';
+          if (wEl) wEl.textContent = '—';
+          saveScores();
+          return;
+        }
+        const teamA = (homes[0]?.textContent||'').trim();
+        const teamB = (aways[0]?.textContent||'').trim();
+        const goalsA = (Number.isNaN(a1)?0:a1) + (Number.isNaN(b2)?0:b2);
+        const goalsB = (Number.isNaN(b1)?0:b1) + (Number.isNaN(a2)?0:a2);
+        if (gEl) gEl.textContent = `${goalsA}–${goalsB}`;
+        if (goalsA>goalsB){ if (wEl) wEl.textContent = teamA; }
+        else if (goalsA<goalsB){ if (wEl) wEl.textContent = teamB; }
+        else {
+          const pen = prompt(`Empate ${teamA} vs ${teamB}. Ganador por penales:`);
+          if (wEl) wEl.textContent = pen || '—';
+        }
+        saveScores();
+      };
+      inputs.forEach(el=> el && el.addEventListener('change', handler));
+    }
+  }
+
+  function boot(){
+    const pairs = load(PKEY);
+    if (pairs && Array.isArray(pairs) && pairs.length===N_TIES){
+      renderPairs(pairs);
+      bindCalc();
+      restoreScores();
+    } else {
+      const parsed = parsePairsFromDOM();
+      if (parsed){ save(PKEY, parsed); }
+      bindCalc();
+      restoreScores();
+    }
+
+    const targets = [];
+    for (let i=0;i<N_TIES;i++){
+      const tie = document.querySelector(tieIds(i).selector);
+      if (tie) targets.push(tie);
+    }
+    const mo = new MutationObserver(()=>{
+      const parsed = parsePairsFromDOM();
+      if (parsed) save(PKEY, parsed);
+    });
+    targets.forEach(node=> mo.observe(node, {subtree:true, characterData:true, childList:true}));
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  window.cl_resetFinal = function(){
+    localStorage.removeItem(PKEY);
+    localStorage.removeItem(SKEY);
+    for (let i=0;i<N_TIES;i++){
+      const ids = tieIds(i);
+      ['idaA','idaB','vtaA','vtaB'].forEach(k=>{ const el = document.getElementById(ids[k]); if (el) el.value=''; });
+      const g = document.getElementById(ids.global);
+      const w = document.getElementById(ids.win);
+      if (g) g.textContent = '—';
+      if (w) w.textContent = '—';
+    }
+    // limpiar posibles indicadores de campeón
+    const champ = document.getElementById("campeon") || document.getElementById("campeonFinal");
+    if (champ) champ.innerHTML = "";
+    alert("Final restablecida.");
+  };
+})();
+</script>
+
+
+<!-- === Patch: Liga Fija (parejas + jornadas persistentes; no se desordenan al cargar) === -->
+<script id="cl-liga-fixed-persist">
 (function(){
   const PKEY = "CL_PAREJAS_FIXED_V1";
   const RKEY = "CL_JORNADAS_FIXED_V1";
 
-  function savePairs(pairs){
-    try { localStorage.setItem(PKEY, JSON.stringify(pairs||[])); } catch(e){}
-  }
-  function loadPairs(){
-    try { const s = localStorage.getItem(PKEY); if(!s) return null; const arr = JSON.parse(s)||[]; return Array.isArray(arr)&&arr.length===36 ? arr : null; } catch(e){ return null; }
-  }
-  function saveRounds(rounds){
-    try { localStorage.setItem(RKEY, JSON.stringify(rounds||[])); } catch(e){}
-  }
-  function loadRounds(){
-    try { const s = localStorage.getItem(RKEY); if(!s) return null; const arr = JSON.parse(s)||[]; return Array.isArray(arr)&&arr.length===8 ? arr : null; } catch(e){ return null; }
-  }
+  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+  function load(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
 
-  // Render helpers
   function renderPairs(parejas){
     const cont = document.getElementById('cl-parejas');
     if (!cont) return;
-    cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
+    if (!document.getElementById('cl-grid-parejas')){
+      cont.innerHTML = '<div class="cl-card"><h3 style="margin:4px 0;">🔗 Parejas sorteadas</h3><div class="cl-grid" id="cl-grid-parejas"></div></div>';
+    } else {
+      document.getElementById('cl-grid-parejas').innerHTML = "";
+    }
     const grid = document.getElementById('cl-grid-parejas');
     parejas.forEach(p=>{
       const d=document.createElement('div'); 
@@ -3633,121 +4056,226 @@ async function cl_wiog_load(){
   }
 
   function renderFixtures(jornadas){
-    try{
-      // CL_PAREJAS debe existir para mapear jugadores a equipos
-      const P = Array.isArray(window.CL_PAREJAS) ? window.CL_PAREJAS : [];
-      const jx = new Map(P.map(p=>[p.equipo, p.jugador]));
-      let cont = document.getElementById('cl-fixtures');
-      if (!cont){
-        cont = document.createElement('div'); cont.id='cl-fixtures';
-        document.body.appendChild(cont);
-      } else {
-        cont.innerHTML = '';
-      }
-      jornadas.forEach((pairs, idx)=>{
-        const wrap=document.createElement('div'); wrap.className='cl-round cl-card';
-        wrap.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
-        const table=document.createElement('table'); table.className='cl-table';
-        table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th><th>Marcador</th></tr></thead>';
-        const tb=document.createElement('tbody');
-        pairs.forEach(([home,away], mIdx)=>{
-          const jl=jx.get(home)||'', jv=jx.get(away)||'';
-          const ida=`cl-r${idx+1}-m${mIdx}-a`, idb=`cl-r${idx+1}-m${mIdx}-b`;
-          const tr=document.createElement('tr');
-          tr.innerHTML = `<td>${home}</td><td>${away}</td><td>${jl}</td><td>${jv}</td>
-                          <td><input id="${ida}" type="number" min="0" style="width:48px;"> – 
-                              <input id="${idb}" type="number" min="0" style="width:48px;"></td>`;
-          tb.appendChild(tr);
-        });
-        table.appendChild(tb); wrap.appendChild(table);
-        cont.appendChild(wrap);
+    const contId = 'cl-fixtures';
+    let cont = document.getElementById(contId);
+    if (!cont){
+      cont = document.createElement('div'); cont.id=contId;
+      document.body.appendChild(cont);
+    } else {
+      cont.innerHTML = '';
+    }
+    const P = Array.isArray(window.CL_PAREJAS) ? window.CL_PAREJAS : [];
+    const jx = new Map(P.map(p=>[p.equipo, p.jugador]));
+    jornadas.forEach((pairs, idx)=>{
+      const wrap=document.createElement('div'); wrap.className='cl-round cl-card';
+      wrap.innerHTML = `<h4>Jornada ${idx+1}</h4>`;
+      const table=document.createElement('table'); table.className='cl-table';
+      table.innerHTML = '<thead><tr><th>Local</th><th>Visitante</th><th>Jugador (Local)</th><th>Jugador (Visitante)</th><th>Marcador</th></tr></thead>';
+      const tb=document.createElement('tbody');
+      pairs.forEach(([home,away], mIdx)=>{
+        const jl=jx.get(home)||'', jv=jx.get(away)||'';
+        const ida=`cl-r${idx+1}-m${mIdx}-a`, idb=`cl-r${idx+1}-m${mIdx}-b`;
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${home}</td><td>${away}</td><td>${jl}</td><td>${jv}</td>
+                        <td><input id="${ida}" type="number" min="0" style="width:48px;"> – 
+                            <input id="${idb}" type="number" min="0" style="width:48px;"></td>`;
+        tb.appendChild(tr);
       });
-      if (typeof window.cl_hookInputs === 'function') window.cl_hookInputs();
-    }catch(e){ console.error("[fixed-order] renderFixtures error", e); }
+      table.appendChild(tb); wrap.appendChild(table);
+      cont.appendChild(wrap);
+    });
+    if (typeof window.cl_hookInputs === 'function') window.cl_hookInputs();
   }
 
-  // 1) Parchear el sorteo de parejas para mantener orden fijo
+  // Guardar/leer parejas de DOM si es necesario
+  function readPairsFromDOM(){
+    const cards = Array.from((document.getElementById('cl-parejas')||document).querySelectorAll('[data-jugador][data-equipo]'));
+    if (cards.length){
+      return cards.map(el=>({jugador:el.getAttribute('data-jugador'), equipo:el.getAttribute('data-equipo')}));
+    }
+    // fallback por lista textual: <li>Jugador - Equipo</li>
+    const lis = Array.from((document.getElementById('cl-parejas')||document).querySelectorAll('li'));
+    if (lis.length){
+      const arr = [];
+      lis.forEach(li=>{
+        const t=(li.textContent||'').split(' - ');
+        if (t.length===2) arr.push({jugador:t[0].trim(), equipo:t[1].trim()});
+      });
+      if (arr.length) return arr;
+    }
+    return null;
+  }
+
+  // Patch sorteo parejas
   if (typeof window.cl_sortearParejas === 'function'){
-    const __origSortPairs = window.cl_sortearParejas;
+    const __orig = window.cl_sortearParejas;
     window.cl_sortearParejas = function(){
-      const saved = loadPairs();
-      if (saved){
-        window.CL_PAREJAS = saved.slice();
-        renderPairs(saved);
-        // también refrescamos los estados visibles
-        if (typeof window.cl_renderEstado==='function') window.cl_renderEstado();
-      } else {
-        __origSortPairs();
-        // guardar lo que haya quedado en memoria/DOM
-        const P = Array.isArray(window.CL_PAREJAS) ? window.CL_PAREJAS : [];
-        if (P.length===36) savePairs(P);
-        else {
-          // intentar leer del DOM
-          const cards = Array.from((document.getElementById('cl-parejas')||document).querySelectorAll('[data-jugador][data-equipo]'));
-          if (cards.length===36){
-            const pares = cards.map(el=>({jugador:el.getAttribute('data-jugador'), equipo:el.getAttribute('data-equipo')}));
-            window.CL_PAREJAS = pares;
-            savePairs(pares);
-          }
-        }
-      }
+      const saved = load(PKEY);
+      if (saved && saved.length){ window.CL_PAREJAS = saved.slice(); renderPairs(saved); return; }
+      __orig();
+      const P = Array.isArray(window.CL_PAREJAS)?window.CL_PAREJAS:readPairsFromDOM();
+      if (P && P.length) { window.CL_PAREJAS = P; save(PKEY, P); }
     };
   }
 
-  // 2) Parchear generación de la fase de liga para que no cambie
+  // Patch generar liga
   if (typeof window.cl_generarFaseLiga === 'function'){
-    const __origGenLiga = window.cl_generarFaseLiga;
+    const __orig = window.cl_generarFaseLiga;
     window.cl_generarFaseLiga = function(){
-      // Asegurar que hay parejas (preferir guardadas)
-      const savedPairs = loadPairs();
-      if (savedPairs){ window.CL_PAREJAS = savedPairs.slice(); renderPairs(savedPairs); }
-      // Si ya existe una fase fija guardada, solo renderizarla
-      const savedRounds = loadRounds();
-      if (savedRounds){
-        window.CL_JORNADAS = savedRounds.slice();
-        renderFixtures(savedRounds);
-        // No recalcular nada ni reordenar
-        document.getElementById('cl-generar-fase')?.scrollIntoView({behavior:'smooth', block:'start'});
-        return;
-      }
-      // Si no hay guardada, generar con original y luego fijar
-      __origGenLiga();
-      if (Array.isArray(window.CL_JORNADAS) && window.CL_JORNADAS.length===8){
-        saveRounds(window.CL_JORNADAS);
-      }
-      if (Array.isArray(window.CL_PAREJAS) && window.CL_PAREJAS.length===36){
-        savePairs(window.CL_PAREJAS);
-      }
+      const sp = load(PKEY);
+      if (sp && sp.length){ window.CL_PAREJAS = sp.slice(); renderPairs(sp); }
+      const sj = load(RKEY);
+      if (sj && sj.length){ window.CL_JORNADAS = sj.slice(); renderFixtures(sj); return; }
+      __orig();
+      if (Array.isArray(window.CL_JORNADAS) && window.CL_JORNADAS.length) save(RKEY, window.CL_JORNADAS);
+      if (Array.isArray(window.CL_PAREJAS)  && window.CL_PAREJAS.length)  save(PKEY, window.CL_PAREJAS);
     };
   }
 
-  // 3) En la carga de la página, si existen datos fijos, precargarlos
+  // Boot: si hay datos guardados, mostrarlos sin remezclar
   function boot(){
-    const sp = loadPairs();
-    if (sp){ window.CL_PAREJAS = sp.slice(); try{ renderPairs(sp); }catch(e){} }
-    const sr = loadRounds();
-    if (sr){ window.CL_JORNADAS = sr.slice(); try{ renderFixtures(sr); }catch(e){} }
+    const sp = load(PKEY); if (sp && sp.length){ window.CL_PAREJAS = sp.slice(); try{ renderPairs(sp);}catch(e){} }
+    const sj = load(RKEY); if (sj && sj.length){ window.CL_JORNADAS = sj.slice(); try{ renderFixtures(sj);}catch(e){} }
   }
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
-
-  // (Opcional) Exponer un reset manual (no se usa automáticamente)
-  window.cl_resetLigaFija = function(){
-    localStorage.removeItem(PKEY);
-    localStorage.removeItem(RKEY);
-    alert('Orden fijo de parejas y jornadas eliminado. Ahora puedes volver a generar si quieres.');
-  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();
 </script>
 
 
-<!-- === Botón de reset colocado debajo de Cargar/Guardar === -->
-<div style="margin-top:12px; display:flex; justify-content:center;">
+<!-- === Patch: Semis→Final automático (reflecta ganadores en la Final y persiste) === -->
+
+<script id="cl-semis-to-final-link">
+(function(){
+  const SEMI_SKEY = "CL_SEMIS_SCORES_V1";
+  const FINAL_PKEY = "CL_FINAL_PAIRS_V1";
+
+  function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+
+  function setFinalPairs(winners){
+    if (!Array.isArray(winners) || winners.length !== 2) return;
+    const [w0, w1] = winners;
+    if (!w0 || !w1 || w0==='—' || w1==='—') return;
+    // DOM
+    const homes = document.querySelectorAll('#cl-final-t0 .cl-home');
+    const aways = document.querySelectorAll('#cl-final-t0 .cl-away');
+    if (homes.length){
+      homes[0].textContent = w0;
+      if (homes[1]) homes[1].textContent = w1;
+    }
+    if (aways.length){
+      aways[0].textContent = w1;
+      if (aways[1]) aways[1].textContent = w0;
+    }
+    // Persistir
+    save(FINAL_PKEY, [{home: w0, away: w1}]);
+  }
+
+  function currentSemiWinners(){
+    const w0 = (document.getElementById('cl-semis-t0-win')?.textContent||'').trim();
+    const w1 = (document.getElementById('cl-semis-t1-win')?.textContent||'').trim();
+    return [w0||'—', w1||'—'];
+  }
+
+  function recomputeFromSemis(){
+    const winners = currentSemiWinners();
+    setFinalPairs(winners);
+  }
+
+  // Bind observers and events to keep Final synced even after loading data
+  function bind(){
+    // Observe winner nodes for text changes
+    ['0','1'].forEach(i=>{
+      const el = document.getElementById(`cl-semis-t${i}-win`);
+      if (!el) return;
+      const mo = new MutationObserver(()=> recomputeFromSemis());
+      mo.observe(el, {childList:true, characterData:true, subtree:true});
+    });
+
+    // Recompute when any input in Semis changes (después de que otros scripts actualicen ganador)
+    document.querySelectorAll('#cl-semis input[type="number"]').forEach(el=>{
+      el.addEventListener('change', ()=> setTimeout(recomputeFromSemis, 0));
+    });
+
+    // Si existe botón Cargar, recomputar tras cargar (con pequeño retraso)
+    const loadBtn = document.getElementById('cl-cargar');
+    if (loadBtn){
+      loadBtn.addEventListener('click', ()=> {
+        // varias pasadas por si el proceso de carga es asíncrono
+        [100, 300, 700, 1200].forEach(ms => setTimeout(recomputeFromSemis, ms));
+      });
+    }
+
+    // Fallback: al iniciar y unos ticks después
+    setTimeout(recomputeFromSemis, 0);
+    [250, 800, 2000].forEach(ms => setTimeout(recomputeFromSemis, ms));
+
+    // Escuchar storage por si la carga ocurre desde otra pestaña (defensivo)
+    window.addEventListener('storage', (e)=>{
+      if (e && e.key === SEMI_SKEY) setTimeout(recomputeFromSemis, 0);
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+</script>
+
+
+
+<!-- === Reset al final: Restablecer Torneo (Completo) === -->
+<div id="cl-reset-bottom-container" style="margin:18px 0; display:flex; justify-content:center;">
   <button id="cl-reset-liga" type="button">♻️ Restablecer Torneo (Completo)</button>
 </div>
+<script id="cl-reset-liga-script">
+(function(){
+  const KEYS = [
+    "CL_PAREJAS_FIXED_V1",
+    "CL_JORNADAS_FIXED_V1",
+    "CL_PL_PAIRS_V1",
+    "CL_PL_SCORES_V1",
+    "CL_OCT_PAIRS_V1",
+    "CL_OCT_SCORES_V1",
+    "CL_CUARTOS_PAIRS_V1",
+    "CL_CUARTOS_SCORES_V1",
+    "CL_SEMIS_PAIRS_V1",
+    "CL_SEMIS_SCORES_V1",
+    "CL_FINAL_PAIRS_V1",
+    "CL_FINAL_SCORES_V1"
+  ];
+
+  function clearLocal(){ KEYS.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); }
+  function clearGlobals(){
+    try { window.CL_PAREJAS  = []; } catch(e){}
+    try { window.CL_JORNADAS = []; } catch(e){}
+    try { window.CL_TABLA    = []; } catch(e){}
+  }
+  function clearUI(){
+    const ids = ["cl-parejas","cl-fixtures","cl-standings","cl-playin","cl-octavos","cl-cuartos","cl-semis","cl-final","campeon","campeonFinal"];
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ""; });
+    document.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = ""; });
+  }
+
+  window.cl_resetTorneoTotal = function(){
+    clearLocal();
+    clearGlobals();
+    clearUI();
+    alert("✅ Torneo restablecido por completo. Inicia uno nuevo (sortear parejas y generar liga).");
+    // Desplazar al inicio si hace falta
+    try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(e){}
+  };
+
+  function bind(){
+    const btn = document.getElementById("cl-reset-liga");
+    if (!btn) return;
+    btn.addEventListener("click", ()=>{
+      try { window.cl_resetTorneoTotal(); } catch(e){ alert("Error al restablecer: " + (e?.message||e)); }
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
+  else bind();
+})();
+</script>
 
 </body>
 </html>
